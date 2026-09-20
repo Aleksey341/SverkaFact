@@ -642,12 +642,10 @@
           <thead><tr><th>Тариф</th><th>Цена</th></tr></thead>
           <tbody>
             <tr><td>Акты сверки</td><td><b>7 900 ₽/год</b></td></tr>
-            <tr><td>Две базы / реестры</td><td>5 900 ₽/год</td></tr>
             <tr><td>Доктор 60/62</td><td>6 900 ₽/год</td></tr>
             <tr><td>Сверка НДС</td><td>7 900 ₽/год</td></tr>
-            <tr><td>Эквайринг</td><td>4 900 ₽/год</td></tr>
-            <tr><td><b>Все модули</b></td><td><b>33 500 ₽/год</b></td></tr>
-            <tr><td>Все модули, 2 года</td><td>67 000 ₽</td></tr>
+            <tr><td><b>Все модули</b></td><td><b>22 700 ₽/год</b></td></tr>
+            <tr><td>Все модули, 2 года</td><td>45 400 ₽</td></tr>
             <tr><td>Тест (все модули)</td><td>ключ на 7 дней</td></tr>
           </tbody>
         </table>
@@ -661,9 +659,9 @@
         <div class="hub-pack">
           <div class="hub-pack-main">
             <strong>Все модули</strong>
-            <span>Акты, реестры, 60/62, НДС, эквайринг — один ключ на ПК</span>
+            <span>Акты, 60/62, НДС — один ключ на ПК</span>
           </div>
-          <div class="hub-pack-price">33 500 ₽<small>/год</small></div>
+          <div class="hub-pack-price">22 700 ₽<small>/год</small></div>
         </div>
         <div class="hub-grid" id="hubGrid">
           <div class="hub-card pro-locked" data-mode="acts" id="card-acts">
@@ -674,16 +672,6 @@
             <div class="hub-actions">
               <button type="button" data-open="acts">Открыть</button>
               <button type="button" class="secondary" data-demo="acts">Демо</button>
-            </div>
-          </div>
-          <div class="hub-card pro-locked" data-mode="regs" id="card-regs">
-            <h3>Две базы / реестры</h3>
-            <p>УТ ↔ БП и любые два Excel-реестра: нет в A/B, сумма, дата.</p>
-            <span class="price">5 900 ₽/год</span>
-            <span class="tag lock" data-tag>ключ</span>
-            <div class="hub-actions">
-              <button type="button" data-open="regs">Открыть</button>
-              <button type="button" class="secondary" data-demo="regs">Демо</button>
             </div>
           </div>
           <div class="hub-card pro-locked" data-mode="r6062" id="card-r6062">
@@ -704,16 +692,6 @@
             <div class="hub-actions">
               <button type="button" data-open="nds">Открыть</button>
               <button type="button" class="secondary" data-demo="nds">Демо</button>
-            </div>
-          </div>
-          <div class="hub-card pro-locked" data-mode="acq" id="card-acq">
-            <h3>Эквайринг</h3>
-            <p>Терминал ↔ банк: дата, сумма, комиссия, возвраты, дубли.</p>
-            <span class="price">4 900 ₽/год</span>
-            <span class="tag lock" data-tag>ключ</span>
-            <div class="hub-actions">
-              <button type="button" data-open="acq">Открыть</button>
-              <button type="button" class="secondary" data-demo="acq">Демо</button>
             </div>
           </div>
         </div>
@@ -2572,10 +2550,8 @@ const LICENSE_CFG = {
 
 const MODULES = {
   acts: { product: "ACT", title: "Акты сверки", price: "7 900 ₽/год" },
-  regs: { product: "REG", title: "Две базы / реестры", price: "5 900 ₽/год" },
   r6062: { product: "OSV", title: "Доктор 60/62", price: "6 900 ₽/год" },
-  nds: { product: "NDS", title: "Сверка НДС", price: "7 900 ₽/год" },
-  acq: { product: "ACQ", title: "Эквайринг", price: "4 900 ₽/год" }
+  nds: { product: "NDS", title: "Сверка НДС", price: "7 900 ₽/год" }
 };
 
 function toBase32(bytes) {
@@ -2693,7 +2669,7 @@ function isEntitlementActive(product) {
   return !!(ents[product] && ents[product] >= today);
 }
 function hasAnyPaidAccess() {
-  return isEntitlementActive("PRO") || ["REG", "OSV", "NDS", "ACQ"].some(isEntitlementActive);
+  return isEntitlementActive("PRO") || ["ACT", "OSV", "NDS"].some(isEntitlementActive);
 }
 /** Тестовый PRO истёк — все платные возможности и демо закрыты */
 function isTrialExpiredLocked() {
