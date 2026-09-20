@@ -2,7 +2,7 @@
 
 Одностраничное приложение для сверки актов и модулей учёта 1С. Файлы обрабатываются только в браузере на компьютере пользователя.
 
-**Продакшен:** [Vercel](https://vercel.com) ← автодеплой с ветки `main` этого репозитория (как у [1C_Analitik](https://github.com/Aleksey341/1C_Analitik)).
+**Продакшен:** https://sverka-fact.vercel.app ← автодеплой с ветки `main` (как у [1C_Analitik](https://github.com/Aleksey341/1C_Analitik)).
 
 ## Запуск локально
 
