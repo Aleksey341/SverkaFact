@@ -1,0 +1,4712 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@600;700&display=swap" rel="stylesheet">
+  <title>СверкаФакт</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
+  <style>
+    :root {
+      --bg: #e8eef4;
+      --bg-tint: #dfe8f0;
+      --card: #fffefb;
+      --surface: #f4f7fa;
+      --surface-2: #eef3f7;
+      --text: #1b2838;
+      --muted: #4d5d6e;
+      --line: #c9d4e0;
+      --line-soft: #dde5ee;
+      --accent: #0f5c5c;
+      --accent-hover: #0a4848;
+      --accent-soft: #e4f2f1;
+      --free: #1b7a4e;
+      --free-soft: #e8f6ee;
+      --pro: #b86e00;
+      --pro-soft: #fff6e8;
+      --danger: #b42318;
+      --danger-soft: #fef3f2;
+      --warn: #a15c07;
+      --warn-soft: #fff8eb;
+      --info: #175cd3;
+      --info-soft: #eff6ff;
+      --shadow: 0 10px 28px rgba(27, 40, 56, .07);
+      --shadow-sm: 0 4px 14px rgba(27, 40, 56, .05);
+      --radius: 14px;
+      --radius-sm: 10px;
+      --font: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+      --font-display: "IBM Plex Serif", "Times New Roman", serif;
+      --m1: #80FF80;
+      --m2: #FFFF80;
+      --m3: #59A8B3;
+      --m4: #C2C2C2;
+      --m0: #FF8080;
+    }
+    * { box-sizing: border-box; }
+    html { -webkit-text-size-adjust: 100%; }
+    body {
+      margin: 0;
+      font-family: var(--font);
+      font-size: 15px;
+      color: var(--text);
+      background:
+        radial-gradient(900px 420px at 8% -8%, #d5e4ef 0%, transparent 55%),
+        radial-gradient(700px 360px at 100% 0%, #d9ebe6 0%, transparent 48%),
+        var(--bg);
+      line-height: 1.45;
+    }
+    ::selection { background: #b8ddd9; color: var(--text); }
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    button:focus:not(:focus-visible),
+    a:focus:not(:focus-visible),
+    input:focus:not(:focus-visible),
+    select:focus:not(:focus-visible) { outline: none; }
+    .wrap { max-width: 1160px; margin: 0 auto; padding: 24px 18px 64px; }
+    .hero {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 22px 26px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+    .hero h1 {
+      margin: 0 0 6px;
+      font-family: var(--font-display);
+      font-size: 1.85rem;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      color: var(--accent);
+    }
+    .hero p { margin: 0; max-width: 54ch; color: var(--muted); font-size: 0.98rem; }
+    .page { display: none; }
+    .page.active { display: block; animation: deskIn .22s ease-out; }
+    @keyframes deskIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .page.active { animation: none; }
+      .hub-card { transition: none !important; }
+    }
+    .hub-lanes { display: none; }
+
+    .hub-shell .mode-title { margin-bottom: 6px; }
+    .hub-pack {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px 20px;
+      margin: 0 0 18px;
+      padding: 16px 18px;
+      border-radius: var(--radius);
+      border: 1px solid #9fc4c2;
+      background: linear-gradient(135deg, #e4f2f1 0%, #f7fbfa 55%, #fffefb 100%);
+      box-shadow: var(--shadow-sm);
+    }
+    .hub-pack-main { display: grid; gap: 4px; min-width: 200px; flex: 1; }
+    .hub-pack-main strong { font-size: 1.05rem; color: var(--accent); }
+    .hub-pack-main span { font-size: 0.88rem; color: var(--muted); }
+    .hub-pack-price {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+    .hub-pack-price small { font-size: 0.75rem; font-weight: 600; color: var(--muted); margin-left: 2px; }
+    .hub-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    .hub-lane-title {
+      margin: 0 0 10px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .hub-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+    }
+        .hub-card {
+      text-align: left;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px 16px 14px;
+      cursor: default;
+      box-shadow: var(--shadow-sm);
+      transition: border-color .15s, box-shadow .15s, background .15s;
+      width: 100%;
+      color: inherit;
+      font: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      min-height: 100%;
+    }
+    .hub-card:hover {
+      background: #fbfcfa;
+      border-color: #a8c4c2;
+      box-shadow: var(--shadow);
+    }
+    button.hub-card { cursor: pointer; }
+    button.hub-card:hover { background: #f7fbfa; color: inherit; }
+    .hub-card .ico { display: none; }
+    .hub-card h3 {
+      margin: 0 0 6px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -.01em;
+    }
+    .hub-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.45;
+      font-weight: 500;
+      flex: 1;
+    }
+    .hub-card .tag {
+      display: inline-flex;
+      align-items: center;
+      margin-top: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--free);
+      background: var(--free-soft);
+      padding: 3px 8px;
+      border-radius: 6px;
+      width: fit-content;
+    }
+    .nav-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 14px;
+      background: var(--card);
+      color: var(--accent);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+    }
+    .nav-back:hover { background: var(--accent-soft); border-color: #9fc4c2; }
+    .mode-title {
+      margin: 0 0 4px;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -.015em;
+    }
+    .mode-sub { margin: 0 0 16px; color: var(--muted); font-size: 0.95rem; max-width: 62ch; }
+    .sev {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+    .sev-error { background: var(--danger-soft); color: var(--danger); }
+    .sev-warning { background: var(--warn-soft); color: var(--warn); }
+    .sev-info { background: var(--info-soft); color: var(--info); }
+    details.faq-box {
+      margin: 12px 0 6px;
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      padding: 10px 14px;
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+    details.faq-box summary {
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--accent);
+      list-style: none;
+    }
+    details.faq-box summary::-webkit-details-marker { display: none; }
+    details.faq-box summary::before { content: "▸ "; color: var(--muted); }
+    details.faq-box[open] summary::before { content: "▾ "; }
+    details.faq-box ul { margin: 8px 0 2px; padding-left: 18px; }
+    details.faq-box li { margin: 4px 0; }
+    tr.sev-row-error { background: #fff8f7; }
+    tr.sev-row-warning { background: #fffbf3; }
+    tr.sev-row-info { background: #f7faff; }
+    .reason-box {
+      background: var(--accent-soft);
+      border: 1px solid #c5ddd9;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      margin: 8px 0 14px;
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--text);
+    }
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
+      gap: 10px;
+      margin: 0 0 14px;
+    }
+    .kpi {
+      background: var(--card);
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      box-shadow: var(--shadow-sm);
+    }
+    .kpi .n { font-size: 1.35rem; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+    .kpi .l { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .hub-card.pro-locked { border-style: solid; border-color: #e2d0b0; background: #fffcf7; }
+    .hub-card.pro-locked:hover { border-color: #d4b888; background: #fffaf2; }
+    .hub-card .price {
+      display: block;
+      margin-top: 10px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--pro);
+      font-variant-numeric: tabular-nums;
+    }
+    .hub-card .price.free { color: var(--free); }
+    .hub-card .tag.lock { color: var(--pro); background: var(--pro-soft); }
+    .hub-card .tag.open { color: var(--free); background: var(--free-soft); }
+    .hub-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+    .hub-actions button { font-size: 13px; padding: 8px 14px; border-radius: var(--radius-sm); }
+    .price-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 14px; }
+    .price-table th, .price-table td { border: 1px solid var(--line-soft); padding: 8px 10px; text-align: left; }
+    .price-table th { background: var(--surface-2); font-weight: 600; }
+    .pro-banner {
+      border: 1px solid #e2d0b0;
+      background: var(--pro-soft);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      margin: 12px 0;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    .pro-banner b { color: var(--pro); }
+    .blur-lock { filter: blur(2.5px); user-select: none; pointer-events: none; opacity: .55; }
+    .license-bar {
+      display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; justify-content: space-between;
+      background: var(--card); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 12px 16px; margin-bottom: 14px; box-shadow: var(--shadow-sm);
+    }
+    .license-bar .status { font-size: 14px; line-height: 1.4; }
+    .license-bar .status b { color: var(--accent); }
+    .license-bar.ok { border-color: #9dceb2; background: var(--free-soft); }
+    .license-bar.free { border-color: var(--line); background: var(--card); }
+    .license-bar code {
+      font-family: "IBM Plex Sans", Consolas, monospace;
+      background: var(--surface-2);
+      padding: 3px 8px; border-radius: 6px; font-size: 13px;
+      font-variant-numeric: tabular-nums;
+    }
+    .license-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .machine-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--line);
+      background: var(--surface);
+      font-size: 13px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .machine-chip:hover { border-color: #9fc4c2; background: var(--accent-soft); }
+    .machine-chip-label { color: var(--muted); font-weight: 600; white-space: nowrap; }
+    .machine-chip code {
+      font-family: "IBM Plex Sans", Consolas, monospace;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+      background: transparent;
+      padding: 0;
+    }
+    .machine-box {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px 16px;
+      margin: 0 0 10px;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      border: 1px solid #9fc4c2;
+      background: var(--accent-soft);
+    }
+    .machine-box span { font-size: 13px; color: var(--muted); font-weight: 600; }
+    .machine-box code {
+      font-family: "IBM Plex Sans", Consolas, monospace;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 12px;
+      cursor: pointer;
+      user-select: all;
+    }
+    .machine-box code:hover { border-color: var(--accent); background: #f7fbfb; }
+    .machine-chip.flash, .machine-box.flash, .machine-box code.flash {
+      outline: 2px solid var(--accent);
+      outline-offset: 1px;
+    }
+    .copy-toast {
+      position: fixed;
+      left: 50%;
+      bottom: 28px;
+      transform: translateX(-50%) translateY(12px);
+      z-index: 9999;
+      padding: 10px 16px;
+      border-radius: 10px;
+      background: var(--ink, #1a2e2e);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 600;
+      box-shadow: 0 8px 24px rgba(15, 40, 40, 0.22);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s ease, transform .2s ease;
+    }
+    .copy-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+    .license-actions input[type=text] {
+      width: min(420px, 100%); border: 1px solid var(--line); border-radius: var(--radius-sm);
+      padding: 9px 12px; font: inherit; font-family: "IBM Plex Sans", Consolas, monospace;
+      background: #fff;
+    }
+    .license-panel { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line-soft); width: 100%; }
+    .license-panel.open { display: block; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 14px;
+      box-shadow: var(--shadow-sm);
+    }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .file {
+      border: 1.5px dashed #a9bfc8;
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      background: var(--surface);
+      transition: border-color .15s, background .15s;
+    }
+    .file:hover { border-color: #7ea8a4; background: #f0f7f6; }
+    label { display: block; font-weight: 600; margin-bottom: 8px; color: var(--text); }
+    input[type=file], select, input[type=number], input[type=text] {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      background: #fff;
+      font: inherit;
+      color: var(--text);
+    }
+    .hint { color: var(--muted); font-size: 13px; line-height: 1.45; margin-top: 8px; }
+    .opts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .optbox {
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      background: var(--surface);
+    }
+    .optbox h3 { margin: 0 0 8px; font-size: 14px; font-weight: 600; }
+    .checks { display: grid; gap: 6px; font-size: 14px; }
+    .checks label { font-weight: 500; display: flex; gap: 8px; align-items: center; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+    button, .btn {
+      border: 0;
+      border-radius: var(--radius-sm);
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 11px 16px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      font-family: inherit;
+      transition: background .15s, box-shadow .15s;
+    }
+    button:hover, .btn:hover { background: var(--accent-hover); }
+    button:disabled { background: #9aa8b8; cursor: default; }
+    button.secondary {
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+    button.secondary:hover { background: #e4ebf2; }
+    button.reset {
+      background: var(--card);
+      color: var(--accent);
+      border: 1px solid var(--line);
+    }
+    button.reset:hover { background: var(--accent-soft); }
+    .msg {
+      display: none;
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      white-space: pre-wrap;
+      line-height: 1.45;
+    }
+    .msg.info { display: block; background: var(--info-soft); color: var(--info); }
+    .msg.ok { display: block; background: var(--free-soft); color: var(--free); }
+    .msg.err { display: block; background: var(--danger-soft); color: var(--danger); }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+    }
+    .methods { display: grid; gap: 8px; margin-top: 14px; }
+    .method {
+      display: grid;
+      grid-template-columns: 18px 1fr auto auto;
+      gap: 10px;
+      align-items: center;
+      border: 1px solid var(--line-soft);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      background: var(--card);
+    }
+    .dot { width: 18px; height: 28px; border-radius: 6px; border: 1px solid #00000022; }
+    .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 12px; }
+    .tab {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--line);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 13px;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .table-wrap {
+      overflow: auto;
+      max-height: 520px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-sm);
+      background: #fff;
+    }
+    table.data {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 13px;
+      min-width: 980px;
+      font-variant-numeric: tabular-nums;
+    }
+    table.data th, table.data td {
+      border-bottom: 1px solid var(--line-soft);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    table.data th {
+      position: sticky;
+      top: 0;
+      background: var(--accent);
+      color: #fff;
+      z-index: 1;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+    table.data tr:hover td { background: rgba(15, 92, 92, .04); }
+    .num { text-align: right; white-space: nowrap; }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 14px;
+      margin: 0 0 12px;
+      font-size: 13px;
+      color: var(--muted);
+      align-items: center;
+    }
+    .legend i {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      margin-right: 5px;
+      vertical-align: -2px;
+      border: 1px solid #00000018;
+    }
+    .hidden { display: none !important; }
+    h2 { margin: 0 0 12px; font-size: 1.25rem; font-weight: 700; }
+    h3.section {
+      margin: 18px 0 8px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -.01em;
+    }
+    .empty-hint {
+      border: 1.5px dashed var(--line);
+      border-radius: var(--radius-sm);
+      padding: 20px 18px;
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.5;
+      margin: 8px 0 0;
+    }
+    @media (max-width: 900px) {
+      .grid2, .opts, .kpis { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 640px) {
+      .grid2, .opts, .kpis { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 1.45rem; }
+      .wrap { padding: 16px 12px 48px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>СверкаФакт</h1>
+      <p>Модули сверки на вашем компьютере. Файлы никуда не отправляются.</p>
+    </section>
+
+        <section id="licenseBar" class="license-bar free">
+      <div class="status" id="licenseStatus">Нет активного ключа — доступен демо-запуск модулей</div>
+      <div class="license-actions">
+        <div class="machine-chip" id="machineChip" title="Нажмите, чтобы скопировать код ПК" role="button" tabindex="0">
+          <span class="machine-chip-label">Код ПК</span>
+          <code id="machineCodeDisplay">····-····-····</code>
+        </div>
+        <button type="button" class="secondary" id="btnShowLicense" style="padding:8px 12px;font-size:13px">Активировать</button>
+      </div>
+      <div class="license-panel" id="licensePanel">
+        <div class="hint" style="margin:0 0 8px">Этот <b>код ПК</b> отправьте продавцу после оплаты — по нему выдадут ключ на модуль, весь пакет или тест на 7 дней. Нажмите на код, чтобы скопировать. Ключ работает только на этом компьютере.</div>
+        <div class="machine-box" id="machineBox">
+          <span>Ваш код ПК · нажмите, чтобы скопировать</span>
+          <code id="machineCodeLarge" title="Нажмите, чтобы скопировать"></code>
+        </div>
+        <div class="row" style="margin:8px 0 0">
+          <input id="licenseKeyInput" type="text" placeholder="Вставьте ключ (SF-PRO-… / SF-ACT-…)" autocomplete="off" spellcheck="false">
+          <button type="button" id="btnActivateKey">Активировать</button>
+        </div>
+        <div class="hint" id="licenseHint" style="margin-top:8px"></div>
+        <table class="price-table" id="priceTable">
+          <thead><tr><th>Тариф</th><th>Цена</th></tr></thead>
+          <tbody>
+            <tr><td>Акты сверки</td><td><b>7 900 ₽/год</b></td></tr>
+            <tr><td>Две базы / реестры</td><td>5 900 ₽/год</td></tr>
+            <tr><td>Доктор 60/62</td><td>6 900 ₽/год</td></tr>
+            <tr><td>Сверка НДС</td><td>7 900 ₽/год</td></tr>
+            <tr><td>Эквайринг</td><td>4 900 ₽/год</td></tr>
+            <tr><td><b>Все модули</b></td><td><b>33 500 ₽/год</b></td></tr>
+            <tr><td>Все модули, 2 года</td><td>67 000 ₽</td></tr>
+            <tr><td>Тест (все модули)</td><td>ключ на 7 дней</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div id="page-hub" class="page page-hub active">
+      <section class="card hub-shell">
+        <h2 class="mode-title">Модули сверки</h2>
+        <p class="mode-sub">Каждый модуль — отдельный ключ или пакет «Все модули». Один демо-запуск на модуль.</p>
+        <div class="hub-pack">
+          <div class="hub-pack-main">
+            <strong>Все модули</strong>
+            <span>Акты, реестры, 60/62, НДС, эквайринг — один ключ на ПК</span>
+          </div>
+          <div class="hub-pack-price">33 500 ₽<small>/год</small></div>
+        </div>
+        <div class="hub-grid" id="hubGrid">
+          <div class="hub-card pro-locked" data-mode="acts" id="card-acts">
+            <h3>Акты сверки</h3>
+            <p>Два акта Excel или PDF: сопоставление, причины расхождений, Excel-отчёт.</p>
+            <span class="price">7 900 ₽/год</span>
+            <span class="tag lock" data-tag>ключ</span>
+            <div class="hub-actions">
+              <button type="button" data-open="acts">Открыть</button>
+              <button type="button" class="secondary" data-demo="acts">Демо</button>
+            </div>
+          </div>
+          <div class="hub-card pro-locked" data-mode="regs" id="card-regs">
+            <h3>Две базы / реестры</h3>
+            <p>УТ ↔ БП и любые два Excel-реестра: нет в A/B, сумма, дата.</p>
+            <span class="price">5 900 ₽/год</span>
+            <span class="tag lock" data-tag>ключ</span>
+            <div class="hub-actions">
+              <button type="button" data-open="regs">Открыть</button>
+              <button type="button" class="secondary" data-demo="regs">Демо</button>
+            </div>
+          </div>
+          <div class="hub-card pro-locked" data-mode="r6062" id="card-r6062">
+            <h3>Доктор 60/62</h3>
+            <p>Развёрнутое сальдо, просрочка, дубли, авансы: Дт 60 ↔ 76.ВА и Кт 62 ↔ 76.АВ.</p>
+            <span class="price">6 900 ₽/год</span>
+            <span class="tag lock" data-tag>ключ</span>
+            <div class="hub-actions">
+              <button type="button" data-open="r6062">Открыть</button>
+              <button type="button" class="secondary" data-demo="r6062">Демо</button>
+            </div>
+          </div>
+          <div class="hub-card pro-locked" data-mode="nds" id="card-nds">
+            <h3>Сверка НДС</h3>
+            <p>СФ: ИНН/КПП, ставки, исправления, корр. СФ, дубли и причины.</p>
+            <span class="price">7 900 ₽/год</span>
+            <span class="tag lock" data-tag>ключ</span>
+            <div class="hub-actions">
+              <button type="button" data-open="nds">Открыть</button>
+              <button type="button" class="secondary" data-demo="nds">Демо</button>
+            </div>
+          </div>
+          <div class="hub-card pro-locked" data-mode="acq" id="card-acq">
+            <h3>Эквайринг</h3>
+            <p>Терминал ↔ банк: дата, сумма, комиссия, возвраты, дубли.</p>
+            <span class="price">4 900 ₽/год</span>
+            <span class="tag lock" data-tag>ключ</span>
+            <div class="hub-actions">
+              <button type="button" data-open="acq">Открыть</button>
+              <button type="button" class="secondary" data-demo="acq">Демо</button>
+            </div>
+          </div>
+        </div>
+        <div class="pro-banner" style="margin-top:16px">
+          После оплаты: «Активировать» → вставьте ключ. Тест всех модулей — ключ на 7 дней.
+        </div>
+      </section>
+    </div>
+
+        <div id="page-acts" class="page page-mode">
+      <button type="button" class="nav-back" data-back>← К выбору режима</button>
+      <h2 class="mode-title">Акты сверки</h2>
+      <p class="mode-sub">Загрузите два акта (Excel или PDF). Программа сопоставит операции и объяснит вероятные причины расхождений.</p>
+      <div class="work-area">
+      <section class="card">
+        <div class="grid2">
+          <div class="file">
+            <label for="act1">Акт 1</label>
+            <input id="act1" type="file" accept=".xlsx,.xls,.csv,.xlsb,.pdf">
+            <div class="hint">Колонки Дата / Документ / Дебет / Кредит. Поддерживается PDF.</div>
+          </div>
+          <div class="file">
+            <label for="act2">Акт 2</label>
+            <input id="act2" type="file" accept=".xlsx,.xls,.csv,.xlsb,.pdf">
+            <div class="hint">Второй акт: .xlsx, .xls, .csv, .pdf.</div>
+          </div>
+        </div>
+        <div class="opts">
+          <div class="optbox">
+            <h3>Методы поиска</h3>
+            <div class="checks">
+              <label><input type="checkbox" id="m1" checked> 1 — Дата+Номер+Сумма</label>
+              <label><input type="checkbox" id="m2" checked> 2 — Номер+Сумма</label>
+              <label><input type="checkbox" id="m3" checked> 3 — Дата+Сумма</label>
+              <label><input type="checkbox" id="m4" checked> 4 — только Сумма</label>
+            </div>
+          </div>
+          <div class="optbox">
+            <h3>Номер документа</h3>
+            <div class="checks">
+              <label><input type="radio" name="num1" value="inside" checked> Акт 1: номер из скобок</label>
+              <label><input type="radio" name="num1" value="outside"> Акт 1: номер вне скобок</label>
+              <label><input type="radio" name="num2" value="inside" checked> Акт 2: номер из скобок</label>
+              <label><input type="radio" name="num2" value="outside"> Акт 2: номер вне скобок</label>
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <button id="btnRun" type="button">Сверить акты</button>
+          <button id="btnXlsx" class="secondary hidden" type="button">Скачать Excel-отчёт</button>
+          <button id="btnReset" class="reset hidden" type="button">Новая сверка</button>
+          <span class="hint" style="margin:0">Обработка полностью в браузере.</span>
+        </div>
+
+        <details class="faq-box">
+          <summary>Кратко: как читать результат</summary>
+          <ul>
+            <li><b>Важность:</b> ошибка — разобрать обязательно; внимание — проверить; справочно — пояснение без блокера.</li>
+            <li>Суммы разные при одной дате/номере — сверить первичку / УПД.</li>
+            <li>Даты разные при одном номере и сумме — часто дата документа vs дата проводки.</li>
+            <li>Нет пары — другой договор, период или номер; запросите скан у контрагента.</li>
+            <li>Файлы не уходят с компьютера — обработка в браузере.</li>
+          </ul>
+        </details>
+        <div id="msg" class="msg"></div>
+      </section>
+      <section id="report" class="card hidden">
+        <div class="tabs" id="tabs"></div>
+        <div id="panels"></div>
+      </section>
+      </div>
+    </div>
+
+    <div id="page-regs" class="page page-mode">
+      <button type="button" class="nav-back" data-back>← К выбору режима</button>
+      <h2 class="mode-title">Две базы / реестры документов</h2>
+      <p class="mode-sub">Выгрузки из УТ и БП (или любых систем): дата, номер/документ, сумма; контрагент желателен.</p>
+      <section class="card">
+        <div class="grid2">
+          <div class="file"><label for="reg1">Реестр A (источник)</label><input id="reg1" type="file" accept=".xlsx,.xls,.csv"></div>
+          <div class="file"><label for="reg2">Реестр B (приёмник)</label><input id="reg2" type="file" accept=".xlsx,.xls,.csv"></div>
+        </div>
+        <div class="row">
+          <button id="btnRegRun" type="button">Сверить реестры</button>
+          <button id="btnRegXlsx" class="secondary hidden" type="button">Скачать Excel</button>
+          <button id="btnRegReset" class="reset hidden" type="button">Новая сверка</button>
+          <span class="hint" style="margin:0">Обработка полностью в браузере.</span>
+        </div>
+
+        <details class="faq-box">
+          <summary>Кратко: реестры УТ ↔ БП</summary>
+          <ul>
+            <li>Нужны колонки: дата, номер/документ, сумма; контрагент желателен.</li>
+            <li>Сопоставление похоже на акты: ищем пары и показываем, чего нет с одной стороны.</li>
+            <li>Выгрузки из любых систем, не только 1С УТ/БП.</li>
+          </ul>
+        </details>
+        <div id="msgReg" class="msg"></div>
+      </section>
+      <section id="reportReg" class="card hidden"><div id="panelsReg"></div></section>
+    </div>
+
+    <div id="page-r6062" class="page page-mode">
+      <button type="button" class="nav-back" data-back>← К выбору режима</button>
+      <h2 class="mode-title">Доктор 60/62</h2>
+      <p class="mode-sub">ОСВ: развёрнутое/красное сальдо, просрочка, дубли, аналитика + сверка авансов с НДС по авансам: Дт 60 ↔ 76.ВА и Кт 62 ↔ 76.АВ.</p>
+      <section class="card">
+        <div class="grid2">
+          <div class="file">
+            <label for="osvFile">ОСВ / выгрузка взаиморасчётов</label>
+            <input id="osvFile" type="file" accept=".xlsx,.xls,.csv">
+            <div class="hint">Желательно: Счёт, Контрагент, Договор, Сальдо Дт/Кт, Дата, ИНН.</div>
+          </div>
+          <div class="file">
+            <label for="osvSfFile">ОСВ 76.ВА / 76.АВ или книга покупок (необязательно)</label>
+            <input id="osvSfFile" type="file" accept=".xlsx,.xls,.csv">
+            <div class="hint">Для сверки авансовых счетов-фактур: к ОСВ по счёту <b>60</b> — ОСВ по <b>76.ВА</b> (авансовые СФ полученные, книга покупок); к ОСВ по счёту <b>62</b> — ОСВ по <b>76.АВ</b> (авансовые СФ выданные, книга продаж). Тип файла определяется автоматически.</div>
+          </div>
+        </div>
+        <div class="row">
+          <label style="display:flex;align-items:center;gap:8px;font-weight:600">
+            Просрочка, дней
+            <input id="osvOverdueDays" type="number" min="1" max="3650" value="30" style="width:80px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit">
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;font-weight:600">
+            Аванс от, ₽
+            <input id="osvMinAdvance" type="number" min="0" step="100" value="1000" style="width:100px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font:inherit">
+          </label>
+          <button id="btnOsvRun" type="button">Проверить 60/62</button>
+          <button id="btnOsvXlsx" class="secondary hidden" type="button">Скачать Excel</button>
+          <button id="btnOsvReset" class="reset hidden" type="button">Новая сверка</button>
+          <span class="hint" style="margin:0">Обработка полностью в браузере.</span>
+        </div>
+
+        <details class="faq-box">
+          <summary>Кратко: авансы и 76.ВА / 76.АВ</summary>
+          <ul>
+            <li>К ОСВ <b>60</b> — второй файл ОСВ <b>76.ВА</b> (авансовые СФ полученные / книга покупок).</li>
+            <li>К ОСВ <b>62</b> — ОСВ <b>76.АВ</b> (авансовые СФ выданные / книга продаж).</li>
+            <li>Аванс выданный без 76.ВА — <b>справочно</b>: вычет НДС с аванса — право, не обязанность.</li>
+            <li>Аванс полученный без 76.АВ — <b>ошибка</b>: СФ на аванс обязательна.</li>
+            <li>Порог «Аванс от, ₽» отсекает копеечные переплаты.</li>
+          </ul>
+        </details>
+        <div id="msgOsv" class="msg"></div>
+      </section>
+      <section id="reportOsv" class="card hidden"><div id="panelsOsv"></div></section>
+    </div>
+
+    <div id="page-nds" class="page page-mode">
+      <button type="button" class="nav-back" data-back>← К выбору режима</button>
+      <h2 class="mode-title">Сверка НДС</h2>
+      <p class="mode-sub">Два реестра СФ / книги: номер, сумма, НДС, ставка, ИНН/КПП, исправления, корр. СФ, дубли и причины.</p>
+      <section class="card">
+        <div class="grid2">
+          <div class="file"><label for="nds1">Реестр / книга A</label><input id="nds1" type="file" accept=".xlsx,.xls,.csv"></div>
+          <div class="file"><label for="nds2">Реестр / книга B</label><input id="nds2" type="file" accept=".xlsx,.xls,.csv"></div>
+        </div>
+        <div class="row">
+          <button id="btnNdsRun" type="button">Сверить НДС</button>
+          <button id="btnNdsXlsx" class="secondary hidden" type="button">Скачать Excel</button>
+          <button id="btnNdsReset" class="reset hidden" type="button">Новая сверка</button>
+          <span class="hint" style="margin:0">Обработка полностью в браузере.</span>
+        </div>
+
+        <details class="faq-box">
+          <summary>Кратко: сверка НДС</summary>
+          <ul>
+            <li>Два реестра СФ или книги (покупки/продажи — как вам нужно сравнить).</li>
+            <li>Смотрим номер, сумму, НДС, ставку, ИНН/КПП, исправления и дубли.</li>
+            <li>«Нет в A/B» — СФ только в одном файле; проверьте период и номер исправления.</li>
+          </ul>
+        </details>
+        <div id="msgNds" class="msg"></div>
+      </section>
+      <section id="reportNds" class="card hidden"><div id="panelsNds"></div></section>
+    </div>
+
+    <div id="page-acq" class="page page-mode">
+      <button type="button" class="nav-back" data-back>← К выбору режима</button>
+      <h2 class="mode-title">Эквайринг</h2>
+      <p class="mode-sub">Реестр терминала ↔ банк: агрегаты и построчное сопоставление (дата, сумма, комиссия, возвраты, дубли).</p>
+      <section class="card">
+        <div class="grid2">
+          <div class="file">
+            <label for="acqTerm">Реестр эквайринга</label>
+            <input id="acqTerm" type="file" accept=".xlsx,.xls,.csv">
+            <div class="hint">Суммы продаж и желательно колонка комиссии.</div>
+          </div>
+          <div class="file">
+            <label for="acqBank">Банковская выписка</label>
+            <input id="acqBank" type="file" accept=".xlsx,.xls,.csv">
+            <div class="hint">Поступления от банка-эквайера: колонка «Кредит» / «Поступление» / «Зачисление» (не «Остаток»).</div>
+          </div>
+        </div>
+        <div class="row">
+          <button id="btnAcqRun" type="button">Сверить эквайринг</button>
+          <button id="btnAcqXlsx" class="secondary hidden" type="button">Скачать Excel</button>
+          <button id="btnAcqReset" class="reset hidden" type="button">Новая сверка</button>
+          <span class="hint" style="margin:0">Обработка полностью в браузере.</span>
+        </div>
+
+        <details class="faq-box">
+          <summary>Кратко: эквайринг</summary>
+          <ul>
+            <li>Терминал ↔ банк: учтите T+1/T+2 и комиссию в выписке.</li>
+            <li>«Совпали только по сумме» — проверить вручную (часто сдвиг даты).</li>
+            <li>Возвраты и дубли выносятся отдельными блоками.</li>
+          </ul>
+        </details>
+        <div id="msgAcq" class="msg"></div>
+      </section>
+      <section id="reportAcq" class="card hidden"><div id="panelsAcq"></div></section>
+    </div>
+  </div>
+
+<script>
+/* ========== СверкаФакт v2.1 — тестовая версия без лицензии ========== */
+
+const METHOD_NAMES = {
+  1: "1 - Дата+Номер+Сумма",
+  2: "2 - Номер+Сумма",
+  3: "3 - Дата+Сумма",
+  4: "4 - только Сумма",
+  0: "0 - не найдено соответствие"
+};
+const METHOD_COLORS = {
+  1: "#80FF80",
+  2: "#FFFF80",
+  3: "#59A8B3",
+  4: "#C2C2C2",
+  0: "#FF8080"
+};
+
+function normalizeText(v) {
+  if (v == null || v === undefined) return "";
+  return String(v).replace(/\u00a0|\u202f/g, " ").replace(/\s+/g, " ").trim();
+}
+
+function collapseSpaces(s) {
+  let t = normalizeText(s);
+  while (t.includes("  ")) t = t.replaceAll("  ", " ");
+  return t;
+}
+
+function parseAmount(v) {
+  if (v == null || v === undefined || v === "") return null;
+  if (typeof v === "number" && Number.isFinite(v)) return Math.round(v * 100) / 100;
+  let s = normalizeText(v);
+  if (!s || s === "-") return null;
+  s = s.replace(/\u00a0|\u202f| /g, "");
+  let neg = false;
+  if (s.startsWith("(") && s.endsWith(")")) { neg = true; s = s.slice(1, -1); }
+  // как в VBA: одна точка → запятая для локали; здесь просто точка
+  const dots = (s.match(/\./g) || []).length;
+  const commas = (s.match(/,/g) || []).length;
+  if (commas === 1 && dots === 0) s = s.replace(",", ".");
+  else if (dots === 1 && commas === 0) { /* ok */ }
+  else s = s.replace(/,/g, "");
+  s = s.replace(/[^0-9.\-]/g, "");
+  if (!s || s === "-" || s === ".") return null;
+  const n = Number(s);
+  if (!Number.isFinite(n)) return null;
+  const r = Math.round((neg ? -n : n) * 100) / 100;
+  return r;
+}
+
+function excelSerialToDate(n) {
+  if (typeof n !== "number" || n < 20000 || n > 80000) return null;
+  const d = new Date(Date.UTC(1899, 11, 30) + Math.round(n) * 86400000);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+function parseDate(v) {
+  if (v == null || v === "") return null;
+  if (v instanceof Date && !Number.isNaN(v.getTime())) {
+    return new Date(Date.UTC(v.getFullYear(), v.getMonth(), v.getDate()));
+  }
+  if (typeof v === "number") return excelSerialToDate(v);
+  let s = normalizeText(v).replace(/г\./gi, "").replace(/\sг$/i, "").trim();
+  if (!s) return null;
+  // dd.mm.yyyy / dd/mm/yy
+  let m = s.match(/^(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{2,4})$/);
+  if (m) {
+    let y = Number(m[3]); if (y < 100) y += 2000;
+    const d = new Date(Date.UTC(y, Number(m[2]) - 1, Number(m[1])));
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  // yyyy-mm-dd
+  m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (m) {
+    const d = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+  const t = Date.parse(s);
+  if (!Number.isNaN(t)) {
+    const d0 = new Date(t);
+    return new Date(Date.UTC(d0.getFullYear(), d0.getMonth(), d0.getDate()));
+  }
+  return null;
+}
+
+function dateKey(d) {
+  if (!d) return "";
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+function fmtDate(d) {
+  if (!d) return "";
+  return `${String(d.getUTCDate()).padStart(2,"0")}.${String(d.getUTCMonth()+1).padStart(2,"0")}.${d.getUTCFullYear()}`;
+}
+
+function fmtMoney(n) {
+  if (n == null || n === "") return "";
+  return Number(n).toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+/**
+ * Извлечение номера и даты из текста документа.
+ * Источник текста (из скобок / вне скобок) — как переключатели VBA в nastr.
+ * Нормализация номера: после «№» берётся последняя значимая группа цифр
+ * («02-1005269» → «1005269»), как в рабочей адаптации под выгрузки 1С.
+ */
+function isLikelyYearToken(n) {
+  return n.length === 4 && Number(n) >= 1900 && Number(n) <= 2100;
+}
+
+function extractDocInfo(docAct, fromInsideParens) {
+  let nomer = "";
+  let dateFromOper = null;
+  let ostatok = String(docAct ?? "");
+
+  if (fromInsideParens) {
+    const poz1 = ostatok.indexOf("(");
+    if (poz1 >= 0) {
+      ostatok = ostatok.slice(poz1 + 1);
+      const poz2 = ostatok.indexOf(")");
+      if (poz2 >= 0) ostatok = ostatok.slice(0, poz2);
+    }
+  } else {
+    const poz1 = ostatok.indexOf("(");
+    let left = ostatok;
+    if (poz1 >= 0) left = ostatok.slice(0, poz1);
+    const poz2 = ostatok.indexOf(")");
+    if (poz2 >= 0) left = left + ostatok.slice(poz2 + 1);
+    ostatok = left;
+  }
+
+  ostatok = collapseSpaces(ostatok);
+
+  // «81820 от 22.07.2026» — номер до « от », не год из даты
+  const mBeforeOt = ostatok.match(/^(\d+)\s+от\b/i);
+  if (mBeforeOt) {
+    nomer = mBeforeOt[1].replace(/^0+/, "") || "0";
+  } else {
+    let numberSource = ostatok;
+    const mNo = ostatok.match(/№\s*(.*?)(?:\s+от\b|$)/i);
+    if (mNo) numberSource = mNo[1];
+    const otIdx = numberSource.toLowerCase().indexOf(" от ");
+    if (otIdx >= 0) numberSource = numberSource.slice(0, otIdx);
+
+    const nums = numberSource.match(/\d+/g) || [];
+    if (nums.length) {
+      const candidates = nums.filter(n => !isLikelyYearToken(n));
+      const pick = candidates.length ? candidates[candidates.length - 1] : nums[nums.length - 1];
+      nomer = pick.replace(/^0+/, "") || "0";
+    } else {
+      // fallback VBA: первая последовательность цифр до пробела
+      let estPerv = false;
+      for (let i = 0; i < ostatok.length; i++) {
+        const simv = ostatok[i];
+        if (simv === " " && estPerv) break;
+        if (!estPerv) {
+          if ("123456789".includes(simv)) { nomer += simv; estPerv = true; }
+        } else if ("0123456789".includes(simv)) {
+          nomer += simv;
+        }
+      }
+    }
+  }
+
+  const pozOt = ostatok.toLowerCase().indexOf(" от ");
+  if (pozOt >= 0) {
+    const after = ostatok.slice(pozOt + 4);
+    let digits = "";
+    for (const ch of after) if (/\d/.test(ch)) digits += ch;
+    if (digits.length >= 6) {
+      const dd = digits.slice(0, 2);
+      const mm = digits.slice(2, 4);
+      const yy = digits.slice(4);
+      const yNum = yy.length === 2 ? 2000 + Number(yy) : Number(yy);
+      const d = new Date(Date.UTC(yNum, Number(mm) - 1, Number(dd)));
+      if (!Number.isNaN(d.getTime())) dateFromOper = d;
+    }
+  }
+  return { number: nomer, docDate: dateFromOper };
+}
+
+function isSaldoText(...vals) {
+  const t = vals.map(v => normalizeText(v).toLowerCase()).join(" ");
+  return t.includes("сальдо") || t.includes("задолженность") || t.includes("остаток");
+}
+
+function sheetToMatrix(ws) {
+  return XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: true });
+}
+
+function scoreSheet(matrix) {
+  let score = 0, dates = 0, amts = 0;
+  const rows = Math.min(matrix.length, 120);
+  for (let r = 0; r < rows; r++) {
+    const row = (matrix[r] || []).map(c => normalizeText(c).toLowerCase()).join(" ");
+    if (!row) continue;
+    if (row.includes("акт") && row.includes("свер")) score += 12;
+    if (row.includes("дата")) score += 8;
+    if (/(документ|операция|описание|основание|регистратор)/.test(row)) score += 8;
+    if (/(дебет|кредит|долг|задолж|сумма|приход|расход)/.test(row)) score += 10;
+    for (const c of (matrix[r] || [])) {
+      if (parseDate(c)) dates++;
+      if (parseAmount(c) != null) amts++;
+    }
+  }
+  return score + Math.min(dates, 30) * 2 + Math.min(amts, 60);
+}
+
+function matrixWidth(matrix) {
+  let w = 0;
+  for (const row of matrix) w = Math.max(w, (row || []).length);
+  return w;
+}
+
+/** Короткая ячейка-заголовок (не юридический текст абзацем). */
+function headerCellKind(value) {
+  const t = normalizeText(value).toLowerCase();
+  if (!t || t.length > 40) return null;
+  if (t === "дата" || t.startsWith("дата ") || t === "дата документа") return "date";
+  if (/^(документ|операция|описание|основание|регистратор|содержание)(\s|$)/.test(t)) return "doc";
+  if (/^(дебет|приход|поступление)(\s|$)/.test(t)) return "debit";
+  if (/^(кредит|расход|оплата|списание)(\s|$)/.test(t)) return "credit";
+  if (/^(долг|задолж)/.test(t)) return "debt";
+  if (t === "сумма" || t.startsWith("сумма ")) return "amount";
+  return null;
+}
+
+function findHeaderRow(matrix) {
+  const rows = Math.min(matrix.length, 120);
+  let best = null, bestScore = -1;
+  for (let r = 0; r < rows; r++) {
+    const row = matrix[r] || [];
+    const row2 = matrix[r + 1] || [];
+    let score = 0, headerCells = 0;
+    let hasDate = false, hasDoc = false, hasAmount = false;
+    for (let c = 0; c < row.length; c++) {
+      const kind = headerCellKind(row[c]);
+      if (!kind) continue;
+      headerCells++;
+      if (kind === "date") { score += 5; hasDate = true; }
+      if (kind === "doc") { score += 4; hasDoc = true; }
+      if (kind === "debit" || kind === "credit" || kind === "debt" || kind === "amount") {
+        score += 5;
+        hasAmount = true;
+      }
+    }
+    for (let c = 0; c < row2.length; c++) {
+      const kind = headerCellKind(row2[c]);
+      if (kind === "debit" || kind === "credit" || kind === "debt") {
+        score += 3;
+        hasAmount = true;
+      }
+    }
+    if (hasDate && (hasDoc || hasAmount) && headerCells >= 2 && score > bestScore) {
+      bestScore = score;
+      best = r;
+    }
+  }
+  return best;
+}
+
+/** Две таблицы на одном листе (Дата/Док/Дт/Кт | Дата/Док/Дт/Кт). Берём первый блок. */
+function findTableBlocks(matrix, headerRow) {
+  if (headerRow == null) return [];
+  const row = matrix[headerRow] || [];
+  const row2 = matrix[headerRow + 1] || [];
+  const width = matrixWidth(matrix);
+  const dateCols = [];
+  for (let c = 0; c < width; c++) {
+    if (headerCellKind(row[c]) === "date") dateCols.push(c);
+  }
+  const blocks = [];
+  for (let i = 0; i < dateCols.length; i++) {
+    const start = dateCols[i];
+    const end = i + 1 < dateCols.length ? dateCols[i + 1] : Math.min(start + 12, width);
+    let doc = null, debit = null, credit = null, amount = null;
+    const debts = [];
+    for (let c = start + 1; c < end; c++) {
+      const k = headerCellKind(row[c]);
+      if (k === "doc" && doc == null) doc = c;
+      if (k === "debit" && debit == null) debit = c;
+      if (k === "credit" && credit == null) credit = c;
+      if (k === "amount" && amount == null) amount = c;
+      if (k === "debt") debts.push(c);
+    }
+    for (let c = start; c < end; c++) {
+      const k = headerCellKind(row2[c]);
+      if (k === "doc" && doc == null) doc = c;
+      if (k === "debit" && debit == null) debit = c;
+      if (k === "credit" && credit == null) credit = c;
+      if (k === "debt") debts.push(c);
+    }
+    if (debts.length >= 2 && debit == null && credit == null) {
+      debit = debts[0];
+      credit = debts[debts.length - 1];
+    } else if (debts.length === 1 && debit == null) {
+      debit = debts[0];
+      credit = debts[0] + 1;
+    }
+    if (amount != null && debit == null) {
+      debit = amount;
+      credit = -1;
+    }
+    if (doc == null) doc = start + 1;
+    if (debit == null && credit == null) continue;
+    blocks.push({
+      date: start,
+      document: doc,
+      debit: debit ?? credit,
+      credit: credit ?? -1,
+      format: credit === -1 ? "amount_single" : (debts.length ? "debt_two_party" : "debit_credit"),
+      blockIndex: i
+    });
+  }
+  return blocks;
+}
+
+function headerText(matrix, headerRow, c, depth = 4) {
+  if (headerRow == null) return "";
+  const parts = [];
+  for (let r = headerRow; r < Math.min(matrix.length, headerRow + depth); r++) {
+    const t = normalizeText((matrix[r] || [])[c]).toLowerCase();
+    if (t) parts.push(t);
+  }
+  return parts.join(" ");
+}
+
+function findColByVariants(matrix, headerRow, variants) {
+  if (headerRow == null) return null;
+  const width = Math.max(...matrix.map(r => (r || []).length), 0);
+  for (let c = 0; c < width; c++) {
+    const text = headerText(matrix, headerRow, c);
+    if (!text) continue;
+    if (variants.some(v => text.includes(v.toLowerCase()))) return c;
+  }
+  return null;
+}
+
+function detectColumns(matrix) {
+  const headerRow = findHeaderRow(matrix);
+  const blocks = findTableBlocks(matrix, headerRow);
+  if (blocks.length) {
+    const b = blocks[0];
+    return {
+      date: b.date,
+      document: b.document,
+      debit: b.debit,
+      credit: b.credit,
+      saldo: b.date,
+      format: b.format,
+      headerRow,
+      blockCount: blocks.length
+    };
+  }
+
+  const start = headerRow != null ? headerRow + 1 : 0;
+  let dateCol = findColByVariants(matrix, headerRow, ["дата"]);
+  let docCol = findColByVariants(matrix, headerRow, ["документ", "операция", "описание", "основание", "регистратор", "содержание"]);
+  let debitCol = findColByVariants(matrix, headerRow, ["дебет", "приход", "поступление"]);
+  let creditCol = findColByVariants(matrix, headerRow, ["кредит", "расход", "оплата"]);
+  let format = "debit_credit";
+
+  // Долг / Долг
+  if (debitCol == null || creditCol == null) {
+    const debt = [];
+    if (headerRow != null) {
+      const width = Math.max(...matrix.map(r => (r || []).length), 0);
+      for (let c = 0; c < width; c++) {
+        const t = headerText(matrix, headerRow, c);
+        if (/(долг|задолж)/.test(t)) debt.push(c);
+      }
+    }
+    if (debt.length >= 2) {
+      format = "debt_two_party";
+      creditCol = debt[0];
+      debitCol = debt[debt.length - 1];
+    } else if (debt.length === 1) {
+      creditCol = debt[0];
+      debitCol = debt[0] + 1;
+      format = "debt_two_party";
+    }
+  }
+
+  if (debitCol == null && creditCol == null) {
+    const amountCol = findColByVariants(matrix, headerRow, ["сумма", "оборот"]);
+    if (amountCol != null) {
+      format = "amount_single";
+      debitCol = amountCol;
+      creditCol = -1;
+    }
+  }
+
+  // fallback по данным
+  if (dateCol == null) {
+    let best = -1, bestS = 0;
+    const width = Math.max(...matrix.map(r => (r || []).length), 0);
+    for (let c = 0; c < width; c++) {
+      let s = 0;
+      for (let r = start; r < Math.min(matrix.length, start + 200); r++) if (parseDate((matrix[r] || [])[c])) s++;
+      if (s > bestS) { bestS = s; best = c; }
+    }
+    if (bestS >= 2) dateCol = best;
+  }
+  if (docCol == null) {
+    let best = -1, bestS = 0;
+    const width = Math.max(...matrix.map(r => (r || []).length), 0);
+    for (let c = 0; c < width; c++) {
+      if (c === dateCol || c === debitCol || c === creditCol) continue;
+      let s = 0;
+      for (let r = start; r < Math.min(matrix.length, start + 150); r++) {
+        const t = normalizeText((matrix[r] || [])[c]);
+        if (t.length >= 3 && parseAmount(t) == null && parseDate(t) == null) s++;
+        if (/[№упд|наклад|оплат|реализ]/i.test(t)) s++;
+      }
+      if (s > bestS) { bestS = s; best = c; }
+    }
+    if (bestS >= 2) docCol = best;
+  }
+
+  // defaults из nastr: 1,2,5,6 (1-based)
+  if (dateCol == null) dateCol = 0;
+  if (docCol == null) docCol = 1;
+  if (debitCol == null) debitCol = 4;
+  if (creditCol == null) creditCol = 5;
+
+  return { date: dateCol, document: docCol, debit: debitCol, credit: creditCol, saldo: dateCol, format, headerRow: headerRow ?? 0 };
+}
+
+async function readPdfToMatrix(file) {
+  if (typeof pdfjsLib === "undefined") {
+    throw new Error("Библиотека PDF не загрузилась. Проверьте интернет и обновите страницу.");
+  }
+  const data = new Uint8Array(await file.arrayBuffer());
+  const pdf = await pdfjsLib.getDocument({ data }).promise;
+  const words = [];
+  let pageWidth = 0;
+
+  for (let p = 1; p <= pdf.numPages; p++) {
+    const page = await pdf.getPage(p);
+    const viewport = page.getViewport({ scale: 1 });
+    pageWidth = Math.max(pageWidth, viewport.width);
+    const content = await page.getTextContent();
+    const pageH = viewport.height;
+    for (const item of content.items) {
+      const str = normalizeText(item.str);
+      if (!str) continue;
+      const x = item.transform[4];
+      const y = pageH - item.transform[5]; // top-like coordinate
+      const w = item.width || (str.length * (item.transform[0] || 6) * 0.5);
+      words.push({ text: str, x0: x, x1: x + Math.max(w, 1), top: y, page: p });
+    }
+  }
+  if (!words.length) throw new Error("В PDF «" + file.name + "» не удалось извлечь текст.");
+
+  const dual = pageWidth > 700;
+  const leftMax = dual ? pageWidth * 0.48 : pageWidth;
+  const leftWords = words.filter(w => w.x0 < leftMax);
+
+  let debitX = null, creditX = null;
+  for (const w of leftWords) {
+    const t = w.text.toLowerCase().replace(/ё/g, "е");
+    if (t === "дебет" && debitX == null) debitX = w.x0;
+    if (t === "кредит" && creditX == null) creditX = w.x0;
+  }
+  if (debitX == null) debitX = leftMax * 0.55;
+  if (creditX == null) creditX = leftMax * 0.75;
+  const midX = (debitX + creditX) / 2;
+
+  const dateRe = /^\d{2}\.\d{2}\.\d{2,4}$/;
+  const amtRe = /^\d{1,3}(?:\s\d{3})*[.,]\d{2}$/;
+  const isAmt = (s) => {
+    const t = String(s || "").replace(/\s+/g, " ").trim();
+    if (dateRe.test(t)) return false;
+    return amtRe.test(t);
+  };
+
+  leftWords.sort((a, b) => (a.page - b.page) || (a.top - b.top) || (a.x0 - b.x0));
+  const clusters = [];
+  for (const w of leftWords) {
+    const last = clusters[clusters.length - 1];
+    if (last && last.page === w.page && Math.abs(last.top - w.top) <= 2.8) last.items.push(w);
+    else clusters.push({ page: w.page, top: w.top, items: [w] });
+  }
+
+  const matrix = [["Дата", "Документ", "Дебет", "Кредит"]];
+  for (const cl of clusters) {
+    const items = cl.items.slice().sort((a, b) => a.x0 - b.x0);
+    const merged = [];
+    for (const it of items) {
+      if (!merged.length) {
+        merged.push({ text: it.text, x0: it.x0, x1: it.x1 });
+        continue;
+      }
+      const prev = merged[merged.length - 1];
+      const gap = it.x0 - prev.x1;
+      if (gap < 8) {
+        let sep = " ";
+        if (/\d$/.test(prev.text) && /^\d/.test(it.text)) sep = gap >= 1.2 ? " " : "";
+        else if (gap < 1.5) sep = "";
+        prev.text += sep + it.text;
+        prev.x1 = it.x1;
+      } else {
+        merged.push({ text: it.text, x0: it.x0, x1: it.x1 });
+      }
+    }
+
+    const fixed = [];
+    for (let i = 0; i < merged.length; i++) {
+      const cur = merged[i].text.trim();
+      const nxt = merged[i + 1] ? merged[i + 1].text.replace(/\s+/g, "") : "";
+      if (merged[i + 1] && /^\d{1,3}$/.test(cur) && /^\d{3}[.,]\d{2}$/.test(nxt)) {
+        fixed.push({
+          text: cur + " " + merged[i + 1].text.trim(),
+          x0: merged[i].x0,
+          x1: merged[i + 1].x1
+        });
+        i++;
+      } else {
+        fixed.push(merged[i]);
+      }
+    }
+
+    const dateTok = fixed.find(m => dateRe.test(m.text));
+    const amounts = fixed.filter(m => isAmt(m.text));
+
+    const docParts = [];
+    for (const m of fixed) {
+      if (dateTok && m.text === dateTok.text) continue;
+      if (isAmt(m.text)) continue;
+      if (/^\d{1,3}$/.test(m.text.trim()) && amounts.some(a => Math.abs(m.x0 - a.x0) < 20)) continue;
+      docParts.push(m.text);
+    }
+    const doc = docParts.join(" ").trim();
+    const lowAll = fixed.map(m => m.text).join(" ").toLowerCase();
+
+    // итоги периода / подписи / текст внизу акта — не операции
+    if (/оборот/.test(lowAll)) continue;
+    if (/подписан|экземпляр|в пользу|подтвержден|составляет/.test(lowAll)) continue;
+
+    let debit = "", credit = "";
+    for (const a of amounts) {
+      if (a.x0 < midX) debit = a.text;
+      else credit = a.text;
+    }
+
+    // строки сальдо/остатка (часто без отдельной даты в колонке)
+    if (/сальдо|остаток/.test(lowAll)) {
+      if (!amounts.length) continue;
+      let label = doc || "Сальдо";
+      if (/сальдо\s*началь/i.test(lowAll)) label = "Сальдо начальное";
+      else if (/сальдо\s*конеч/i.test(lowAll)) label = "Сальдо конечное";
+      else if (/остаток/i.test(doc)) label = doc.replace(/\s+/g, " ").trim();
+      matrix.push([dateTok ? dateTok.text : "", label, debit, credit]);
+      continue;
+    }
+
+    if (!dateTok) continue;
+    if (!amounts.length) continue;
+    if (!doc) continue;
+
+    matrix.push([dateTok.text, doc, debit, credit]);
+  }
+
+  if (matrix.length < 2) {
+    throw new Error("В PDF «" + file.name + "» не найдено операций с датой и суммой. Если это скан — сохраните акт в Excel или в PDF с текстом.");
+  }
+  return { matrix, sheetName: "PDF", fileName: file.name };
+}
+
+async function readFileToMatrix(file) {
+  const name = (file.name || "").toLowerCase();
+  if (name.endsWith(".pdf")) return readPdfToMatrix(file);
+  if (name.endsWith(".csv")) {
+    const text = await file.text();
+    const wb = XLSX.read(text, { type: "string", FS: ";", raw: false });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    return { matrix: sheetToMatrix(sheet), sheetName: wb.SheetNames[0], fileName: file.name };
+  }
+  const buf = await file.arrayBuffer();
+  let wb;
+  try {
+    wb = XLSX.read(buf, { type: "array", cellDates: true, raw: true });
+  } catch (e) {
+    throw new Error("Не удалось прочитать файл «" + file.name + "». Сохраните как .xlsx или .pdf и повторите.");
+  }
+  let bestName = wb.SheetNames[0], bestM = null, bestS = -1e9;
+  for (const sn of wb.SheetNames) {
+    const m = sheetToMatrix(wb.Sheets[sn]);
+    const s = scoreSheet(m);
+    if (s > bestS) { bestS = s; bestM = m; bestName = sn; }
+  }
+  if (!bestM || !bestM.length) throw new Error("В файле «" + file.name + "» нет данных.");
+  return { matrix: bestM, sheetName: bestName, fileName: file.name };
+}
+
+function parseAct(matrix, actNo, fileName, fromInsideParens) {
+  const cols = detectColumns(matrix);
+  const ops = [];
+  const warnings = [];
+  let debitSum = 0, creditSum = 0;
+  const saldoHits = [];
+  let pendingDoc = "";
+
+  if (cols.blockCount > 1) {
+    warnings.push(`«${fileName}»: две таблицы на листе — взята левая.`);
+  }
+
+  for (let r = 0; r < matrix.length; r++) {
+    const row = matrix[r] || [];
+    let rawDate = row[cols.date];
+    let rawDoc = row[cols.document];
+    let rawDebit = row[cols.debit];
+    let rawCredit = cols.credit >= 0 ? row[cols.credit] : null;
+    const rawSaldo = row[cols.saldo];
+
+    let debit = parseAmount(rawDebit);
+    let credit = parseAmount(rawCredit);
+    const docText = normalizeText(rawDoc);
+
+    // строка только с текстом документа (без даты)
+    const operDatePreview = parseDate(typeof rawDate === "string" ? String(rawDate).replace(/г\./gi, "") : rawDate);
+    if (operDatePreview == null && docText) {
+      const low = docText.toLowerCase();
+      if (docText.includes("№") || low.includes("документ") || low.includes("накладная") || low.includes("счет") || low.includes("счёт")) {
+        pendingDoc = docText;
+      }
+    }
+
+    if (isSaldoText(rawDate, rawDoc, rawSaldo)) {
+      if (debit != null || credit != null) saldoHits.push({ debit, credit });
+      continue;
+    }
+
+    let operDate = operDatePreview;
+    if (operDate == null) continue;
+    if (debit == null && credit == null) continue;
+    if (debit != null && credit != null && debit === credit) continue;
+
+    // нули на пустой стороне
+    if (debit === 0 && credit != null && credit !== 0) debit = null;
+    if (credit === 0 && debit != null && debit !== 0) credit = null;
+
+    let doc = docText;
+    if (pendingDoc) {
+      const { number: nCur } = extractDocInfo(doc, fromInsideParens);
+      if (!nCur) doc = collapseSpaces(pendingDoc + " " + doc);
+      pendingDoc = "";
+    }
+
+    const { number, docDate } = extractDocInfo(doc, fromInsideParens);
+    const dateForMatch = docDate || operDate;
+
+    // VBA: если есть и дебет и кредит → debet = debet - credit
+    let ownSide, matchSide, amount, debFinal = null, credFinal = null;
+    if (debit != null && credit != null) {
+      const net = Math.round((debit - credit) * 100) / 100;
+      if (net === 0) continue;
+      if (net > 0) {
+        debFinal = net; amount = net; ownSide = "дт";
+        matchSide = actNo === 2 ? "дт" : "кт";
+      } else {
+        credFinal = -net; amount = -net; ownSide = "кт";
+        matchSide = actNo === 2 ? "кт" : "дт";
+      }
+    } else if (debit != null) {
+      if (debit === 0) continue;
+      debFinal = debit; amount = debit; ownSide = "дт";
+      matchSide = actNo === 2 ? "дт" : "кт";
+    } else if (credit != null) {
+      if (credit === 0) continue;
+      credFinal = credit; amount = credit; ownSide = "кт";
+      matchSide = actNo === 2 ? "кт" : "дт";
+    } else continue;
+
+    if (debFinal != null) debitSum += debFinal;
+    if (credFinal != null) creditSum += credFinal;
+
+    ops.push({
+      act: actNo,
+      sourceRow: r + 1,
+      date: operDate,
+      doc,
+      number,
+      dateForMatch,
+      debit: debFinal,
+      credit: credFinal,
+      amount,
+      ownSide,
+      matchSide,
+      matched: false,
+      method: 0,
+      matchedIndex: null,
+      matchedSourceRow: null
+    });
+  }
+
+  let saldoStartD = null, saldoStartC = null, saldoEndD = null, saldoEndC = null;
+  if (saldoHits.length) {
+    saldoStartD = saldoHits[0].debit; saldoStartC = saldoHits[0].credit;
+    const last = saldoHits[saldoHits.length - 1];
+    saldoEndD = last.debit; saldoEndC = last.credit;
+  }
+
+  const dates = ops.map(o => o.date);
+  return {
+    name: fileName,
+    matrix,
+    columns: cols,
+    operations: ops,
+    minDate: dates.length ? dates.reduce((a, b) => a < b ? a : b) : null,
+    maxDate: dates.length ? dates.reduce((a, b) => a > b ? a : b) : null,
+    debitSum: Math.round(debitSum * 100) / 100,
+    creditSum: Math.round(creditSum * 100) / 100,
+    saldoStartDebit: saldoStartD,
+    saldoStartCredit: saldoStartC,
+    saldoEndDebit: saldoEndD,
+    saldoEndCredit: saldoEndC,
+    warnings
+  };
+}
+
+function amtKey(a) {
+  return (Math.round(Number(a) * 100) / 100).toFixed(2);
+}
+
+function buildIndexes(ops, onlyUnmatched = false) {
+  const idx = {
+    m1: new Map(), m2: new Map(), m3: new Map(), m4: new Map(),
+    sameDateNumber: new Map(), sameNumberSum: new Map(), sameNumber: new Map()
+  };
+  const add = (map, key, i) => {
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(i);
+  };
+  ops.forEach((op, i) => {
+    if (onlyUnmatched && op.matched) return;
+    const amount = amtKey(op.amount);
+    const d = dateKey(op.dateForMatch);
+    const side = op.matchSide;
+    if (op.number) {
+      add(idx.m1, side + "|" + d + "|" + op.number + "|" + amount, i);
+      add(idx.m2, side + "|" + op.number + "|" + amount, i);
+      add(idx.sameDateNumber, side + "|" + d + "|" + op.number, i);
+      add(idx.sameNumberSum, side + "|" + op.number + "|" + amount, i);
+      add(idx.sameNumber, side + "|" + op.number, i);
+    }
+    add(idx.m3, side + "|" + d + "|" + amount, i);
+    add(idx.m4, side + "|" + amount, i);
+  });
+  return idx;
+}
+
+function findUnmatched(map, key, ops) {
+  const arr = map.get(key) || [];
+  for (const pos of arr) if (!ops[pos].matched) return pos;
+  return null;
+}
+
+function altSide(s) { return s === "дт" ? "кт" : "дт"; }
+
+function tryMatch(op, act2, indexes, method) {
+  const amount = amtKey(op.amount);
+  const d = dateKey(op.dateForMatch);
+  const side = op.matchSide;
+  const number = op.number;
+  const candidates = [];
+  if (method === 1 && number) {
+    candidates.push(["m1", side + "|" + d + "|" + number + "|" + amount]);
+    candidates.push(["m1", altSide(side) + "|" + d + "|" + number + "|" + amtKey(-op.amount)]);
+  } else if (method === 2 && number) {
+    candidates.push(["m2", side + "|" + number + "|" + amount]);
+    candidates.push(["m2", altSide(side) + "|" + number + "|" + amtKey(-op.amount)]);
+  } else if (method === 3) {
+    candidates.push(["m3", side + "|" + d + "|" + amount]);
+    candidates.push(["m3", altSide(side) + "|" + d + "|" + amtKey(-op.amount)]);
+  } else if (method === 4) {
+    candidates.push(["m4", side + "|" + amount]);
+    candidates.push(["m4", altSide(side) + "|" + amtKey(-op.amount)]);
+  }
+  for (const [name, key] of candidates) {
+    const pos = findUnmatched(indexes[name], key, act2);
+    if (pos != null) return pos;
+  }
+  return null;
+}
+
+function markMatch(op1, op2, i1, i2, method) {
+  const m = method >= 5 && method <= 10 ? 4 : Math.min(method, 4);
+  // методы 5–8 в VBA — зеркальные варианты 1–3 и 4; для отчёта красим как базовые 1–4
+  let display = method;
+  if (method === 5) display = 1;
+  else if (method === 6) display = 2;
+  else if (method === 7) display = 3;
+  else if (method === 8 || method === 9 || method === 10) display = 4;
+  op1.matched = true; op1.method = display; op1.matchedIndex = i2; op1.matchedSourceRow = op2.sourceRow;
+  op2.matched = true; op2.method = display; op2.matchedIndex = i1; op2.matchedSourceRow = op1.sourceRow;
+}
+
+function makePairRow(op1, op2, reason, diff) {
+  return {
+    "Причина": reason,
+    "Дата Акт 1": fmtDate(op1.date),
+    "Документ Акт 1": op1.doc,
+    "Дебет Акт 1": op1.debit,
+    "Кредит Акт 1": op1.credit,
+    "Строка Акт 1": op1.sourceRow,
+    "Дата Акт 2": fmtDate(op2.date),
+    "Документ Акт 2": op2.doc,
+    "Дебет Акт 2": op2.debit,
+    "Кредит Акт 2": op2.credit,
+    "Строка Акт 2": op2.sourceRow,
+    "Разница": diff
+  };
+}
+
+function makeDiscrepancies(act1, act2, idx2) {
+  const diffDateNumber = [], diffNumberSum = [], diffNumber = [];
+  for (const op1 of act1.operations) {
+    if (!op1.number) continue;
+    const side = op1.matchSide;
+    const amount = amtKey(op1.amount);
+    const d = dateKey(op1.dateForMatch);
+    for (const pos of (idx2.sameDateNumber.get(side + "|" + d + "|" + op1.number) || [])) {
+      const op2 = act2.operations[pos];
+      if (op1.amount !== op2.amount) {
+        diffDateNumber.push(makePairRow(op1, op2, "Дата+Номер совпали, сумма отличается", Math.round((op1.amount - op2.amount) * 100) / 100));
+        break;
+      }
+    }
+    for (const pos of (idx2.sameNumberSum.get(side + "|" + op1.number + "|" + amount) || [])) {
+      const op2 = act2.operations[pos];
+      if (dateKey(op1.dateForMatch) !== dateKey(op2.dateForMatch)) {
+        diffNumberSum.push(makePairRow(op1, op2, "Номер+Сумма совпали, дата отличается", null));
+        break;
+      }
+    }
+    for (const pos of (idx2.sameNumber.get(side + "|" + op1.number) || [])) {
+      const op2 = act2.operations[pos];
+      if (dateKey(op1.dateForMatch) !== dateKey(op2.dateForMatch) || op1.amount !== op2.amount) {
+        diffNumber.push(makePairRow(op1, op2, "Номер совпал, дата или сумма отличается", Math.round((op1.amount - op2.amount) * 100) / 100));
+        break;
+      }
+    }
+  }
+  return { diffDateNumber, diffNumberSum, diffNumber };
+}
+
+function findDuplicates(ops, by) {
+  const groups = new Map();
+  for (const op of ops) {
+    if (!op.number) continue;
+    const key = by === "date_number"
+      ? op.ownSide + "|" + dateKey(op.dateForMatch) + "|" + op.number
+      : op.ownSide + "|" + op.number;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(op);
+  }
+  const rows = [];
+  for (const items of groups.values()) {
+    if (items.length > 1) {
+      for (const op of items) {
+        rows.push({
+          "Акт": "Акт " + op.act,
+          "Критерий": by === "date_number" ? "Дата+Номер" : "Номер",
+          "Дата": fmtDate(op.date),
+          "Документ": op.doc,
+          "Номер": op.number,
+          "Дебет": op.debit,
+          "Кредит": op.credit,
+          "Строка": op.sourceRow
+        });
+      }
+    }
+  }
+  return rows;
+}
+
+/** Второй проход «только сумма» с методами 9/10 как в VBA */
+function matchOnlySumExtra(act1, act2) {
+  const nf1 = act1.operations.map((op, i) => ({ op, i })).filter(x => !x.op.matched);
+  const nf2 = act2.operations.map((op, i) => ({ op, i, used: false })).filter(x => !x.op.matched);
+
+  for (const a of nf1) {
+    if (a.op.matched) continue;
+    const side1 = a.op.ownSide; // дт/кт как в самом акте 1
+    const sum1 = a.op.amount;
+    for (const b of nf2) {
+      if (b.used || b.op.matched) continue;
+      const side2 = b.op.ownSide;
+      const sum2 = b.op.amount;
+      if (side1 === side2) {
+        // method 10: одинаковая сторона, суммы противоположны
+        if (Math.abs(sum1 + sum2) < 0.001) {
+          markMatch(a.op, b.op, a.i, b.i, 10);
+          b.used = true;
+          break;
+        }
+      } else {
+        // method 9: разные стороны, суммы равны
+        if (Math.abs(sum1 - sum2) < 0.001) {
+          markMatch(a.op, b.op, a.i, b.i, 9);
+          b.used = true;
+          break;
+        }
+      }
+    }
+  }
+}
+
+
+function normDocNum(n) {
+  let s = String(n || "").toUpperCase().replace(/\s+/g, "");
+  s = s.replace(/^№/, "").replace(/[^0-9A-ZА-Я\-]/gi, "");
+  s = s.replace(/^0+/, "") || "0";
+  return s;
+}
+
+function buildActReasons(act1, act2, comp) {
+  const rows = [];
+  const used2 = new Set();
+
+  for (const r of (comp.diffDateNumber || [])) {
+    rows.push(withSeverity({
+      "Тип": "Сумма отличается",
+      "Вероятная причина": "Документ найден по дате и номеру, но суммы разные. Возможны корректировка, частичное отражение, НДС или ошибка ввода.",
+      "Что сделать": "Открыть оба документа в учёте и сверить сумму с первичкой / УПД.",
+      "Дата Акт 1": r["Дата Акт 1"],
+      "Документ Акт 1": r["Документ Акт 1"],
+      "Дата Акт 2": r["Дата Акт 2"],
+      "Документ Акт 2": r["Документ Акт 2"],
+      "Разница": r["Разница"]
+    }, "warning"));
+  }
+  for (const r of (comp.diffNumberSum || [])) {
+    rows.push(withSeverity({
+      "Тип": "Дата отличается",
+      "Вероятная причина": "Одна операция: номер и сумма совпали, даты отражения разные (дата проводки vs дата документа).",
+      "Что сделать": "Проверить дату в первичке и дату проведения в обоих учётах.",
+      "Дата Акт 1": r["Дата Акт 1"],
+      "Документ Акт 1": r["Документ Акт 1"],
+      "Дата Акт 2": r["Дата Акт 2"],
+      "Документ Акт 2": r["Документ Акт 2"],
+      "Разница": r["Разница"]
+    }, "info"));
+  }
+
+  const idx2ByNum = new Map();
+  for (const op of act2.operations) {
+    if (!op.number) continue;
+    const k = normDocNum(op.number);
+    if (!idx2ByNum.has(k)) idx2ByNum.set(k, []);
+    idx2ByNum.get(k).push(op);
+  }
+  const idx2ByAmt = new Map();
+  for (const op of act2.operations) {
+    const k = amtKey(op.amount);
+    if (!idx2ByAmt.has(k)) idx2ByAmt.set(k, []);
+    idx2ByAmt.get(k).push(op);
+  }
+
+  for (const op1 of (comp.notFound1 || [])) {
+    let tip = "Документ не найден у контрагента";
+    let cause = "В акте 2 нет пары с близкими реквизитами. Возможно, документ отсутствует в учёте контрагента или оформлен под другим номером.";
+    let todo = "Запросить у контрагента подтверждение операции / первичку.";
+    let pairDoc = "", pairDate = "";
+
+    if (op1.number) {
+      const cands = idx2ByNum.get(normDocNum(op1.number)) || [];
+      const free = cands.find(o => !o.matched && !used2.has(o));
+      if (free) {
+        tip = "Номер есть, не сошлось по сумме/дате/стороне";
+        cause = "В акте 2 есть документ с тем же номером, но сверка не связала строки (сумма, дата или сторона Дт/Кт).";
+        todo = "Сверить вручную документ " + (free.doc || free.number) + ".";
+        pairDoc = free.doc; pairDate = fmtDate(free.date);
+        used2.add(free);
+      }
+    }
+    if (!pairDoc) {
+      const cands = (idx2ByAmt.get(amtKey(op1.amount)) || []).filter(o => !o.matched && !used2.has(o));
+      if (cands.length === 1) {
+        const free = cands[0];
+        tip = "Возможная пара только по сумме";
+        cause = "В акте 2 есть единственная операция на ту же сумму без пары. Часто это та же операция с другим номером/датой.";
+        todo = "Сверить вручную: " + (free.doc || "");
+        pairDoc = free.doc; pairDate = fmtDate(free.date);
+        used2.add(free);
+      } else if (cands.length > 1) {
+        tip = "Несколько кандидатов по сумме";
+        cause = "В акте 2 несколько операций на ту же сумму без пары — автоматическая привязка неоднозначна.";
+        todo = "Разобрать вручную по дате и назначению платежа.";
+      }
+    }
+
+    rows.push(withSeverity({
+      "Тип": tip,
+      "Вероятная причина": cause,
+      "Что сделать": todo,
+      "Дата Акт 1": fmtDate(op1.date),
+      "Документ Акт 1": op1.doc,
+      "Дата Акт 2": pairDate,
+      "Документ Акт 2": pairDoc,
+      "Разница": op1.amount
+    }, "warning"));
+  }
+
+  for (const op2 of (comp.notFound2 || [])) {
+    if (used2.has(op2)) continue;
+    rows.push(withSeverity({
+      "Тип": "Лишнее у контрагента / нет у нас",
+      "Вероятная причина": "В вашем акте нет пары. Документ мог не попасть в учёт, быть на другом договоре или под другим номером.",
+      "Что сделать": "Найти документ в 1С / запросить скан у контрагента.",
+      "Дата Акт 1": "",
+      "Документ Акт 1": "",
+      "Дата Акт 2": fmtDate(op2.date),
+      "Документ Акт 2": op2.doc,
+      "Разница": op2.amount
+    }, "warning"));
+  }
+  return rows;
+}
+
+function compareActs(act1, act2, flags) {
+  const idx2 = buildIndexes(act2.operations);
+  for (const method of [1, 2, 3]) {
+    if (!flags[method]) continue;
+    act1.operations.forEach((op1, i1) => {
+      if (op1.matched) return;
+      if ((method === 1 || method === 2) && !op1.number) return;
+      const i2 = tryMatch(op1, act2.operations, idx2, method);
+      if (i2 != null) markMatch(op1, act2.operations[i2], i1, i2, method);
+    });
+  }
+
+  if (flags[4]) {
+    const idxU = buildIndexes(act2.operations, true);
+    act1.operations.forEach((op1, i1) => {
+      if (op1.matched) return;
+      const i2 = tryMatch(op1, act2.operations, idxU, 4);
+      if (i2 != null) markMatch(op1, act2.operations[i2], i1, i2, 4);
+    });
+    matchOnlySumExtra(act1, act2);
+  }
+
+  const idxAll = buildIndexes(act2.operations);
+  const discs = makeDiscrepancies(act1, act2, idxAll);
+  const dupDN = findDuplicates(act1.operations, "date_number").concat(findDuplicates(act2.operations, "date_number"));
+  const dupN = findDuplicates(act1.operations, "number").concat(findDuplicates(act2.operations, "number"));
+
+  const methodsSummary = [];
+  for (const method of [1, 2, 3, 4]) {
+    const row = { method, name: METHOD_NAMES[method], color: METHOD_COLORS[method] };
+    for (const [actNo, ops] of [[1, act1.operations], [2, act2.operations]]) {
+      const matched = ops.filter(o => o.method === method);
+      row["act" + actNo + "DebSum"] = matched.reduce((s, o) => s + (o.debit || 0), 0);
+      row["act" + actNo + "DebCnt"] = matched.filter(o => o.debit != null).length;
+      row["act" + actNo + "CredSum"] = matched.reduce((s, o) => s + (o.credit || 0), 0);
+      row["act" + actNo + "CredCnt"] = matched.filter(o => o.credit != null).length;
+      row["act" + actNo + "Cnt"] = matched.length;
+    }
+    methodsSummary.push(row);
+  }
+
+  const notFound1 = act1.operations.filter(o => !o.matched);
+  const notFound2 = act2.operations.filter(o => !o.matched);
+  const base = {
+    methodsSummary,
+    notFound1,
+    notFound2,
+    ...discs,
+    duplicatesDateNumber: dupDN,
+    duplicatesNumber: dupN
+  };
+  base.reasons = buildActReasons(act1, act2, base);
+  return base;
+}
+
+/* ========== UI ========== */
+let LAST = null;
+
+function showMsg(text, type) {
+  const el = document.getElementById("msg");
+  el.textContent = text;
+  el.className = "msg " + type;
+}
+
+function opRows(ops, actName) {
+  return ops.map(op => ({
+    "Акт": actName,
+    "Дата": fmtDate(op.date),
+    "Документ": op.doc,
+    "Номер": op.number,
+    "Дебет": op.debit,
+    "Кредит": op.credit,
+    "Строка": op.sourceRow
+  }));
+}
+
+function coloredOps(act) {
+  return act.operations.map(op => ({
+    "Дата": fmtDate(op.date),
+    "Документ": op.doc,
+    "Номер": op.number,
+    "Дебет": op.debit,
+    "Кредит": op.credit,
+    "Строка": op.sourceRow,
+    "Метод": METHOD_NAMES[op.matched ? op.method : 0],
+    "Строка соответствия": op.matchedSourceRow || "",
+    _color: METHOD_COLORS[op.matched ? op.method : 0]
+  }));
+}
+
+const NO_MATCHES_TEXT = "совпадений нет";
+const NO_PARTIAL_TEXT = "частичных расхождений нет";
+const NO_DUPLICATES_TEXT = "дубликатов нет";
+
+function actNoLabel(fileName) {
+  const base = String(fileName || "").replace(/\.[^.]+$/, "");
+  const byNum = base.match(/№[_\s]*([0-9]+)/i);
+  if (byNum) return "№ " + byNum[1];
+  const byParen = base.match(/\((\d+)\)\s*$/);
+  if (byParen) return "№ " + byParen[1];
+  return "«" + (base.length > 40 ? base.slice(0, 40) + "…" : base) + "»";
+}
+
+function noDiscrepanciesText(actName) {
+  return `Расхождений с актом ${actNoLabel(actName)} нет`;
+}
+
+function shortActTitle(name) {
+  return `Операции — ${actNoLabel(name)}`;
+}
+
+function renderTable(rows, moneyCols = [], emptyText) {
+  if (!rows || !rows.length) return `<div class="hint">${emptyText || NO_MATCHES_TEXT}</div>`;
+  const keys = Object.keys(rows[0]).filter(k => !k.startsWith("_"));
+  // Колонку «Тип» (severity) ставим сразу после ключевых полей, если есть
+  const ordered = keys.includes("Важность")
+    ? ["Важность", ...keys.filter(k => k !== "Важность")]
+    : keys;
+  let html = '<div class="table-wrap"><table class="data"><thead><tr>';
+  for (const k of ordered) html += `<th>${k}</th>`;
+  html += "</tr></thead><tbody>";
+  for (const row of rows) {
+    const sevClass = row._severity ? " sev-row-" + row._severity : "";
+    const bg = row._color ? ` style="background:${row._color}"` : "";
+    html += `<tr class="${sevClass.trim()}"${bg}>`;
+    for (const k of ordered) {
+      let v = row[k];
+      const isMoney = moneyCols.includes(k) || /дебет|кредит|сумма|разница|\bдт\b|\bкт\b/i.test(k);
+      if (k === "Важность" && row._severity) {
+        html += `<td><span class="sev sev-${row._severity}">${escapeHtml(String(v || severityMeta(row._severity).label))}</span></td>`;
+        continue;
+      }
+      if (isMoney && typeof v === "number") v = fmtMoney(v);
+      else if (v == null) v = "";
+      html += `<td class="${isMoney ? "num" : ""}">${escapeHtml(String(v))}</td>`;
+    }
+    html += "</tr>";
+  }
+  html += "</tbody></table></div>";
+  return html;
+}
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;" }[c]));
+}
+
+const COLOR_LEGEND_HTML = `
+  <div class="legend">
+    <span><i style="background:var(--m1)"></i>Дата+Номер+Сумма</span>
+    <span><i style="background:var(--m2)"></i>Номер+Сумма</span>
+    <span><i style="background:var(--m3)"></i>Дата+Сумма</span>
+    <span><i style="background:var(--m4)"></i>Только сумма</span>
+    <span><i style="background:var(--m0)"></i>Не найдено</span>
+  </div>`;
+
+function renderReport(act1, act2, comp) {
+  const tabs = [
+    ["summary", "Сводка"],
+    ["reasons", "Причины"],
+    ["act1", "Акт 1"],
+    ["act2", "Акт 2"],
+    ["nf", "Расхождения"],
+    ["diff", "Разные суммы/даты"],
+    ["dup", "Дубликаты"]
+  ];
+  const tabsEl = document.getElementById("tabs");
+  const panelsEl = document.getElementById("panels");
+  tabsEl.innerHTML = "";
+  panelsEl.innerHTML = "";
+
+  const periodRows = [
+    { "Показатель": "Акт 1", "Начало": fmtDate(act1.minDate), "Конец": fmtDate(act1.maxDate) },
+    { "Показатель": "Акт 2", "Начало": fmtDate(act2.minDate), "Конец": fmtDate(act2.maxDate) }
+  ];
+  const saldoRows = [
+    { "Показатель": "Сальдо начальное", "Акт 1 дебет": act1.saldoStartDebit, "Акт 1 кредит": act1.saldoStartCredit, "Акт 2 дебет": act2.saldoStartDebit, "Акт 2 кредит": act2.saldoStartCredit },
+    { "Показатель": "Обороты", "Акт 1 дебет": act1.debitSum, "Акт 1 кредит": act1.creditSum, "Акт 2 дебет": act2.debitSum, "Акт 2 кредит": act2.creditSum },
+    { "Показатель": "Сальдо конечное", "Акт 1 дебет": act1.saldoEndDebit, "Акт 1 кредит": act1.saldoEndCredit, "Акт 2 дебет": act2.saldoEndDebit, "Акт 2 кредит": act2.saldoEndCredit }
+  ];
+  const methodRows = comp.methodsSummary.map(m => ({
+    "Метод": m.name,
+    "Акт 1 Дт сумма": m.act1DebSum,
+    "Акт 1 Дт кол-во": m.act1DebCnt,
+    "Акт 1 Кт сумма": m.act1CredSum,
+    "Акт 1 Кт кол-во": m.act1CredCnt,
+    "Акт 2 Дт сумма": m.act2DebSum,
+    "Акт 2 Дт кол-во": m.act2DebCnt,
+    "Акт 2 Кт сумма": m.act2CredSum,
+    "Акт 2 Кт кол-во": m.act2CredCnt
+  }));
+
+  const reasonIntro = ((comp.reasons && comp.reasons.length)
+    ? `<div class="reason-box">Найдено пояснений: <b>${comp.reasons.length}</b>. Это подсказки для разбора, не замена первички.</div>`
+    : `<div class="reason-box">Явных расхождений для пояснения нет — все операции нашли пару выбранными методами.</div>`)
+    + '<div class="legend" style="margin:0 0 12px">'
+    + '<span><i class="sev sev-warning" style="margin-right:4px">внимание</i>суммы / нет пары</span>'
+    + '<span><i class="sev sev-info" style="margin-right:4px">справочно</i>даты разные</span></div>';
+  const content = {
+    summary: `
+      <h3 class="section">Периоды сверки</h3>${renderTable(periodRows)}
+      <h3 class="section">Сальдо и обороты</h3>${renderTable(saldoRows)}
+      <h3 class="section">Методы сравнения</h3>${renderTable(methodRows)}
+    `,
+    reasons: `<h3 class="section">Почему не сходится</h3>${reasonIntro}${renderTable(comp.reasons || [], [], "Пояснений нет")}`,
+    act1: `<h3 class="section">Операции Акта 1 с раскраской методов</h3>${COLOR_LEGEND_HTML}${renderTable(coloredOps(act1))}`,
+    act2: `<h3 class="section">Операции Акта 2 с раскраской методов</h3>${COLOR_LEGEND_HTML}${renderTable(coloredOps(act2))}`,
+    nf: `
+      <h3 class="section">Операции без соответствия — Акт 1</h3>${renderTable(opRows(comp.notFound1, "Акт 1"), [], noDiscrepanciesText(act1.name))}
+      <h3 class="section">Операции без соответствия — Акт 2</h3>${renderTable(opRows(comp.notFound2, "Акт 2"), [], noDiscrepanciesText(act2.name))}
+    `,
+    diff: `
+      <h3 class="section">Одинаковые Дата и Номер, но разные Суммы</h3>${renderTable(comp.diffDateNumber, [], NO_PARTIAL_TEXT)}
+      <h3 class="section">Одинаковые Номер и Сумма, но разные Даты</h3>${renderTable(comp.diffNumberSum, [], NO_PARTIAL_TEXT)}
+      <h3 class="section">Одинаковый Номер, но разная Дата или Сумма</h3>${renderTable(comp.diffNumber, [], NO_PARTIAL_TEXT)}
+    `,
+    dup: `
+      <h3 class="section">Одинаковые Дата и Номер в одном акте</h3>${renderTable(comp.duplicatesDateNumber, [], NO_DUPLICATES_TEXT)}
+      <h3 class="section">Одинаковый Номер в одном акте</h3>${renderTable(comp.duplicatesNumber, [], NO_DUPLICATES_TEXT)}
+    `
+  };
+
+  tabs.forEach(([id, title], i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "tab" + (i === 0 ? " active" : "");
+    b.textContent = title;
+    b.onclick = () => {
+      tabsEl.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      panelsEl.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+      b.classList.add("active");
+      document.getElementById("panel-" + id).classList.add("active");
+    };
+    tabsEl.appendChild(b);
+    const panel = document.createElement("div");
+    panel.id = "panel-" + id;
+    panel.className = "panel" + (i === 0 ? " active" : "");
+    panel.innerHTML = content[id];
+    panelsEl.appendChild(panel);
+  });
+}
+
+/* ========== Excel export (стиль 1С / СверкаФакт) ========== */
+const XL_COLORS = {
+  title: "FF0F5C5C",
+  white: "FFFFFFFF",
+  header: "FFE4F2F1",
+  kpi: "FFE8F6EE",
+  border: "FFC9D4E0",
+  text: "FF000000"
+};
+const XL_MIN_COLS = 10;
+
+function xlRgb(hex) {
+  const h = String(hex || "").replace("#", "").toUpperCase();
+  return h.length === 6 ? "FF" + h : h;
+}
+
+function xlBorder() {
+  const c = { rgb: XL_COLORS.border };
+  const thin = { style: "thin", color: c };
+  return { top: thin, bottom: thin, left: thin, right: thin };
+}
+
+function xlStyle(opts = {}) {
+  const s = {
+    font: {
+      name: "Arial",
+      sz: opts.sz || 11,
+      bold: !!opts.bold,
+      color: { rgb: opts.color || XL_COLORS.text }
+    },
+    alignment: {
+      vertical: "center",
+      horizontal: opts.align || "left",
+      wrapText: opts.wrap !== false
+    },
+    border: xlBorder()
+  };
+  if (opts.bg) s.fill = { patternType: "solid", fgColor: { rgb: opts.bg } };
+  if (opts.numFmt) s.numFmt = opts.numFmt;
+  return s;
+}
+
+function xlCell(ws, r, c, value, style) {
+  const addr = XLSX.utils.encode_cell({ r, c });
+  const cell = { v: value, t: typeof value === "number" ? "n" : "s" };
+  if (style) cell.s = style;
+  ws[addr] = cell;
+}
+
+function isMoneyHeader(h) {
+  return /дебет|кредит|сумма|разница|оборот|сальдо|\bдт\b|\bкт\b/i.test(String(h || ""));
+}
+
+function isCountHeader(h) {
+  return /кол-?во|колич/i.test(String(h || ""));
+}
+
+function rowsToTable(rows, emptyText) {
+  if (!rows || !rows.length) return { headers: ["Сообщение"], data: [[emptyText || NO_MATCHES_TEXT]] };
+  const keys = Object.keys(rows[0]).filter(k => !k.startsWith("_"));
+  const headers = keys.includes("Важность")
+    ? ["Важность", ...keys.filter(k => k !== "Важность")]
+    : keys;
+  const data = rows.map(r => headers.map(h => r[h] ?? ""));
+  return { headers, data, meta: rows };
+}
+
+function sheetRange(ws) {
+  let maxR = 0, maxC = 0;
+  for (const addr of Object.keys(ws)) {
+    if (addr[0] === "!") continue;
+    const cell = XLSX.utils.decode_cell(addr);
+    maxR = Math.max(maxR, cell.r);
+    maxC = Math.max(maxC, cell.c);
+  }
+  return { maxR, maxC };
+}
+
+function mergeSpanAt(ws, r, c) {
+  for (const m of (ws["!merges"] || [])) {
+    if (r >= m.s.r && r <= m.e.r && c >= m.s.c && c <= m.e.c) return m;
+  }
+  return null;
+}
+
+function finishSheet(ws, freezeRow = 1) {
+  const { maxR, maxC } = sheetRange(ws);
+  if (maxR === 0 && maxC === 0) return ws;
+  // только реальные колонки с данными — без искусственного растягивания до 10
+  const endC = Math.max(maxC, (ws._xlSpanCols || 1) - 1);
+  ws["!ref"] = XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: maxR, c: endC } });
+
+  for (const addr of Object.keys(ws)) {
+    if (addr[0] === "!") continue;
+    if (!ws[addr].s) ws[addr].s = xlStyle();
+    else if (!ws[addr].s.alignment) ws[addr].s.alignment = { vertical: "center", horizontal: "left", wrapText: true };
+    else {
+      if (ws[addr].s.alignment.wrapText !== false) ws[addr].s.alignment.wrapText = true;
+      ws[addr].s.alignment.vertical = "center";
+    }
+  }
+
+  const range = XLSX.utils.decode_range(ws["!ref"]);
+  const preferred = {
+    "документ": 48,
+    "метод": 26,
+    "сообщение": 40,
+    "значение": 36,
+    "причина": 44,
+    "сделать": 36,
+    "важность": 14,
+    "контрагент": 26,
+    "аналитика": 26,
+    "дата": 12,
+    "номер": 12,
+    "№": 10,
+    "сумма": 14,
+    "разница": 12,
+    "дебет": 14,
+    "кредит": 14,
+    "строка": 10,
+    "акт": 10,
+    "показатель": 28,
+    "проблема": 34,
+    "как нашли": 18
+  };
+
+  const colWidths = [];
+  for (let c = range.s.c; c <= range.e.c; c++) {
+    let maxLen = 8;
+    let headerHint = 0;
+    for (let r = range.s.r; r <= range.e.r; r++) {
+      const cell = ws[XLSX.utils.encode_cell({ r, c })];
+      if (!cell || cell.v == null) continue;
+      const merge = mergeSpanAt(ws, r, c);
+      // объединённые заголовки секций не раздувают ширину одной колонки
+      if (merge && merge.e.c > merge.s.c && c === merge.s.c && (ws._titleRows || []).includes(r)) continue;
+      let text = String(cell.v);
+      if (typeof cell.v === "number" && cell.s && cell.s.numFmt) {
+        text = cell.v.toLocaleString("ru-RU", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+      const low = text.toLowerCase();
+      for (const [key, w] of Object.entries(preferred)) {
+        if (low === key || low.includes(key)) headerHint = Math.max(headerHint, w);
+      }
+      for (const line of text.split("\n")) {
+        // кириллица шире: ~1.15 к ширине Excel wch
+        const approx = Math.ceil(line.length * 1.15) + 2;
+        maxLen = Math.max(maxLen, Math.min(56, approx));
+      }
+    }
+    colWidths.push({ wch: Math.min(56, Math.max(maxLen, headerHint || 8)) });
+  }
+  ws["!cols"] = colWidths;
+
+  const titleRows = ws._titleRows || [];
+  const rowHeights = [];
+  for (let r = range.s.r; r <= range.e.r; r++) {
+    let maxLines = 1;
+    let longest = 0;
+    for (let c = range.s.c; c <= range.e.c; c++) {
+      const cell = ws[XLSX.utils.encode_cell({ r, c })];
+      if (!cell || cell.v == null) continue;
+      const merge = mergeSpanAt(ws, r, c);
+      if (merge && c !== merge.s.c) continue;
+      let totalW = colWidths[c - range.s.c]?.wch || 12;
+      if (merge) {
+        totalW = 0;
+        for (let cc = merge.s.c; cc <= merge.e.c; cc++) {
+          totalW += colWidths[cc - range.s.c]?.wch || 12;
+        }
+      }
+      const lines = String(cell.v).split("\n");
+      for (const line of lines) {
+        longest = Math.max(longest, line.length);
+        // кириллица в Excel шире латиницы (~1.25), иначе высота строки занижается
+        const charsPerLine = Math.max((totalW - 1) / 1.25, 8);
+        maxLines = Math.max(maxLines, Math.ceil(line.length / charsPerLine));
+      }
+    }
+    const minH = titleRows.includes(r) ? 30 : (longest > 25 ? 36 : 24);
+    rowHeights[r] = { hpt: Math.min(200, Math.max(minH, maxLines * 18)) };
+  }
+  ws["!rows"] = rowHeights;
+  ws["!views"] = [{ state: "frozen", ySplit: freezeRow, activeCell: "A" + (freezeRow + 1) }];
+  return ws;
+}
+
+function writeSection(ws, startRow, startCol, title, headers, dataRows, rowMeta, emptyText) {
+  if (!dataRows || !dataRows.length) {
+    headers = ["Сообщение"];
+    dataRows = [[emptyText || NO_MATCHES_TEXT]];
+    rowMeta = null;
+  }
+  const colCount = Math.max(headers.length, 1);
+  ws._xlSpanCols = Math.max(ws._xlSpanCols || 0, colCount);
+  if (!ws._titleRows) ws._titleRows = [];
+  let r = startRow;
+  const mergeEnd = startCol + colCount - 1;
+  xlCell(ws, r, startCol, title, xlStyle({ bold: true, sz: 13, color: XL_COLORS.white, bg: XL_COLORS.title, wrap: false }));
+  if (!ws["!merges"]) ws["!merges"] = [];
+  if (colCount > 1) {
+    ws["!merges"].push({ s: { r, c: startCol }, e: { r, c: mergeEnd } });
+  }
+  ws._titleRows.push(r);
+  r++;
+
+  headers.forEach((h, i) => {
+    xlCell(ws, r, startCol + i, h, xlStyle({
+      bold: true,
+      bg: XL_COLORS.header,
+      align: isMoneyHeader(h) || isCountHeader(h) ? "right" : "left",
+      wrap: false
+    }));
+  });
+  r++;
+
+  dataRows.forEach((row, idx) => {
+    const meta = rowMeta ? rowMeta[idx] : null;
+    const rowBg = meta && meta._color ? xlRgb(meta._color) : null;
+    if (headers.length === 1) {
+      xlCell(ws, r, startCol, row[0], xlStyle({ bg: rowBg }));
+      r++;
+      return;
+    }
+    row.forEach((val, i) => {
+      const h = headers[i];
+      const style = xlStyle({
+        bg: rowBg,
+        align: isMoneyHeader(h) || isCountHeader(h) ? "right" : "left",
+        numFmt: isMoneyHeader(h) ? "#,##0.00" : (isCountHeader(h) ? "0" : undefined),
+        wrap: !isMoneyHeader(h) && !isCountHeader(h) && String(h || "").toLowerCase().includes("документ")
+      });
+      xlCell(ws, r, startCol + i, val, style);
+    });
+    r++;
+  });
+  return r + 2;
+}
+
+function writeMainTitle(ws, row, text, colCount) {
+  const cols = Math.max(colCount || ws._xlSpanCols || 5, 1);
+  ws._xlSpanCols = Math.max(ws._xlSpanCols || 0, cols);
+  if (!ws._titleRows) ws._titleRows = [];
+  if (!ws["!merges"]) ws["!merges"] = [];
+  const mergeEnd = cols - 1;
+  xlCell(ws, row, 0, text, xlStyle({ bold: true, sz: 15, color: XL_COLORS.white, bg: XL_COLORS.title, wrap: false }));
+  if (cols > 1) {
+    ws["!merges"].push({ s: { r: row, c: 0 }, e: { r: row, c: mergeEnd } });
+  }
+  ws._titleRows.push(row);
+}
+
+function buildReportSheet(act1, act2, comp) {
+  const ws = {};
+
+  let row = 2;
+  row = writeSection(ws, row, 0, "Периоды сверки",
+    ["Показатель", "Начало", "Конец"],
+    [
+      ["Акт 1", fmtDate(act1.minDate), fmtDate(act1.maxDate)],
+      ["Акт 2", fmtDate(act2.minDate), fmtDate(act2.maxDate)]
+    ]
+  );
+
+  row = writeSection(ws, row, 0, "Сальдо и обороты",
+    ["Показатель", "Акт 1 дебет", "Акт 1 кредит", "Акт 2 дебет", "Акт 2 кредит"],
+    [
+      ["Сальдо начальное", act1.saldoStartDebit, act1.saldoStartCredit, act2.saldoStartDebit, act2.saldoStartCredit],
+      ["Обороты", act1.debitSum, act1.creditSum, act2.debitSum, act2.creditSum],
+      ["Сальдо конечное", act1.saldoEndDebit, act1.saldoEndCredit, act2.saldoEndDebit, act2.saldoEndCredit]
+    ]
+  );
+
+  const nf1 = rowsToTable(opRows(comp.notFound1, "Акт 1"), noDiscrepanciesText(act1.name));
+  row = writeSection(ws, row, 0, `Расхождения — ${actNoLabel(act1.name)}`, nf1.headers, nf1.data, nf1.meta, noDiscrepanciesText(act1.name));
+
+  const nf2 = rowsToTable(opRows(comp.notFound2, "Акт 2"), noDiscrepanciesText(act2.name));
+  row = writeSection(ws, row, 0, `Расхождения — ${actNoLabel(act2.name)}`, nf2.headers, nf2.data, nf2.meta, noDiscrepanciesText(act2.name));
+
+  writeMainTitle(ws, 0, `Отчёт по автосверке: ${actNoLabel(act1.name)} и ${actNoLabel(act2.name)}`, ws._xlSpanCols || 5);
+  return finishSheet(ws, 0);
+}
+
+function writeColorLegend(ws, startRow, mergeCols) {
+  const span = Math.max(mergeCols + 1, 2);
+  ws._xlSpanCols = Math.max(ws._xlSpanCols || 0, span);
+  if (!ws._titleRows) ws._titleRows = [];
+  const items = [
+    { method: 1, hint: "полное совпадение" },
+    { method: 2, hint: "номер и сумма" },
+    { method: 3, hint: "дата и сумма" },
+    { method: 4, hint: "только сумма" },
+    { method: 0, hint: "нет пары в другом акте" }
+  ];
+  let r = startRow;
+  const legendMerge = span - 1;
+  xlCell(ws, r, 0, "Легенда цветов", xlStyle({ bold: true, sz: 12, color: XL_COLORS.white, bg: XL_COLORS.title, wrap: false }));
+  if (!ws["!merges"]) ws["!merges"] = [];
+  if (legendMerge > 0) {
+    ws["!merges"].push({ s: { r, c: 0 }, e: { r, c: legendMerge } });
+  }
+  ws._titleRows.push(r);
+  r++;
+
+  xlCell(ws, r, 0, "Цвет", xlStyle({ bold: true, bg: XL_COLORS.header, wrap: false }));
+  xlCell(ws, r, 1, "Значение", xlStyle({ bold: true, bg: XL_COLORS.header, wrap: false }));
+  r++;
+
+  for (const item of items) {
+    xlCell(ws, r, 0, "■", xlStyle({ bg: xlRgb(METHOD_COLORS[item.method]), align: "center", bold: true }));
+    xlCell(ws, r, 1, `${METHOD_NAMES[item.method]} — ${item.hint}`, xlStyle());
+    r++;
+  }
+  return r + 1;
+}
+
+function buildDataSheet(rows, sheetTitle) {
+  const table = rowsToTable(rows);
+  const ws = {};
+  const mergeCols = Math.max(table.headers.length - 1, 1);
+  const dataStartRow = writeColorLegend(ws, 0, mergeCols);
+  writeSection(ws, dataStartRow, 0, sheetTitle, table.headers, table.data, table.meta);
+  return finishSheet(ws, dataStartRow + 2);
+}
+
+function buildMultiSectionSheet(sections) {
+  const ws = {};
+  let row = 0;
+  for (const sec of sections) {
+    const table = rowsToTable(sec.rows, sec.emptyText);
+    row = writeSection(ws, row, 0, sec.title, table.headers, table.data, table.meta, sec.emptyText);
+  }
+  return finishSheet(ws, 2);
+}
+
+function buildWorkbook(act1, act2, comp) {
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, buildReportSheet(act1, act2, comp), "Отчет");
+  XLSX.utils.book_append_sheet(wb, buildMultiSectionSheet([
+    { title: "Причины расхождений", rows: comp.reasons || [], emptyText: "Пояснений нет" }
+  ]), "Причины");
+  XLSX.utils.book_append_sheet(wb, buildDataSheet(coloredOps(act1), shortActTitle(act1.name)), "Акт 1");
+  XLSX.utils.book_append_sheet(wb, buildDataSheet(coloredOps(act2), shortActTitle(act2.name)), "Акт 2");
+  XLSX.utils.book_append_sheet(wb, buildMultiSectionSheet([
+    { title: `Без соответствия — ${actNoLabel(act1.name)}`, rows: opRows(comp.notFound1, "Акт 1"), emptyText: noDiscrepanciesText(act1.name) },
+    { title: `Без соответствия — ${actNoLabel(act2.name)}`, rows: opRows(comp.notFound2, "Акт 2"), emptyText: noDiscrepanciesText(act2.name) },
+    { title: "Дата и номер совпали, сумма отличается", rows: comp.diffDateNumber, emptyText: NO_PARTIAL_TEXT },
+    { title: "Номер и сумма совпали, дата отличается", rows: comp.diffNumberSum, emptyText: NO_PARTIAL_TEXT },
+    { title: "Номер совпал, дата или сумма отличается", rows: comp.diffNumber, emptyText: NO_PARTIAL_TEXT }
+  ]), "Расхождения");
+  XLSX.utils.book_append_sheet(wb, buildMultiSectionSheet([
+    { title: "Одинаковые дата и номер, разные суммы", rows: comp.diffDateNumber, emptyText: NO_PARTIAL_TEXT },
+    { title: "Одинаковые номер и сумма, разные даты", rows: comp.diffNumberSum, emptyText: NO_PARTIAL_TEXT },
+    { title: "Одинаковый номер, разная дата или сумма", rows: comp.diffNumber, emptyText: NO_PARTIAL_TEXT }
+  ]), "Различия");
+  XLSX.utils.book_append_sheet(wb, buildMultiSectionSheet([
+    { title: "Дубликаты: дата и номер в одном акте", rows: comp.duplicatesDateNumber, emptyText: NO_DUPLICATES_TEXT },
+    { title: "Дубликаты: номер в одном акте", rows: comp.duplicatesNumber, emptyText: NO_DUPLICATES_TEXT }
+  ]), "Дубликаты");
+  return wb;
+}
+
+
+
+/* ========== Лицензия модулей ========== */
+const LICENSE_CFG = {
+  SECRET: "SverkaPro-Avito-2026-K7mQ9xWp2nR4",
+  STORE_DEVICE: "sverkafact_device_id",
+  STORE_ENTS: "sverkafact_ents_v2",
+  STORE_DEMO: "sverkafact_demo_v2",
+  STORE_TRIAL: "sverkafact_trial_v2"
+};
+
+const MODULES = {
+  acts: { product: "ACT", title: "Акты сверки", price: "7 900 ₽/год" },
+  regs: { product: "REG", title: "Две базы / реестры", price: "5 900 ₽/год" },
+  r6062: { product: "OSV", title: "Доктор 60/62", price: "6 900 ₽/год" },
+  nds: { product: "NDS", title: "Сверка НДС", price: "7 900 ₽/год" },
+  acq: { product: "ACQ", title: "Эквайринг", price: "4 900 ₽/год" }
+};
+
+function toBase32(bytes) {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let bits = 0, value = 0, out = "";
+  for (const b of bytes) {
+    value = (value << 8) | b;
+    bits += 8;
+    while (bits >= 5) {
+      out += alphabet[(value >>> (bits - 5)) & 31];
+      bits -= 5;
+    }
+  }
+  if (bits > 0) out += alphabet[(value << (5 - bits)) & 31];
+  return out;
+}
+function formatDeviceId(raw) {
+  const s = String(raw).replace(/[^A-Z0-9]/gi, "").toUpperCase();
+  const parts = [];
+  for (let i = 0; i < 12; i += 4) parts.push(s.slice(i, i + 4));
+  return parts.join("-");
+}
+function normalizeDeviceId(s) {
+  return String(s || "").replace(/[^A-Z0-9]/gi, "").toUpperCase().slice(0, 12);
+}
+async function sha256Hex(text) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+function ymdFromDate(d) {
+  return d.getFullYear() + String(d.getMonth() + 1).padStart(2, "0") + String(d.getDate()).padStart(2, "0");
+}
+function parseYmd(ymd) {
+  const s = String(ymd || "");
+  if (!/^\d{8}$/.test(s)) return null;
+  const d = new Date(Number(s.slice(0, 4)), Number(s.slice(4, 6)) - 1, Number(s.slice(6, 8)));
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+function fmtDateLicense(d) {
+  return String(d.getDate()).padStart(2, "0") + "." + String(d.getMonth() + 1).padStart(2, "0") + "." + d.getFullYear();
+}
+function getOrCreateDeviceId() {
+  let id = localStorage.getItem(LICENSE_CFG.STORE_DEVICE);
+  if (id && normalizeDeviceId(id).length === 12) {
+    id = formatDeviceId(normalizeDeviceId(id));
+    localStorage.setItem(LICENSE_CFG.STORE_DEVICE, id);
+    return id;
+  }
+  const rnd = new Uint8Array(8);
+  crypto.getRandomValues(rnd);
+  id = formatDeviceId(toBase32(rnd).slice(0, 12));
+  localStorage.setItem(LICENSE_CFG.STORE_DEVICE, id);
+  return id;
+}
+async function makeSig(deviceId, expiryYmd, product) {
+  const payload = normalizeDeviceId(deviceId) + "|" + expiryYmd + "|" + product + "|" + LICENSE_CFG.SECRET;
+  return (await sha256Hex(payload)).slice(0, 10).toUpperCase();
+}
+async function makeSigLegacy(deviceId, expiryYmd) {
+  const payload = normalizeDeviceId(deviceId) + "|" + expiryYmd + "|" + LICENSE_CFG.SECRET;
+  return (await sha256Hex(payload)).slice(0, 10).toUpperCase();
+}
+function loadEntitlements() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(LICENSE_CFG.STORE_ENTS) || "{}");
+    return raw && typeof raw === "object" ? raw : {};
+  } catch { return {}; }
+}
+function saveEntitlements(ents) {
+  localStorage.setItem(LICENSE_CFG.STORE_ENTS, JSON.stringify(ents));
+}
+function loadDemo() {
+  try { return JSON.parse(localStorage.getItem(LICENSE_CFG.STORE_DEMO) || "{}") || {}; }
+  catch { return {}; }
+}
+function saveDemo(d) {
+  localStorage.setItem(LICENSE_CFG.STORE_DEMO, JSON.stringify(d));
+}
+function loadTrial() {
+  try { return JSON.parse(localStorage.getItem(LICENSE_CFG.STORE_TRIAL) || "null"); }
+  catch { return null; }
+}
+function saveTrial(info) {
+  localStorage.setItem(LICENSE_CFG.STORE_TRIAL, JSON.stringify(info));
+}
+function daysBetweenYmd(fromYmd, toYmd) {
+  const a = parseYmd(fromYmd);
+  const b = parseYmd(toYmd);
+  if (!a || !b) return 9999;
+  return Math.round((b - a) / 86400000);
+}
+function isShortTrialExpiry(expiryYmd) {
+  const today = ymdFromDate(new Date());
+  const days = daysBetweenYmd(today, expiryYmd);
+  return days >= 0 && days <= 10;
+}
+function purgeExpiredEntitlements() {
+  const ents = loadEntitlements();
+  const today = ymdFromDate(new Date());
+  let changed = false;
+  for (const k of Object.keys(ents)) {
+    if (!ents[k] || ents[k] < today) {
+      delete ents[k];
+      changed = true;
+    }
+  }
+  if (changed) saveEntitlements(ents);
+  return ents;
+}
+function isEntitlementActive(product) {
+  const ents = purgeExpiredEntitlements();
+  const today = ymdFromDate(new Date());
+  if (ents.PRO && ents.PRO >= today) return true;
+  if (product === "PRO") return !!(ents.PRO && ents.PRO >= today);
+  return !!(ents[product] && ents[product] >= today);
+}
+function hasAnyPaidAccess() {
+  return isEntitlementActive("PRO") || ["REG", "OSV", "NDS", "ACQ"].some(isEntitlementActive);
+}
+/** Тестовый PRO истёк — все платные возможности и демо закрыты */
+function isTrialExpiredLocked() {
+  const trial = loadTrial();
+  if (!trial || !trial.expiryYmd) return false;
+  if (hasAnyPaidAccess()) return false;
+  const today = ymdFromDate(new Date());
+  return trial.expiryYmd < today;
+}
+function lockAllDemos() {
+  const d = loadDemo();
+  for (const mode of Object.keys(MODULES)) {
+    d[mode] = true;
+  }
+  saveDemo(d);
+}
+function hasModuleAccess(mode) {
+  const m = MODULES[mode];
+  if (!m) return false;
+  if (isTrialExpiredLocked()) return false;
+  return isEntitlementActive(m.product) || isEntitlementActive("PRO");
+}
+function canUseDemo(mode) {
+  if (isTrialExpiredLocked()) return false;
+  if (hasModuleAccess(mode)) return false;
+  return !loadDemo()[mode];
+}
+function consumeDemo(mode) {
+  const d = loadDemo();
+  d[mode] = true;
+  saveDemo(d);
+}
+async function validateAndParseKey(key, deviceId) {
+  const raw = String(key || "").trim().toUpperCase().replace(/\s+/g, "");
+  const legacy = raw.match(/^SP-([A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4})-(\d{8})-([A-Z0-9]{10})$/);
+  if (legacy) {
+    const dev = legacy[1], ymd = legacy[2], sig = legacy[3];
+    if (normalizeDeviceId(dev) !== normalizeDeviceId(deviceId)) return { ok: false, error: "Ключ выдан для другого компьютера." };
+    const exp = parseYmd(ymd);
+    if (!exp || exp < new Date(new Date().toDateString())) return { ok: false, error: "Срок ключа истёк." };
+    if (sig !== await makeSigLegacy(dev, ymd)) return { ok: false, error: "Неверный ключ." };
+    return { ok: true, product: "PRO", expiryYmd: ymd, key: raw, legacy: true };
+  }
+  const m = raw.match(/^SF-(PRO|ACT|REG|OSV|NDS|ACQ)-([A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4})-(\d{8})-([A-Z0-9]{10})$/);
+  if (!m) return { ok: false, error: "Неверный формат ключа." };
+  const product = m[1], dev = m[2], ymd = m[3], sig = m[4];
+  if (normalizeDeviceId(dev) !== normalizeDeviceId(deviceId)) return { ok: false, error: "Ключ выдан для другого компьютера." };
+  const exp = parseYmd(ymd);
+  if (!exp || exp < new Date(new Date().toDateString())) return { ok: false, error: "Срок ключа истёк. Доступ закрыт — активируйте платный ключ." };
+  if (sig !== await makeSig(dev, ymd, product)) return { ok: false, error: "Неверный ключ." };
+  return { ok: true, product, expiryYmd: ymd, key: raw };
+}
+function activateEntitlement(product, expiryYmd) {
+  const ents = loadEntitlements();
+  if (!ents[product] || expiryYmd > ents[product]) ents[product] = expiryYmd;
+  saveEntitlements(ents);
+  if (product === "PRO" && isShortTrialExpiry(expiryYmd)) {
+    saveTrial({ expiryYmd, product: "PRO", kind: "test7" });
+  }
+}
+function hideProExcelButtons() {
+  ["btnXlsx", "btnRegXlsx", "btnOsvXlsx", "btnNdsXlsx", "btnAcqXlsx"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.add("hidden");
+  });
+}
+function enforceAccessLock() {
+  if (!isTrialExpiredLocked() && hasAnyPaidAccess()) return;
+  window.__DEMO_MODE = null;
+  if (isTrialExpiredLocked()) {
+    lockAllDemos();
+    hideProExcelButtons();
+    document.querySelectorAll("[id^=demoBanner-]").forEach(el => el.remove());
+  }
+}
+function refreshHubCards() {
+  enforceAccessLock();
+  for (const [mode] of Object.entries(MODULES)) {
+    const card = document.getElementById("card-" + mode);
+    if (!card) continue;
+    const tag = card.querySelector("[data-tag]");
+    const open = hasModuleAccess(mode);
+    card.classList.toggle("pro-locked", !open);
+    if (tag) {
+      tag.className = "tag " + (open ? "open" : "lock");
+      tag.textContent = open ? "открыт" : "ключ";
+    }
+    const demoBtn = card.querySelector("[data-demo]");
+    if (demoBtn) demoBtn.style.display = (!open && canUseDemo(mode)) ? "" : "none";
+  }
+}
+function refreshLicenseUI() {
+  const bar = document.getElementById("licenseBar");
+  const status = document.getElementById("licenseStatus");
+  purgeExpiredEntitlements();
+  enforceAccessLock();
+  const ents = loadEntitlements();
+  const today = ymdFromDate(new Date());
+  const active = Object.entries(ents).filter(([, y]) => y >= today);
+  const trial = loadTrial();
+  if (ents.PRO && ents.PRO >= today) {
+    bar.className = "license-bar ok";
+    const left = daysBetweenYmd(today, ents.PRO);
+    const trialNote = (trial && trial.expiryYmd === ents.PRO && left <= 10)
+      ? " · <b>тестовый доступ</b>, осталось " + left + " дн. После окончания все PRO-модули закроются"
+      : "";
+    status.innerHTML = "PRO активен до <b>" + fmtDateLicense(parseYmd(ents.PRO)) + "</b> · все модули открыты" + trialNote;
+  } else if (active.length) {
+    bar.className = "license-bar ok";
+    status.innerHTML = "Активны модули: <b>" + active.map(([p, y]) => p + " до " + fmtDateLicense(parseYmd(y))).join(", ") + "</b>";
+  } else if (isTrialExpiredLocked()) {
+    bar.className = "license-bar free";
+    status.innerHTML = "Тестовый период <b>закончился</b> (" + fmtDateLicense(parseYmd(trial.expiryYmd)) + "). Все модули и демо закрыты. Активируйте платный ключ.";
+  } else {
+    bar.className = "license-bar free";
+    status.innerHTML = "Нет активного ключа. Можно купить модуль или запустить <b>демо</b> (один раз на модуль).";
+  }
+  refreshHubCards();
+}
+function openMode(mode, asDemo) {
+  enforceAccessLock();
+  if (hasModuleAccess(mode)) {
+    window.__DEMO_MODE = null;
+    showPage(mode);
+    return;
+  }
+  if (isTrialExpiredLocked()) {
+    alert("Тестовый период закончился. Все модули закрыты.\nАктивируйте платный ключ.");
+    document.getElementById("licensePanel").classList.add("open");
+    return;
+  }
+  if (asDemo) {
+    if (!canUseDemo(mode)) {
+      alert("Демо этого модуля уже использовано. Активируйте ключ для полного доступа.");
+      document.getElementById("licensePanel").classList.add("open");
+      return;
+    }
+    window.__DEMO_MODE = mode;
+    showPage(mode);
+    const banner = document.querySelector("#page-" + mode + " .mode-sub");
+    if (banner && !document.getElementById("demoBanner-" + mode)) {
+      const div = document.createElement("div");
+      div.id = "demoBanner-" + mode;
+      div.className = "pro-banner";
+      div.innerHTML = "<b>Демо-режим</b>: один пробный запуск. После расчёта увидите итоги; строки и Excel — после активации модуля.";
+      banner.after(div);
+    }
+    return;
+  }
+  alert("Модуль «" + MODULES[mode].title + "» — " + MODULES[mode].price + ".\nМожно нажать «Демо» для одного пробного запуска или активировать ключ.");
+  document.getElementById("licensePanel").classList.add("open");
+}
+function gateAfterProRun(mode, panelsId, buildFullHtml, kpiHtml) {
+  enforceAccessLock();
+  if (!hasModuleAccess(mode) && window.__DEMO_MODE !== mode) {
+    const el = document.getElementById(panelsId);
+    if (el) {
+      el.innerHTML = '<div class="pro-banner"><b>Доступ закрыт.</b> ' +
+        (isTrialExpiredLocked()
+          ? "Тестовый период закончился. Активируйте платный PRO."
+          : "Активируйте модуль или весь PRO.") + "</div>";
+    }
+    hideProExcelButtons();
+    return true;
+  }
+  const isDemo = window.__DEMO_MODE === mode;
+  const full = buildFullHtml();
+  const el = document.getElementById(panelsId);
+  if (!isDemo && hasModuleAccess(mode)) {
+    el.innerHTML = full;
+    window.__DEMO_MODE = null;
+    return false;
+  }
+  if (isDemo) {
+    consumeDemo(mode);
+    el.dataset.fullHtml = full;
+    el.innerHTML = kpiHtml +
+      '<div class="pro-banner"><b>Демо завершено.</b> Итоги видны выше. Чтобы открыть строки и Excel — активируйте PRO.</div>' +
+      '<div class="blur-lock" aria-hidden="true">' + full + '</div>';
+    const map = { acts: "btnXlsx", regs: "btnRegXlsx", r6062: "btnOsvXlsx", nds: "btnNdsXlsx", acq: "btnAcqXlsx" };
+    const xb = document.getElementById(map[mode]);
+    if (xb) xb.classList.add("hidden");
+    window.__DEMO_MODE = null;
+    refreshHubCards();
+    return true;
+  }
+  el.innerHTML = full;
+  return false;
+}
+
+
+/* ========== V2: навигация и доп. режимы ========== */
+function showPage(id) {
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  const el = document.getElementById("page-" + id);
+  if (el) el.classList.add("active");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+document.querySelectorAll("[data-back]").forEach(btn => {
+  btn.addEventListener("click", () => { window.__DEMO_MODE = null; showPage("hub"); refreshHubCards(); });
+});
+document.getElementById("page-hub").addEventListener("click", (e) => {
+  const openBtn = e.target.closest("[data-open]");
+  const demoBtn = e.target.closest("[data-demo]");
+  if (demoBtn) { openMode(demoBtn.getAttribute("data-demo"), true); return; }
+  if (openBtn) { openMode(openBtn.getAttribute("data-open"), false); return; }
+});
+
+function showMsgIn(id, text, type) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  el.className = "msg " + type;
+}
+
+function findColSmart(matrix, headerRow, variants) {
+  return findColByVariants(matrix, headerRow, variants);
+}
+
+function parseGenericRegistry(matrix, fileName) {
+  const cols = detectColumns(matrix);
+  const headerRow = cols.headerRow || 0;
+  const partnerCol = findColSmart(matrix, headerRow, ["контрагент", "покупатель", "поставщик", "организация", "партнер", "партнёр"]);
+  const rows = [];
+  for (let r = headerRow + 1; r < matrix.length; r++) {
+    const row = matrix[r] || [];
+    const rawDate = row[cols.date];
+    const rawDoc = row[cols.document];
+    const rawDebit = row[cols.debit];
+    const rawCredit = cols.credit >= 0 ? row[cols.credit] : null;
+    const d = parseDate(typeof rawDate === "string" ? String(rawDate).replace(/г\./gi, "") : rawDate);
+    let amount = parseAmount(rawDebit);
+    if (amount == null) amount = parseAmount(rawCredit);
+    if (amount == null) {
+      for (let c = 0; c < row.length; c++) {
+        if (c === cols.date) continue;
+        const a = parseAmount(row[c]);
+        if (a != null && a !== 0) { amount = a; break; }
+      }
+    }
+    const doc = normalizeText(rawDoc);
+    if (d == null && !doc) continue;
+    if (amount == null) continue;
+    const { number } = extractDocInfo(doc || String(rawDate || ""), true);
+    let num = number;
+    if (!num && doc) {
+      const m = String(doc).match(/\d{1,10}/);
+      if (m) num = m[0];
+    }
+    rows.push({
+      sourceRow: r + 1,
+      date: d,
+      doc: doc || "(без документа)",
+      number: num || "",
+      amount: Math.abs(amount),
+      partner: partnerCol >= 0 ? normalizeText(row[partnerCol]) : "",
+      matched: false
+    });
+  }
+  return { name: fileName, rows, warnings: cols.blockCount > 1 ? ["Взята левая таблица"] : [] };
+}
+
+function compareRegistries(a, b) {
+  const used = new Set();
+  const matched = [];
+  const missB = [];
+  const sumDiff = [];
+  const dateDiff = [];
+  const weakNum = [];
+
+  const byNum = new Map();
+  b.rows.forEach((row, i) => {
+    const k = normDocNum(row.number);
+    if (!k || k === "0") return;
+    if (!byNum.has(k)) byNum.set(k, []);
+    byNum.get(k).push(i);
+  });
+
+  function pairRow(ra, rb, extra = {}) {
+    return {
+      "№": ra.number || rb.number,
+      "Дата A": fmtDate(ra.date),
+      "Дата B": fmtDate(rb.date),
+      "Сумма A": ra.amount,
+      "Сумма B": rb.amount,
+      "Документ A": ra.doc,
+      "Документ B": rb.doc,
+      "Контрагент A": ra.partner || "",
+      "Контрагент B": rb.partner || "",
+      ...extra
+    };
+  }
+
+  for (const ra of a.rows) {
+    let found = null;
+    let how = "";
+    const k = normDocNum(ra.number);
+    const cands = (k && k !== "0" ? (byNum.get(k) || []) : []).filter(i => !used.has(i));
+
+    // 1) номер + сумма
+    if (cands.length) {
+      const iAmt = cands.find(i => amtKey(b.rows[i].amount) === amtKey(ra.amount));
+      if (iAmt != null) { found = iAmt; how = "number_sum"; }
+    }
+    // 2) номер + дата
+    if (found == null && cands.length) {
+      const iDate = cands.find(i => dateKey(b.rows[i].date) === dateKey(ra.date));
+      if (iDate != null) { found = iDate; how = "number_date"; }
+    }
+    // 3) только номер
+    if (found == null && cands.length) {
+      found = cands[0];
+      how = "number_only";
+    }
+    // 4) дата + сумма (без номера)
+    if (found == null) {
+      for (let i = 0; i < b.rows.length; i++) {
+        if (used.has(i)) continue;
+        const rb = b.rows[i];
+        if (amtKey(ra.amount) === amtKey(rb.amount) && dateKey(ra.date) === dateKey(rb.date)) {
+          found = i; how = "date_sum"; break;
+        }
+      }
+    }
+
+    if (found == null) {
+      missB.push(ra);
+      continue;
+    }
+    used.add(found);
+    const rb = b.rows[found];
+    ra.matched = true; rb.matched = true;
+
+    if (amtKey(ra.amount) !== amtKey(rb.amount)) {
+      sumDiff.push({
+        ...pairRow(ra, rb),
+        "Разница": Math.round((ra.amount - rb.amount) * 100) / 100,
+        "Как нашли": "номер совпал"
+      });
+    } else if (dateKey(ra.date) !== dateKey(rb.date)) {
+      dateDiff.push({
+        ...pairRow(ra, rb),
+        "Как нашли": how === "number_sum" ? "номер+сумма" : "номер"
+      });
+    } else if (how === "number_only") {
+      weakNum.push(pairRow(ra, rb, { "Как нашли": "только номер (проверьте вручную)" }));
+    } else {
+      matched.push(pairRow(ra, rb, {
+        "Как нашли": how === "number_sum" ? "номер+сумма" : (how === "number_date" ? "номер+дата" : "дата+сумма")
+      }));
+    }
+  }
+  const missA = b.rows.filter((_, i) => !used.has(i));
+  const sevW = (arr) => (arr || []).map(r => withSeverity(Object.assign({}, r), "warning"));
+  const sevI = (arr) => (arr || []).map(r => withSeverity(Object.assign({}, r), "info"));
+  return {
+    matched,
+    weakNum: sevW(weakNum),
+    missB,
+    missA,
+    sumDiff: sevW(sumDiff),
+    dateDiff: sevI(dateDiff)
+  };
+}
+
+function renderKpi(items) {
+  return '<div class="kpi-row">' + items.map(([n, l]) =>
+    '<div class="kpi"><div class="n">' + escapeHtml(String(n)) + '</div><div class="l">' + escapeHtml(l) + '</div></div>'
+  ).join("") + '</div>';
+}
+
+let LAST_REG = null;
+document.getElementById("btnRegRun").addEventListener("click", async () => {
+  if (!hasModuleAccess("regs") && window.__DEMO_MODE !== "regs") {
+    showMsgIn("msgReg", isTrialExpiredLocked()
+      ? "Тестовый период закончился. Все PRO-модули закрыты. Активируйте платный ключ."
+      : "Модуль PRO. Откройте «Демо» с главного экрана или активируйте ключ.", "err");
+    return;
+  }
+  const f1 = document.getElementById("reg1").files[0];
+  const f2 = document.getElementById("reg2").files[0];
+  if (!f1 || !f2) { showMsgIn("msgReg", "Загрузите оба реестра.", "err"); return; }
+  showMsgIn("msgReg", "Сверяю реестры…", "info");
+  try {
+    const [raw1, raw2] = await Promise.all([readFileToMatrix(f1), readFileToMatrix(f2)]);
+    const a = parseGenericRegistry(raw1.matrix, raw1.fileName);
+    const b = parseGenericRegistry(raw2.matrix, raw2.fileName);
+    if (!a.rows.length) throw new Error("В реестре A не найдено строк с суммой.");
+    if (!b.rows.length) throw new Error("В реестре B не найдено строк с суммой.");
+    const comp = compareRegistries(a, b);
+    LAST_REG = { a, b, comp };
+    const missBRows = comp.missB.map(r => withSeverity({ "Дата": fmtDate(r.date), "№": r.number, "Документ": r.doc, "Сумма": r.amount, "Контрагент": r.partner || "—", "Строка": r.sourceRow }, "warning"));
+    const missARows = comp.missA.map(r => withSeverity({ "Дата": fmtDate(r.date), "№": r.number, "Документ": r.doc, "Сумма": r.amount, "Контрагент": r.partner || "—", "Строка": r.sourceRow }, "warning"));
+    document.getElementById("reportReg").classList.remove("hidden");
+    const kpiReg = renderKpi([
+        [a.rows.length, "Строк в A"],
+        [b.rows.length, "Строк в B"],
+        [comp.matched.length, "Совпали"],
+        [(comp.weakNum || []).length, "Только №"],
+        [comp.missB.length, "Нет в B"],
+        [comp.missA.length, "Нет в A"],
+        [comp.sumDiff.length, "Σ отличается"],
+        [comp.dateDiff.length, "Дата отличается"]
+      ]);
+    const regLegend = '<div class="legend" style="margin:0 0 12px">'
+      + '<span><i class="sev sev-warning" style="margin-right:4px">внимание</i>нет пары / сумма / только №</span>'
+      + '<span><i class="sev sev-info" style="margin-right:4px">справочно</i>даты разные</span></div>';
+    const fullReg = kpiReg + regLegend +
+      '<div class="reason-box">Сначала ищем пару по <b>номеру+сумме</b>, затем по номеру+дате. Блок «только по номеру» — на ручную проверку.</div>' +
+      '<h3 class="section">Нет в B (есть в A)</h3>' + renderTable(missBRows, [], "Все документы A найдены в B") +
+      '<h3 class="section">Нет в A (есть в B)</h3>' + renderTable(missARows, [], "Все документы B найдены в A") +
+      '<h3 class="section">Отличается сумма</h3>' + renderTable(comp.sumDiff, [], "Нет") +
+      '<h3 class="section">Отличается дата</h3>' + renderTable(comp.dateDiff, [], "Нет") +
+      '<h3 class="section">Совпали только по номеру (проверить)</h3>' + renderTable(comp.weakNum || [], [], "Нет") +
+      '<h3 class="section">Совпадения</h3>' + renderTable(comp.matched.slice(0, 500), [], "Нет совпадений");
+    const demoReg = gateAfterProRun("regs", "panelsReg", () => fullReg, kpiReg + '<div class="reason-box">Найдено расхождений (нет в A/B + Σ/дата): <b>' + (comp.missA.length + comp.missB.length + comp.sumDiff.length + comp.dateDiff.length) + '</b></div>');
+    document.getElementById("btnRegReset").classList.remove("hidden");
+    if (!demoReg) document.getElementById("btnRegXlsx").classList.remove("hidden");
+    showMsgIn("msgReg", demoReg ? "Демо: итоги посчитаны. Строки скрыты." : "Сверка реестров выполнена.", "ok");
+  } catch (e) {
+    console.error(e);
+    showMsgIn("msgReg", e.message || String(e), "err");
+  }
+});
+document.getElementById("btnRegXlsx").addEventListener("click", () => {
+  if (!LAST_REG) return;
+  const { comp } = LAST_REG;
+  const wb = XLSX.utils.book_new();
+  const missBRows = comp.missB.map(r => ({ "Дата": fmtDate(r.date), "№": r.number, "Документ": r.doc, "Сумма": r.amount, "Контрагент": r.partner || "" }));
+  const missARows = comp.missA.map(r => ({ "Дата": fmtDate(r.date), "№": r.number, "Документ": r.doc, "Сумма": r.amount, "Контрагент": r.partner || "" }));
+  const add = (name, title, rows) => {
+    XLSX.utils.book_append_sheet(wb, buildMultiSectionSheet([
+      { title, rows, emptyText: "Нет" }
+    ]), name.slice(0, 31));
+  };
+  add("Нет в B", "Нет в B (есть в A)", missBRows);
+  add("Нет в A", "Нет в A (есть в B)", missARows);
+  add("Сумма", "Отличается сумма", comp.sumDiff);
+  add("Дата", "Отличается дата", comp.dateDiff);
+  add("Только номер", "Совпали только по номеру", comp.weakNum || []);
+  add("Совпадения", "Совпадения", comp.matched);
+  XLSX.writeFile(wb, "SverkaFact_reestry.xlsx");
+});
+
+function normalizePartnerKey(name) {
+  let s = normalizeText(name).toLowerCase().replace(/ё/g, "е");
+  s = s.replace(/["«»„“”']/g, "");
+  s = s.replace(/\b(ооо|оао|зао|пао|ао|ип|индивидуальный предприниматель|общество с ограниченной ответственностью)\b/gi, " ");
+  s = s.replace(/[^a-zа-я0-9]+/gi, " ").replace(/\s+/g, " ").trim();
+  return s;
+}
+
+function normalizeInn(v) {
+  const digits = String(v == null ? "" : v).replace(/\D/g, "");
+  if (digits.length === 10 || digits.length === 12) return digits;
+  return "";
+}
+
+function detectAccount76Kind(account) {
+  const t = normalizeText(account).toUpperCase().replace(/Ё/g, "Е").replace(/\s+/g, "");
+  if (/76[.\-]?АВ|76[.\-]?AB/.test(t)) return "76.АВ";
+  if (/76[.\-]?ВА|76[.\-]?BA/.test(t)) return "76.ВА";
+  return "";
+}
+
+/** Номер счёта из заголовка ОСВ: «Оборотно-сальдовая ведомость по счету 60 за 3 квартал». */
+function detectOsvMainAccount(matrix) {
+  for (let r = 0; r < Math.min(matrix.length, 15); r++) {
+    const line = (matrix[r] || []).map(v => normalizeText(v)).join(" ");
+    const m = line.match(/по\s+сч[её]ту\s+(\d{2}(?:\.[0-9A-Za-zА-Яа-я]{1,3})?)/i);
+    if (m) return m[1].toUpperCase().replace(/Ё/g, "Е");
+  }
+  for (let r = 0; r < Math.min(matrix.length, 30); r++) {
+    const first = normalizeText((matrix[r] || [])[0]).replace(/\s/g, "");
+    if (/^\d{2}(\.[0-9A-Za-zА-Яа-я]{1,3})?$/.test(first)) return first.toUpperCase().replace(/Ё/g, "Е");
+  }
+  return "";
+}
+
+/** Строка ОСВ — детализация документа-регистратора, а не контрагент. */
+function isOsvDocumentRow(name) {
+  const t = normalizeText(name).toLowerCase().replace(/ё/g, "е");
+  if (!t) return false;
+  if (/\sот\s\d{1,2}\.\d{1,2}\.\d{2,4}/.test(t)) return true;
+  return /^(списание|поступление|платежное|платежный|платеж|оплата|счет-фактура|счет фактура|аванс|реализация|возврат|корректировка|операция|банковская выписка|расходный|приходный|инкассовое|зачет|взаимозачет|перечисление)/.test(t);
+}
+
+/** Служебная строка ОСВ: итог, шапка субконто, строка самого счёта. */
+function isOsvServiceRow(name) {
+  const t = normalizeText(name).toLowerCase().replace(/ё/g, "е");
+  if (!t) return true;
+  if (/^(итого|всего|оборот|сальдо)/.test(t)) return true;
+  if (/^сч(ет|ета|ёт|ёта)[- ]?фактур/.test(t)) return true;
+  if (/^\d{2}(\.[0-9а-яa-z]{1,3})?$/i.test(t.replace(/\s/g, ""))) return true;
+  if (/^(контрагент|субконто|аналитика|наименование|организац)/.test(t)) return true;
+  if (/^(выводимые данные|отбор|параметр)/.test(t)) return true;
+  return false;
+}
+
+/** Шапка ОСВ: строка с парами Дебет/Кредит (колонки «Дата» в ОСВ обычно нет). */
+function findOsvHeaderRow(matrix) {
+  const rows = Math.min(matrix.length, 40);
+  let best = null, bestScore = -1;
+  for (let r = 0; r < rows; r++) {
+    const row = matrix[r] || [];
+    let deb = 0, cred = 0, label = 0;
+    for (let c = 0; c < row.length; c++) {
+      const t = normalizeText(row[c]).toLowerCase().replace(/ё/g, "е");
+      if (!t || t.length > 40) continue;
+      if (/^дебет$|^дт$/.test(t)) deb++;
+      else if (/^кредит$|^кт$/.test(t)) cred++;
+      else if (/^(счет|контрагент|субконто|аналитика|наименование)/.test(t)) label++;
+    }
+    const score = deb * 3 + cred * 3 + label;
+    if (deb >= 1 && cred >= 1 && score > bestScore) { bestScore = score; best = r; }
+  }
+  return best;
+}
+
+/** Групповая шапка («Сальдо на начало / Обороты / Сальдо на конец») с протяжкой объединённых ячеек. */
+function osvGroupHeaders(matrix, headerRow) {
+  const width = matrixWidth(matrix);
+  const groups = new Array(width).fill("");
+  for (let r = Math.max(0, headerRow - 3); r < headerRow; r++) {
+    const row = matrix[r] || [];
+    const filled = new Array(width).fill("");
+    let cur = "";
+    for (let c = 0; c < width; c++) {
+      const t = normalizeText(row[c]).toLowerCase().replace(/ё/g, "е");
+      if (t) cur = t;
+      filled[c] = cur;
+    }
+    if (/сальдо|оборот/.test(filled.join(" "))) {
+      for (let c = 0; c < width; c++) if (filled[c]) groups[c] = filled[c];
+    }
+  }
+  return groups;
+}
+
+/** Колонки ОСВ: конечное сальдо Дт/Кт и обороты за период (не сальдо на начало). */
+function resolveOsvAmountCols(matrix, headerRow) {
+  const width = matrixWidth(matrix);
+  const groups = osvGroupHeaders(matrix, headerRow);
+  const own = [];
+  for (let c = 0; c < width; c++) {
+    own.push(normalizeText((matrix[headerRow] || [])[c]).toLowerCase().replace(/ё/g, "е"));
+  }
+  const full = (c) => (groups[c] + " " + own[c]).trim();
+  const isDeb = (t) => /дебет|(^|\s)дт(\s|$)/.test(t);
+  const isCred = (t) => /кредит|(^|\s)кт(\s|$)/.test(t);
+  const find = (groupRe, side) => {
+    let found = -1;
+    for (let c = 0; c < width; c++) {
+      const t = full(c);
+      if (!t) continue;
+      if (groupRe && !groupRe.test(t)) continue;
+      const probe = own[c] || t;
+      if (side === "deb" ? isDeb(probe) : isCred(probe)) found = c;
+    }
+    return found;
+  };
+  const endRe = /сальдо[^а-я]*на\s*кон|сальдо\s*кон|кон[а-я]*\s*сальдо|(^|\s)ск(\s|$)/;
+  let debEnd = find(endRe, "deb");
+  let credEnd = find(endRe, "cred");
+  const debTurn = find(/оборот/, "deb");
+  const credTurn = find(/оборот/, "cred");
+  if (debEnd < 0 || credEnd < 0) {
+    const debs = [], creds = [];
+    for (let c = 0; c < width; c++) {
+      const t = full(c);
+      if (!t) continue;
+      if (isDeb(t)) debs.push(c);
+      if (isCred(t)) creds.push(c);
+    }
+    if (debEnd < 0) debEnd = debs.length ? debs[debs.length - 1] : -1;
+    if (credEnd < 0) credEnd = creds.length ? creds[creds.length - 1] : -1;
+  }
+  return { debEnd, credEnd, debTurn, credTurn, groups, own };
+}
+
+function parseOsv6062(matrix, fileName) {
+  const headerRow = findOsvHeaderRow(matrix);
+  if (headerRow == null) {
+    throw new Error("Не найдена шапка ОСВ (нужны колонки Дебет/Кредит). Выгрузите оборотно-сальдовую ведомость по счёту с сальдо и оборотами.");
+  }
+  const cols = resolveOsvAmountCols(matrix, headerRow);
+  if (cols.debEnd < 0 && cols.credEnd < 0) {
+    throw new Error("Не найдены колонки конечного сальдо Дт/Кт. Выгрузите ОСВ с сальдо на конец периода.");
+  }
+  const amountCols = new Set([cols.debEnd, cols.credEnd, cols.debTurn, cols.credTurn].filter(c => c >= 0));
+  const width = matrixWidth(matrix);
+  const findByHeader = (variants) => {
+    for (let c = 0; c < width; c++) {
+      if (amountCols.has(c)) continue;
+      const t = (cols.groups[c] + " " + cols.own[c]).toLowerCase();
+      if (variants.some(v => t.includes(v))) return c;
+    }
+    return -1;
+  };
+  let nameCol = findByHeader(["контрагент", "субконто", "аналитика", "наименование", "организац", "счет", "счёт"]);
+  if (nameCol < 0) {
+    for (let c = 0; c < width; c++) { if (!amountCols.has(c)) { nameCol = c; break; } }
+  }
+  const contractCol = findByHeader(["договор", "соглашение"]);
+  const innCol = findByHeader(["инн"]);
+  const dateCol = findByHeader(["дата", "срок"]);
+  let accountCol = findByHeader(["счет учета", "счёт учета", "субсчет", "субсчёт"]);
+  if (accountCol === nameCol) accountCol = -1;
+
+  const mainAccount = detectOsvMainAccount(matrix);
+  const items = [];
+  let skippedDocs = 0;
+  for (let r = headerRow + 1; r < matrix.length; r++) {
+    const row = matrix[r] || [];
+    const name = nameCol >= 0 ? normalizeText(row[nameCol]) : "";
+    if (isOsvServiceRow(name)) continue;
+    if (isOsvDocumentRow(name)) { skippedDocs++; continue; }
+    const debit = cols.debEnd >= 0 ? parseAmount(row[cols.debEnd]) : null;
+    const credit = cols.credEnd >= 0 ? parseAmount(row[cols.credEnd]) : null;
+    const debitTurn = cols.debTurn >= 0 ? parseAmount(row[cols.debTurn]) : null;
+    const creditTurn = cols.credTurn >= 0 ? parseAmount(row[cols.credTurn]) : null;
+    if (![debit, credit, debitTurn, creditTurn].some(v => v != null && Math.abs(v) > 0.009)) continue;
+    const account = accountCol >= 0 ? normalizeText(row[accountCol]) : "";
+    items.push({
+      name: name || "(без аналитики)",
+      account: account || mainAccount,
+      contract: contractCol >= 0 ? normalizeText(row[contractCol]) : "",
+      inn: innCol >= 0 ? normalizeInn(row[innCol]) : "",
+      date: dateCol >= 0 ? parseDate(row[dateCol]) : null,
+      debit: debit || 0,
+      credit: credit || 0,
+      debitTurn: debitTurn || 0,
+      creditTurn: creditTurn || 0,
+      sourceRow: r + 1
+    });
+  }
+  return {
+    name: fileName,
+    items,
+    mainAccount,
+    vatKind: detectAccount76Kind(mainAccount),
+    skippedDocs,
+    hasDates: items.some(it => it.date),
+    hasAccounts: items.some(it => it.account)
+  };
+}
+
+/** Индекс контрагентов по ОСВ 76.АВ / 76.ВА. */
+function buildVatAdvanceIndex(vatData) {
+  const byName = new Map();
+  const byInn = new Map();
+  for (const it of vatData.items) {
+    const rec = {
+      name: it.name,
+      debit: it.debit || 0,
+      credit: it.credit || 0,
+      debitTurn: it.debitTurn || 0,
+      creditTurn: it.creditTurn || 0,
+      sourceRow: it.sourceRow
+    };
+    const k = normalizePartnerKey(it.name);
+    if (k) {
+      const prev = byName.get(k);
+      if (prev) {
+        prev.debit += rec.debit;
+        prev.credit += rec.credit;
+        prev.debitTurn += rec.debitTurn;
+        prev.creditTurn += rec.creditTurn;
+      } else {
+        byName.set(k, rec);
+      }
+    }
+    if (it.inn && !byInn.has(it.inn)) byInn.set(it.inn, rec);
+  }
+  return { kind: vatData.vatKind || "76.ВА", byName, byInn, name: vatData.name, count: vatData.items.length };
+}
+
+function hasVatActivity(rec) {
+  if (!rec) return false;
+  return [rec.debit, rec.credit, rec.debitTurn, rec.creditTurn].some(v => Math.abs(v || 0) > 0.009);
+}
+
+/**
+ * Сверка авансов с НДС по авансам:
+ *   счёт 60 (Дт — аванс выданный поставщику) ↔ 76.ВА (авансовые СФ полученные / книга покупок)
+ *   счёт 62 (Кт — аванс полученный от покупателя) ↔ 76.АВ (авансовые СФ выданные / книга продаж)
+ */
+function checkAdvanceVat(mainData, vatIndex, opts) {
+  const r2 = (n) => Math.round((n || 0) * 100) / 100;
+  const minAdvance = Math.max(0, Number(opts && opts.minAdvance) || 0);
+  const acc = String(mainData.mainAccount || "").replace(/\s/g, "");
+  const isReceived = /^62/.test(acc) || vatIndex.kind === "76.АВ";
+  const kind = isReceived ? "76.АВ" : "76.ВА";
+  const advLabel = isReceived ? "Аванс полученный (Кт 62)" : "Аванс выданный (Дт 60)";
+  const payLabel = isReceived ? "Поступило в периоде (Кт 62 оборот)" : "Оплачено в периоде (Дт 60 оборот)";
+  const missing = [];
+  const notRestored = [];
+  const mainAdv = new Map();
+  let smallSkipped = 0, smallSkippedSum = 0;
+
+  for (const it of mainData.items) {
+    const adv = isReceived ? it.credit : it.debit;
+    if (!(adv > 0.009)) continue;
+    const key = normalizePartnerKey(it.name);
+    if (key && !mainAdv.has(key)) mainAdv.set(key, it);
+    const rec = (it.inn && vatIndex.byInn.get(it.inn)) || (key ? vatIndex.byName.get(key) : null);
+    if (hasVatActivity(rec)) continue;
+    if (adv < minAdvance) { smallSkipped++; smallSkippedSum += adv; continue; }
+    const payTurn = isReceived ? (it.creditTurn || 0) : (it.debitTurn || 0);
+    const row = {
+      "Контрагент": it.name,
+      "Счёт": it.account || acc || "—",
+      "Договор": it.contract || "—"
+    };
+    row[advLabel] = r2(adv);
+    row[payLabel] = r2(payTurn);
+    row["Период аванса"] = payTurn > 0.009 ? "предоплата текущего периода" : "переходит с прошлых периодов";
+    row["НДС 20/120 расчётно"] = r2(adv * 20 / 120);
+    row[kind] = rec ? "строка есть, движений нет" : "нет в ОСВ " + kind;
+    row["Проблема"] = isReceived
+      ? "Аванс получен, СФ на аванс не выставлена (" + kind + " пусто)"
+      : "Аванс выдан, авансовая СФ не получена (" + kind + " пусто) — справочно";
+    row["Вероятная причина"] = isReceived
+      ? "НДС с полученной предоплаты не начислен."
+      : "Поставщик не выставил (или в базу не занесён) авансовый счёт-фактура — НДС с предоплаты к вычету не заявлен.";
+    row["Что сделать"] = isReceived
+      ? "Выставить СФ на аванс (5 календарных дней) и начислить НДС на 76.АВ."
+      : "Запросить у поставщика СФ на аванс. Вычет — право, а не обязанность: если вычет не заявляете, замечание справочное.";
+    row["Строка"] = it.sourceRow;
+    missing.push(withSeverity(row, isReceived ? "error" : "info"));
+  }
+
+  for (const [key, rec] of vatIndex.byName) {
+    const bal = isReceived ? rec.debit : rec.credit;
+    if (!(Math.abs(bal) > 0.009)) continue;
+    if (mainAdv.has(key)) continue;
+    const row = { "Контрагент": rec.name };
+    row[kind + " сальдо"] = r2(bal);
+    row[advLabel] = 0;
+    row["Проблема"] = kind + " висит, аванса по счёту " + (isReceived ? "62" : "60") + " нет";
+    row["Вероятная причина"] = isReceived
+      ? "Аванс зачтён реализацией, а НДС с аванса не принят к вычету."
+      : "Аванс закрыт поставкой, а НДС с аванса не восстановлен.";
+    row["Что сделать"] = isReceived
+      ? "Проверить вычет НДС с аванса в периоде реализации (Дт 68.02 / Кт 76.АВ)."
+      : "Проверить восстановление НДС с аванса в периоде поставки (Дт 76.ВА / Кт 68.02).";
+    row["Строка"] = rec.sourceRow;
+    notRestored.push(withSeverity(row, "warning"));
+  }
+
+  missing.sort((a, b) => (b[advLabel] || 0) - (a[advLabel] || 0));
+  notRestored.sort((a, b) => (b[kind + " сальдо"] || 0) - (a[kind + " сальдо"] || 0));
+  return {
+    missing,
+    notRestored,
+    kind,
+    isReceived,
+    advLabel,
+    minAdvance,
+    smallSkipped,
+    smallSkippedSum: r2(smallSkippedSum),
+    advTotal: r2(missing.reduce((s, x) => s + (x[advLabel] || 0), 0)),
+    vatTotal: r2(missing.reduce((s, x) => s + (x["НДС 20/120 расчётно"] || 0), 0))
+  };
+}
+
+
+function severityMeta(level) {
+  const s = level === "error" ? "error" : (level === "info" ? "info" : "warning");
+  const label = s === "error" ? "ошибка" : (s === "info" ? "справочно" : "внимание");
+  const color = s === "error" ? "#fff8f8" : (s === "info" ? "#f8fbff" : "#fffdf5");
+  return { severity: s, label, color };
+}
+
+function withSeverity(row, level) {
+  const m = severityMeta(level);
+  row["Важность"] = m.label;
+  row._severity = m.severity;
+  row._color = row._color || m.color;
+  return row;
+}
+
+function issueRow(it, problem, cause, action, extra) {
+  const ex = extra || {};
+  const level = ex.severity || ex._severity || "warning";
+  const row = {
+    "Счёт": it.account || "—",
+    "Контрагент / аналитика": it.name,
+    "Договор": it.contract || "—",
+    "ИНН": it.inn || "—",
+    "Дата": fmtDate(it.date),
+    "Сальдо Дт": Math.round(it.debit * 100) / 100,
+    "Сальдо Кт": Math.round(it.credit * 100) / 100,
+    "Важность": "",
+    "Проблема": problem,
+    "Вероятная причина": cause,
+    "Что сделать": action,
+    "Строка": it.sourceRow
+  };
+  Object.assign(row, ex);
+  delete row.severity;
+  return withSeverity(row, level);
+}
+
+function diagnose6062(data, opts) {
+  const overdueDays = Math.max(1, Number(opts && opts.overdueDays) || 30);
+  const sfPartners = opts && opts.sfPartners ? opts.sfPartners : null;
+  const vatIndex = opts && opts.vatIndex ? opts.vatIndex : null;
+  const mainAcc = String(data.mainAccount || "").replace(/\s/g, "");
+  const mainIs62 = /^62/.test(mainAcc);
+  const issues = [];
+  const av76 = [];
+  const overdue = [];
+  const analytics = [];
+  const advanceNoSf = [];
+  const vatNotRestored = [];
+  const corrections = [];
+  const today = new Date();
+  const todayUtc = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+
+  for (const it of data.items) {
+    const d = Math.round(it.debit * 100) / 100;
+    const c = Math.round(it.credit * 100) / 100;
+    const kind76 = detectAccount76Kind(it.account);
+    if (kind76 && (Math.abs(d) > 0.009 || Math.abs(c) > 0.009)) {
+      const row = issueRow(it, kind76 + " с остатком",
+        "На счёте НДС с авансов висит сальдо — часто незакрытый аванс или неснятый НДС.",
+        "Сверить авансы и счета-фактуры на аванс; закрыть или уточнить остаток.",
+        { severity: "warning" });
+      av76.push(row);
+      issues.push(row);
+    }
+    const nameEmpty = !it.name || it.name === "(без аналитики)" || /^без\s*аналитик|не\s*указан|пусто/i.test(it.name);
+    if (nameEmpty && (Math.abs(d) > 0.009 || Math.abs(c) > 0.009)) {
+      const row = issueRow(it, "Нет обязательной аналитики",
+        "Сальдо без контрагента/субконто — риск потери контроля взаиморасчётов.",
+        "Заполнить аналитику (контрагент, договор) и перепровести документы.",
+        { severity: "warning" });
+      analytics.push(row);
+      issues.push(row);
+    }
+    if (d > 0.009 && c > 0.009) {
+      const same = Math.abs(d - c) < 0.02;
+      const offset = Math.min(d, c);
+      const row = issueRow(it,
+        same ? "Незачтённый аванс (развёрнутое сальдо, суммы близки)" : "Развёрнутое сальдо (долг и аванс одновременно)",
+        same
+          ? "Аванс не зачтён в погашение задолженности (или наоборот)."
+          : "Часть суммы на одном договоре/документе расчётов, часть — на другом.",
+        "Сверить карточку и оформить зачёт аванса / корректировку долга.",
+        { severity: "warning" });
+      issues.push(row);
+      corrections.push({
+        "Контрагент": it.name,
+        "Договор": it.contract || "",
+        "ИНН": it.inn || "",
+        "Счёт": it.account || "",
+        "Сальдо Дт": d,
+        "Сальдо Кт": c,
+        "Сумма зачёта": Math.round(offset * 100) / 100,
+        "Рекомендация": "Создать в 1С непроведённую корректировку долга на сумму зачёта и проверить аналитику.",
+        "Строка ОСВ": it.sourceRow
+      });
+    } else if (d < -0.009 || c < -0.009) {
+      issues.push(issueRow(it, "Красное сальдо",
+        "Ошибка стороны проводки или лишнее сторно.",
+        "Открыть карточку счёта и проверить знак операций.",
+        { severity: "error" }));
+    }
+    if (it.date) {
+      const age = Math.floor((todayUtc - Date.UTC(it.date.getUTCFullYear(), it.date.getUTCMonth(), it.date.getUTCDate())) / 86400000);
+      const acc = (it.account || "").replace(/\s/g, "");
+      const is60 = /^60\b|^60\.|сч\.?\s*60/i.test(acc) || (!acc && c > 0.009 && d < 0.009);
+      const is62 = /^62\b|^62\.|сч\.?\s*62/i.test(acc) || (!acc && d > 0.009 && c < 0.009);
+      const overdueAmt = is62 ? d : (is60 ? c : (d > c ? d : c));
+      if (age > overdueDays && overdueAmt > 0.009) {
+        const row = issueRow(it, "Просроченная задолженность",
+          "Дата старше " + overdueDays + " дн. (факт: " + age + " дн.).",
+          "Запросить акт сверки / оплату / уточнить срок договора.",
+          { "Дней": age, severity: "warning" });
+        overdue.push(row);
+        issues.push(row);
+      }
+    }
+    if (sfPartners && !vatIndex) {
+      const adv = mainIs62 ? c : d;
+      if (adv > 0.009) {
+        const keyName = normalizePartnerKey(it.name);
+        const hasSf = (it.inn && sfPartners.inns.has(it.inn)) || (keyName && sfPartners.names.has(keyName));
+        if (!hasSf) {
+          const row = issueRow(it,
+            mainIs62
+              ? "Аванс получен, контрагента нет в реестре выданных СФ"
+              : "Аванс выдан, контрагента нет в реестре полученных СФ (книге покупок)",
+            mainIs62
+              ? "По ОСВ виден аванс от покупателя, в загруженном реестре/книге продаж контрагент не найден."
+              : "По ОСВ виден аванс поставщику, в загруженном реестре полученных СФ / книге покупок контрагент не найден.",
+            mainIs62
+              ? "Проверить выставление СФ на аванс и начисление НДС (76.АВ)."
+              : "Точнее проверить можно, загрузив ОСВ по счёту 76.ВА — тогда сверка идёт 60 Дт ↔ 76.ВА.",
+            { severity: mainIs62 ? "error" : "info" });
+          advanceNoSf.push(row);
+          if (mainIs62) issues.push(row);
+        }
+      }
+    }
+  }
+
+  let vatAdvance = null;
+  if (vatIndex) {
+    vatAdvance = checkAdvanceVat(data, vatIndex, { minAdvance: opts && opts.minAdvance });
+    for (const row of vatAdvance.missing) {
+      advanceNoSf.push(row);
+      if (vatAdvance.isReceived) issues.push(row);
+    }
+    for (const row of vatAdvance.notRestored) {
+      vatNotRestored.push(row);
+      issues.push(row);
+    }
+  }
+
+  // дубли контрагентов
+  const byKey = new Map();
+  const byInn = new Map();
+  for (const it of data.items) {
+    const k = normalizePartnerKey(it.name);
+    if (k) {
+      if (!byKey.has(k)) byKey.set(k, []);
+      byKey.get(k).push(it);
+    }
+    if (it.inn) {
+      if (!byInn.has(it.inn)) byInn.set(it.inn, []);
+      byInn.get(it.inn).push(it);
+    }
+  }
+  const duplicates = [];
+  const seenDup = new Set();
+  for (const [, list] of byKey) {
+    const uniqNames = [...new Set(list.map(x => normalizeText(x.name)))];
+    if (list.length < 2) continue;
+    // несколько строк с одним ключом — не обязательно дубль карточки; смотрим разные написания / разные ИНН
+    const inns = [...new Set(list.map(x => x.inn).filter(Boolean))];
+    if (uniqNames.length > 1 || inns.length > 1) {
+      for (const it of list) {
+        const id = it.sourceRow + ":" + it.name;
+        if (seenDup.has(id)) continue;
+        seenDup.add(id);
+        const row = issueRow(it, "Возможный дубль контрагента",
+          uniqNames.length > 1
+            ? "Похожие наименования: " + uniqNames.slice(0, 4).join(" | ")
+            : "Один ключ имени, разные ИНН: " + inns.join(", "),
+          "Объединить карточки контрагентов в справочнике 1С.",
+          { severity: "warning" });
+        duplicates.push(row);
+        issues.push(row);
+      }
+    }
+  }
+  for (const [inn, list] of byInn) {
+    const uniqNames = [...new Set(list.map(x => normalizePartnerKey(x.name)).filter(Boolean))];
+    if (uniqNames.length < 2) continue;
+    for (const it of list) {
+      const id = "inn:" + inn + ":" + it.sourceRow;
+      if (seenDup.has(id) || seenDup.has(it.sourceRow + ":" + it.name)) continue;
+      seenDup.add(id);
+      const row = issueRow(it, "Дубль по ИНН (разные имена)",
+        "ИНН " + inn + " встречается под разными наименованиями.",
+        "Оставить одну карточку контрагента с корректным наименованием.",
+        { severity: "warning" });
+      duplicates.push(row);
+      issues.push(row);
+    }
+  }
+
+  return {
+    issues,
+    av76,
+    overdue,
+    analytics,
+    advanceNoSf,
+    duplicates,
+    corrections,
+    vatNotRestored,
+    vatAdvance,
+    mainAccount: data.mainAccount || "",
+    overdueSkipped: !data.hasDates,
+    sfChecked: !!(sfPartners || vatIndex),
+    vatChecked: !!vatIndex
+  };
+}
+
+function buildSfPartnerIndex(sfData) {
+  const names = new Set();
+  const inns = new Set();
+  for (const r of sfData.rows || []) {
+    const k = normalizePartnerKey(r.partner);
+    if (k) names.add(k);
+    if (r.inn) inns.add(r.inn);
+  }
+  return { names, inns };
+}
+
+let LAST_OSV = null;
+document.getElementById("btnOsvRun").addEventListener("click", async () => {
+  if (!hasModuleAccess("r6062") && window.__DEMO_MODE !== "r6062") {
+    showMsgIn("msgOsv", isTrialExpiredLocked()
+      ? "Тестовый период закончился. Все PRO-модули закрыты. Активируйте платный ключ."
+      : "Модуль PRO. Откройте «Демо» с главного экрана или активируйте ключ.", "err");
+    return;
+  }
+  const f = document.getElementById("osvFile").files[0];
+  if (!f) { showMsgIn("msgOsv", "Загрузите файл ОСВ.", "err"); return; }
+  showMsgIn("msgOsv", "Анализирую ОСВ…", "info");
+  try {
+    const raw = await readFileToMatrix(f);
+    const data = parseOsv6062(raw.matrix, raw.fileName);
+    let sfPartners = null;
+    let vatIndex = null;
+    let advSource = "";
+    const sfFile = document.getElementById("osvSfFile").files[0];
+    if (sfFile) {
+      const sfRaw = await readFileToMatrix(sfFile);
+      const guessKind = detectAccount76Kind(detectOsvMainAccount(sfRaw.matrix));
+      if (guessKind) {
+        const vatData = parseOsv6062(sfRaw.matrix, sfRaw.fileName);
+        vatIndex = buildVatAdvanceIndex(vatData);
+        advSource = "ОСВ " + vatIndex.kind + ", контрагентов: " + vatIndex.count;
+      } else {
+        const sfData = parseSfRegistry(sfRaw.matrix, sfRaw.fileName);
+        sfPartners = buildSfPartnerIndex(sfData);
+        advSource = "реестр полученных СФ / книга покупок, строк: " + ((sfData.rows || []).length);
+      }
+    }
+    const overdueDays = Number(document.getElementById("osvOverdueDays").value) || 30;
+    const minAdvEl = document.getElementById("osvMinAdvance");
+    const minAdvance = minAdvEl ? (Number(minAdvEl.value) || 0) : 0;
+    const diag = diagnose6062(data, { overdueDays, sfPartners, vatIndex, minAdvance });
+    LAST_OSV = { data, diag };
+    document.getElementById("reportOsv").classList.remove("hidden");
+    const kpiOsv = renderKpi([
+      [data.items.length, "Строк аналитики"],
+      [diag.issues.length, "Замечаний"],
+      [diag.corrections.length, "К зачёту"],
+      [diag.av76.length, "76.АВ/ВА"],
+      [diag.overdue.length, "Просрочка"],
+      [diag.duplicates.length, "Дубли"],
+      [diag.advanceNoSf.length, "Аванс без СФ"]
+    ]);
+    const advKind = diag.vatAdvance ? diag.vatAdvance.kind : "76.ВА";
+    const advTitle = diag.vatChecked
+      ? (diag.vatAdvance && diag.vatAdvance.isReceived
+        ? "Аванс получен, СФ на аванс не выставлена (62 Кт ↔ 76.АВ)"
+        : "Аванс выдан, авансовая СФ не получена (60 Дт ↔ 76.ВА)")
+      : "Аванс без счёта-фактуры (по реестру полученных СФ)";
+    const sevLegend = '<div class="legend" style="margin:0 0 12px">'
+      + '<span><i class="sev sev-error" style="margin-right:4px">ошибка</i>обязательно исправить</span>'
+      + '<span><i class="sev sev-warning" style="margin-right:4px">внимание</i>проверить</span>'
+      + '<span><i class="sev sev-info" style="margin-right:4px">справочно</i>право / не блокер</span>'
+      + '</div>';
+    let notes = sevLegend + '<div class="reason-box">Счёт по ОСВ: <b>' + (diag.mainAccount || "не определён")
+      + '</b>. Проверки: развёрнутое/незачтённый аванс, красное сальдо, 76.АВ/76.ВА, аналитика, дубли, просрочка'
+      + (diag.sfChecked ? ", авансы без СФ" : "") + ".</div>";
+    if (advSource) {
+      notes += '<div class="reason-box">Второй файл распознан как: ' + advSource + ".</div>";
+    }
+    if (diag.vatAdvance) {
+      const va = diag.vatAdvance;
+      notes += '<div class="reason-box">Сверка авансов: '
+        + (va.isReceived ? "Кт 62 (аванс полученный) ↔ 76.АВ" : "Дт 60 (аванс выданный) ↔ 76.ВА")
+        + ". Без авансовой СФ: <b>" + va.missing.length + "</b> контрагентов на <b>"
+        + fmtMoney(va.advTotal) + "</b> ₽, НДС 20/120 расчётно ≈ <b>" + fmtMoney(va.vatTotal) + "</b> ₽."
+        + (va.smallSkipped ? " Мелких авансов ниже порога " + fmtMoney(va.minAdvance) + " ₽ пропущено: " + va.smallSkipped + " на " + fmtMoney(va.smallSkippedSum) + " ₽." : "")
+        + (va.isReceived
+          ? " По полученным авансам СФ обязательна — это ошибка."
+          : " Вычет НДС с выданного аванса — право, а не обязанность: список справочный.")
+        + "</div>";
+    }
+    if (diag.overdueSkipped) {
+      notes += '<div class="reason-box">Дата в ОСВ не найдена — проверка просрочки пропущена. Добавьте колонку даты или выгрузите ОСВ с датами.</div>';
+    }
+    if (!diag.sfChecked) {
+      notes += '<div class="reason-box">Второй файл не загружен — сверка авансов с НДС по авансам не выполнялась. Для счёта 60 загрузите ОСВ по 76.ВА (или книгу покупок / реестр полученных СФ), для счёта 62 — ОСВ по 76.АВ.</div>';
+    }
+    const fullOsv = kpiOsv + notes +
+      '<h3 class="section">Все замечания</h3>' + renderTable(diag.issues, [], "Критических замечаний не найдено") +
+      '<h3 class="section">76.АВ / 76.ВА</h3>' + renderTable(diag.av76, [], "Нет") +
+      '<h3 class="section">Просрочка</h3>' + renderTable(diag.overdue, [], "Нет") +
+      '<h3 class="section">Аналитика</h3>' + renderTable(diag.analytics, [], "Нет") +
+      '<h3 class="section">Дубли контрагентов</h3>' + renderTable(diag.duplicates, [], "Нет") +
+      (diag.sfChecked ? '<h3 class="section">' + advTitle + '</h3>' + renderTable(diag.advanceNoSf, [], "Нет") : "") +
+      (diag.vatChecked ? '<h3 class="section">' + advKind + ' без аванса (НДС с аванса не закрыт)</h3>' + renderTable(diag.vatNotRestored, [], "Нет") : "") +
+      '<h3 class="section">Шаблон корректировки долга (для 1С)</h3>' + renderTable(diag.corrections, [], "Нет строк с развёрнутым сальдо") +
+      '<div class="hint">Лист «Корректировка» в Excel — шаблон для ручного создания непроведённой корректировки долга в 1С (программа документ в базу не пишет).</div>';
+    const demoOsv = gateAfterProRun("r6062", "panelsOsv", () => fullOsv, kpiOsv + '<div class="reason-box">Найдено проблем: <b>' + diag.issues.length + '</b></div>');
+    document.getElementById("btnOsvReset").classList.remove("hidden");
+    if (!demoOsv) document.getElementById("btnOsvXlsx").classList.remove("hidden");
+    showMsgIn("msgOsv", demoOsv ? "Демо: итоги посчитаны. Строки скрыты." : "Проверка 60/62 выполнена.", "ok");
+  } catch (e) {
+    console.error(e);
+    showMsgIn("msgOsv", e.message || String(e), "err");
+  }
+});
+document.getElementById("btnOsvXlsx").addEventListener("click", () => {
+  if (!LAST_OSV) return;
+  const d = LAST_OSV.diag;
+  const wb = XLSX.utils.book_new();
+  const add = (name, title, rows) => {
+    XLSX.utils.book_append_sheet(wb, buildMultiSectionSheet([
+      { title, rows, emptyText: "Нет" }
+    ]), name.slice(0, 31));
+  };
+  add("Проблемы", "Все замечания 60/62", d.issues);
+  add("76АВ_ВА", "76.АВ / 76.ВА", d.av76);
+  add("Просрочка", "Просроченная задолженность", d.overdue);
+  add("Дубли", "Дубли контрагентов", d.duplicates);
+  add("Аналитика", "Обязательная аналитика", d.analytics);
+  if (d.sfChecked) {
+    const t = d.vatChecked
+      ? (d.vatAdvance && d.vatAdvance.isReceived
+        ? "Аванс получен, СФ на аванс не выставлена (62 Кт ↔ 76.АВ)"
+        : "Аванс выдан, авансовая СФ не получена (60 Дт ↔ 76.ВА)")
+      : "Аванс без счёта-фактуры (по реестру полученных СФ)";
+    add("Аванс без СФ", t, d.advanceNoSf);
+  }
+  if (d.vatChecked) {
+    const k = d.vatAdvance ? d.vatAdvance.kind : "76.ВА";
+    add(k.replace(".", ""), k + " без аванса (НДС с аванса не закрыт)", d.vatNotRestored);
+  }
+  add("Корректировка", "Шаблон корректировки долга", d.corrections);
+  XLSX.writeFile(wb, "SverkaFact_60_62.xlsx");
+});
+
+function parseVatRate(v) {
+  if (v == null || v === "") return null;
+  if (typeof v === "number" && Number.isFinite(v)) {
+    const n = v > 1 ? v : v * 100;
+    return Math.round(n * 100) / 100;
+  }
+  const s = normalizeText(v).replace("%", "").replace(",", ".");
+  const n = Number(s.replace(/[^0-9.\-]/g, ""));
+  if (!Number.isFinite(n)) return null;
+  const r = n > 1 ? n : n * 100;
+  return Math.round(r * 100) / 100;
+}
+
+function parseSfRegistry(matrix, fileName) {
+  const headerRow = findHeaderRow(matrix) ?? 0;
+  const width = matrixWidth(matrix);
+  const dateCol = findColSmart(matrix, headerRow, ["дата", "дата сф", "дата счета", "дата счёт"]);
+  const numCol = findColSmart(matrix, headerRow, ["номер", "№", "номер сф", "счет-фактура", "счёт-фактура"]);
+  const sumCol = findColSmart(matrix, headerRow, ["стоимость", "сумма", "всего", "сумма с ндс", "продажи", "покупки"]);
+  const ndsCol = findColSmart(matrix, headerRow, ["ндс", "сумма ндс", "ндс всего"]);
+  const partnerCol = findColSmart(matrix, headerRow, ["контрагент", "продавец", "покупатель", "наименование"]);
+  const innCol = findColSmart(matrix, headerRow, ["инн", "инн контрагента", "инн продавца", "инн покупателя"]);
+  const kppCol = findColSmart(matrix, headerRow, ["кпп", "кпп контрагента", "кпп продавца"]);
+  const rateCol = findColSmart(matrix, headerRow, ["ставка", "ставка ндс", "% ндс", "ндс %"]);
+  const corrNumCol = findColSmart(matrix, headerRow, ["номер исправления", "№ исправления", "исправление номер"]);
+  const corrDateCol = findColSmart(matrix, headerRow, ["дата исправления", "исправление дата"]);
+  const typeCol = findColSmart(matrix, headerRow, ["вид", "тип", "вид сф", "тип сф", "корректировоч"]);
+  // несколько ставок: колонки НДС 0/10/20
+  const rateCols = [];
+  for (let c = 0; c < width; c++) {
+    const t = headerText(matrix, headerRow, c).toLowerCase().replace(/ё/g, "е");
+    if (/ндс\s*0%|ндс\s*0\b|0%\s*ндс/.test(t)) rateCols.push({ c, rate: 0 });
+    else if (/ндс\s*10|10%\s*ндс/.test(t)) rateCols.push({ c, rate: 10 });
+    else if (/ндс\s*20|20%\s*ндс|ндс\s*18|18%\s*ндс/.test(t)) rateCols.push({ c, rate: /18/.test(t) ? 18 : 20 });
+  }
+  if (numCol < 0 && dateCol < 0) throw new Error("Не найдены колонки номера/даты СФ в «" + fileName + "».");
+  const rows = [];
+  for (let r = headerRow + 1; r < matrix.length; r++) {
+    const row = matrix[r] || [];
+    const numRaw = numCol >= 0 ? normalizeText(row[numCol]) : "";
+    const d = dateCol >= 0 ? parseDate(row[dateCol]) : null;
+    let amount = sumCol >= 0 ? parseAmount(row[sumCol]) : null;
+    let nds = ndsCol >= 0 ? parseAmount(row[ndsCol]) : null;
+    if (!numRaw && d == null) continue;
+    if (amount == null && nds == null && !rateCols.length) continue;
+    if (amount == null) amount = nds;
+    const typeRaw = typeCol >= 0 ? normalizeText(row[typeCol]) : "";
+    const isCorr = /корр|ксф|корректир/i.test(typeRaw + " " + numRaw) || /корр|ксф/i.test(numRaw);
+    let rate = rateCol >= 0 ? parseVatRate(row[rateCol]) : null;
+    const multiRates = [];
+    for (const rc of rateCols) {
+      const v = parseAmount(row[rc.c]);
+      if (v != null && Math.abs(v) > 0.009) multiRates.push({ rate: rc.rate, nds: v });
+    }
+    if (rate == null && multiRates.length === 1) rate = multiRates[0].rate;
+    if (nds == null && multiRates.length) nds = multiRates.reduce((s, x) => s + x.nds, 0);
+    const number = normDocNum(numRaw || extractDocInfo(numRaw, true).number);
+    rows.push({
+      sourceRow: r + 1,
+      date: d,
+      number,
+      amount: amount || 0,
+      nds: nds,
+      rate,
+      multiRates,
+      partner: partnerCol >= 0 ? normalizeText(row[partnerCol]) : "",
+      inn: innCol >= 0 ? normalizeInn(row[innCol]) : "",
+      kpp: kppCol >= 0 ? String(row[kppCol] == null ? "" : row[kppCol]).replace(/\D/g, "") : "",
+      corrNumber: corrNumCol >= 0 ? normalizeText(row[corrNumCol]) : "",
+      corrDate: corrDateCol >= 0 ? parseDate(row[corrDateCol]) : null,
+      isCorr,
+      matched: false
+    });
+  }
+  return { name: fileName, rows, hasMultiRateCols: rateCols.length > 0 };
+}
+
+function ndsDupKey(r) {
+  return [r.number || "", dateKey(r.date), amtKey(r.amount), r.inn || ""].join("|");
+}
+
+function findNdsDuplicates(rows, side) {
+  const map = new Map();
+  rows.forEach((r, i) => {
+    const k = ndsDupKey(r);
+    if (!map.has(k)) map.set(k, []);
+    map.get(k).push(i);
+  });
+  const out = [];
+  for (const [, idxs] of map) {
+    if (idxs.length < 2) continue;
+    for (const i of idxs) {
+      const r = rows[i];
+      out.push({
+        "Сторона": side,
+        "№": r.number,
+        "Дата": fmtDate(r.date),
+        "Сумма": r.amount,
+        "НДС": r.nds,
+        "ИНН": r.inn || "—",
+        "Контрагент": r.partner || "—",
+        "Причина": "дубль",
+        "Строка": r.sourceRow
+      });
+    }
+  }
+  return out;
+}
+
+function compareNds(a, b) {
+  const used = new Set();
+  const ok = [], sumDiff = [], ndsDiff = [], rateDiff = [], innDiff = [], kppDiff = [], corrDiff = [], typeDiff = [];
+  const missB = [], missA = [];
+  const byNum = new Map();
+  b.rows.forEach((row, i) => {
+    const k = row.number || ("d:" + dateKey(row.date) + ":" + amtKey(row.amount));
+    if (!byNum.has(k)) byNum.set(k, []);
+    byNum.get(k).push(i);
+  });
+
+  function pickBest(ra, candidates) {
+    let best = null, bestScore = -1;
+    for (const i of candidates) {
+      if (used.has(i)) continue;
+      const rb = b.rows[i];
+      let score = 0;
+      if (ra.number && rb.number && ra.number === rb.number) score += 4;
+      if (dateKey(ra.date) && dateKey(ra.date) === dateKey(rb.date)) score += 2;
+      if (ra.inn && rb.inn && ra.inn === rb.inn) score += 2;
+      if (amtKey(ra.amount) === amtKey(rb.amount)) score += 1;
+      if (score > bestScore) { bestScore = score; best = i; }
+    }
+    return best;
+  }
+
+  for (const ra of a.rows) {
+    const k = ra.number || ("d:" + dateKey(ra.date) + ":" + amtKey(ra.amount));
+    let idx = pickBest(ra, byNum.get(k) || []);
+    if (idx == null && ra.number) {
+      // fallback: same number already exhausted — try scan by inn+date
+      for (let i = 0; i < b.rows.length; i++) {
+        if (used.has(i)) continue;
+        const rb = b.rows[i];
+        if (ra.inn && rb.inn && ra.inn === rb.inn && dateKey(ra.date) === dateKey(rb.date)) { idx = i; break; }
+      }
+    }
+    if (idx == null) {
+      missB.push(Object.assign({}, ra, { reason: "нет в B" }));
+      continue;
+    }
+    used.add(idx);
+    const rb = b.rows[idx];
+    const reasons = [];
+    if (amtKey(ra.amount) !== amtKey(rb.amount)) reasons.push("сумма ≠");
+    if (ra.nds != null && rb.nds != null && amtKey(ra.nds) !== amtKey(rb.nds)) reasons.push("НДС ≠");
+    if (ra.rate != null && rb.rate != null && Math.abs(ra.rate - rb.rate) > 0.01) reasons.push("ставка ≠");
+    if (ra.inn && rb.inn && ra.inn !== rb.inn) reasons.push("ИНН ≠");
+    if (ra.kpp && rb.kpp && ra.kpp !== rb.kpp) reasons.push("КПП ≠");
+    if ((ra.corrNumber || rb.corrNumber) && normalizeText(ra.corrNumber) !== normalizeText(rb.corrNumber)) reasons.push("исправление ≠");
+    if ((ra.corrDate || rb.corrDate) && dateKey(ra.corrDate) !== dateKey(rb.corrDate)) reasons.push("дата исправления ≠");
+    if (!!ra.isCorr !== !!rb.isCorr) reasons.push("тип СФ ≠");
+    const row = {
+      "№ норм.": ra.number || rb.number,
+      "Дата A": fmtDate(ra.date), "Дата B": fmtDate(rb.date),
+      "Сумма A": ra.amount, "Сумма B": rb.amount,
+      "НДС A": ra.nds, "НДС B": rb.nds,
+      "Ставка A": ra.rate, "Ставка B": rb.rate,
+      "ИНН A": ra.inn || "—", "ИНН B": rb.inn || "—",
+      "КПП A": ra.kpp || "—", "КПП B": rb.kpp || "—",
+      "Исп. № A": ra.corrNumber || "—", "Исп. № B": rb.corrNumber || "—",
+      "Исп. дата A": fmtDate(ra.corrDate), "Исп. дата B": fmtDate(rb.corrDate),
+      "Корр. A": ra.isCorr ? "да" : "нет", "Корр. B": rb.isCorr ? "да" : "нет",
+      "Контрагент A": ra.partner, "Контрагент B": rb.partner,
+      "Причина": reasons.join("; ") || "OK"
+    };
+    if (!reasons.length) ok.push(row);
+    else {
+      if (reasons.includes("сумма ≠")) sumDiff.push(row);
+      if (reasons.includes("НДС ≠")) ndsDiff.push(row);
+      if (reasons.includes("ставка ≠")) rateDiff.push(row);
+      if (reasons.includes("ИНН ≠")) innDiff.push(row);
+      if (reasons.includes("КПП ≠")) kppDiff.push(row);
+      if (reasons.includes("исправление ≠") || reasons.includes("дата исправления ≠")) corrDiff.push(row);
+      if (reasons.includes("тип СФ ≠")) typeDiff.push(row);
+    }
+  }
+  b.rows.forEach((rb, i) => {
+    if (!used.has(i)) missA.push(Object.assign({}, rb, { reason: "нет в A" }));
+  });
+  const dupsA = findNdsDuplicates(a.rows, "A");
+  const dupsB = findNdsDuplicates(b.rows, "B");
+  const multiRateWarn = [];
+  for (const side of [{ name: "A", rows: a.rows }, { name: "B", rows: b.rows }]) {
+    for (const r of side.rows) {
+      if (r.multiRates && r.multiRates.length > 1) {
+        multiRateWarn.push({
+          "Сторона": side.name,
+          "№": r.number,
+          "Дата": fmtDate(r.date),
+          "Ставки": r.multiRates.map(x => x.rate + "%=" + x.nds).join("; "),
+          "Причина": "несколько ставок",
+          "Строка": r.sourceRow
+        });
+      }
+    }
+  }
+  const sevW = (arr) => (arr || []).map(r => withSeverity(Object.assign({}, r), "warning"));
+  return {
+    ok,
+    sumDiff: sevW(sumDiff),
+    ndsDiff: sevW(ndsDiff),
+    rateDiff: sevW(rateDiff),
+    innDiff: sevW(innDiff),
+    kppDiff: sevW(kppDiff),
+    corrDiff: sevW(corrDiff),
+    typeDiff: sevW(typeDiff),
+    missB: sevW(missB.map(r => ({
+      "№": r.number, "Дата": fmtDate(r.date), "Сумма": r.amount, "НДС": r.nds,
+      "Ставка": r.rate, "ИНН": r.inn || "—", "КПП": r.kpp || "—",
+      "Корр.": r.isCorr ? "да" : "нет", "Контрагент": r.partner,
+      "Причина": r.reason || "нет в паре"
+    }))),
+    missA: sevW(missA.map(r => ({
+      "№": r.number, "Дата": fmtDate(r.date), "Сумма": r.amount, "НДС": r.nds,
+      "Ставка": r.rate, "ИНН": r.inn || "—", "КПП": r.kpp || "—",
+      "Корр.": r.isCorr ? "да" : "нет", "Контрагент": r.partner,
+      "Причина": r.reason || "нет в паре"
+    }))),
+    dupsA: sevW(dupsA),
+    dupsB: sevW(dupsB),
+    multiRateWarn: sevW(multiRateWarn)
+  };
+}
+
+let LAST_NDS = null;
+document.getElementById("btnNdsRun").addEventListener("click", async () => {
+  if (!hasModuleAccess("nds") && window.__DEMO_MODE !== "nds") {
+    showMsgIn("msgNds", isTrialExpiredLocked()
+      ? "Тестовый период закончился. Все PRO-модули закрыты. Активируйте платный ключ."
+      : "Модуль PRO. Откройте «Демо» с главного экрана или активируйте ключ.", "err");
+    return;
+  }
+  const f1 = document.getElementById("nds1").files[0];
+  const f2 = document.getElementById("nds2").files[0];
+  if (!f1 || !f2) { showMsgIn("msgNds", "Загрузите оба файла.", "err"); return; }
+  showMsgIn("msgNds", "Сверяю НДС…", "info");
+  try {
+    const [raw1, raw2] = await Promise.all([readFileToMatrix(f1), readFileToMatrix(f2)]);
+    const a = parseSfRegistry(raw1.matrix, raw1.fileName);
+    const b = parseSfRegistry(raw2.matrix, raw2.fileName);
+    if (!a.rows.length || !b.rows.length) throw new Error("Не удалось прочитать строки СФ. Проверьте заголовки колонок.");
+    const comp = compareNds(a, b);
+    LAST_NDS = { a, b, comp };
+    const problemCount = comp.missA.length + comp.missB.length + comp.sumDiff.length + comp.ndsDiff.length
+      + comp.rateDiff.length + comp.innDiff.length + comp.kppDiff.length + comp.corrDiff.length + comp.typeDiff.length;
+    const dupCount = comp.dupsA.length + comp.dupsB.length;
+    document.getElementById("reportNds").classList.remove("hidden");
+    const kpiNds = renderKpi([
+      [a.rows.length, "СФ в A"],
+      [b.rows.length, "СФ в B"],
+      [comp.ok.length, "OK"],
+      [problemCount, "Расхождения"],
+      [dupCount, "Дубли"],
+      [comp.multiRateWarn.length, "Неск. ставок"]
+    ]);
+    const ndsLegend = '<div class="legend" style="margin:0 0 12px">'
+      + '<span><i class="sev sev-warning" style="margin-right:4px">внимание</i>расхождения и дубли</span></div>';
+    const fullNds = kpiNds + ndsLegend +
+      '<div class="reason-box">Сопоставление: номер → номер+дата / ИНН. Колонка «Важность» — уровень замечания.</div>' +
+      '<h3 class="section">Нет в B</h3>' + renderTable(comp.missB, [], "Нет") +
+      '<h3 class="section">Нет в A</h3>' + renderTable(comp.missA, [], "Нет") +
+      '<h3 class="section">Отличается стоимость</h3>' + renderTable(comp.sumDiff, [], "Нет") +
+      '<h3 class="section">Отличается НДС</h3>' + renderTable(comp.ndsDiff, [], "Нет") +
+      '<h3 class="section">Отличается ставка</h3>' + renderTable(comp.rateDiff, [], "Нет") +
+      '<h3 class="section">ИНН / КПП</h3>' + renderTable(comp.innDiff.concat(comp.kppDiff), [], "Нет") +
+      '<h3 class="section">Исправления / корр. СФ</h3>' + renderTable(comp.corrDiff.concat(comp.typeDiff), [], "Нет") +
+      '<h3 class="section">Дубли в A</h3>' + renderTable(comp.dupsA, [], "Нет") +
+      '<h3 class="section">Дубли в B</h3>' + renderTable(comp.dupsB, [], "Нет") +
+      '<h3 class="section">Несколько ставок в одной СФ</h3>' + renderTable(comp.multiRateWarn, [], "Нет");
+    const demoNds = gateAfterProRun("nds", "panelsNds", () => fullNds, kpiNds + '<div class="reason-box">Проблемных позиций: <b>' + (problemCount + dupCount) + '</b></div>');
+    document.getElementById("btnNdsReset").classList.remove("hidden");
+    if (!demoNds) document.getElementById("btnNdsXlsx").classList.remove("hidden");
+    showMsgIn("msgNds", demoNds ? "Демо: итоги посчитаны. Строки скрыты." : "Сверка НДС выполнена.", "ok");
+  } catch (e) {
+    console.error(e);
+    showMsgIn("msgNds", e.message || String(e), "err");
+  }
+});
+document.getElementById("btnNdsXlsx").addEventListener("click", () => {
+  if (!LAST_NDS) return;
+  const c = LAST_NDS.comp;
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, buildMultiSectionSheet([
+    { title: "Нет в B", rows: c.missB, emptyText: "Нет" },
+    { title: "Нет в A", rows: c.missA, emptyText: "Нет" },
+    { title: "Сумма", rows: c.sumDiff, emptyText: "Нет" },
+    { title: "НДС", rows: c.ndsDiff, emptyText: "Нет" },
+    { title: "Ставка", rows: c.rateDiff, emptyText: "Нет" },
+    { title: "ИНН", rows: c.innDiff, emptyText: "Нет" },
+    { title: "КПП", rows: c.kppDiff, emptyText: "Нет" },
+    { title: "Исправления", rows: c.corrDiff.concat(c.typeDiff), emptyText: "Нет" },
+    { title: "Дубли A", rows: c.dupsA, emptyText: "Нет" },
+    { title: "Дубли B", rows: c.dupsB, emptyText: "Нет" },
+    { title: "Неск. ставок", rows: c.multiRateWarn, emptyText: "Нет" },
+    { title: "OK", rows: c.ok, emptyText: "Нет" }
+  ]), "НДС");
+  XLSX.writeFile(wb, "SverkaFact_NDS.xlsx");
+});
+
+function isPlausibleMoney(a) {
+  if (a == null || !Number.isFinite(a)) return false;
+  const v = Math.abs(a);
+  return v >= 0.01 && v < 50_000_000;
+}
+
+function pickAcqColumns(matrix, mode) {
+  const headerRow = findHeaderRow(matrix) ?? 0;
+  const width = matrixWidth(matrix);
+  const cols = [];
+  for (let c = 0; c < width; c++) {
+    const t = headerText(matrix, headerRow, c).toLowerCase().replace(/ё/g, "е");
+    cols.push({ c, t });
+  }
+  const score = (pred) => cols.filter(x => pred(x.t));
+
+  if (mode === "terminal") {
+    const fee = score(t => /комисс/.test(t) && !/ндс|ставка|%/.test(t));
+    const sale = score(t =>
+      (/продаж|оборот|оплат|сумма\s*(операц|транзак|покуп)|amount|total/.test(t) ||
+        (/^сумма$|сумма\s*руб|сумма\s*платеж/.test(t))) &&
+      !/комисс|остат|сальдо|баланс|ндс|зачислен|перечисл/.test(t)
+    );
+    const saleFallback = score(t => /сумма/.test(t) && !/комисс|остат|сальдо|ндс|зачислен/.test(t));
+    const date = score(t => /^дата$|дата\s*операц|дата\s*транзак|date/.test(t));
+    const type = score(t => /тип|вид\s*операц|операция|transaction\s*type|возврат|продажа/.test(t) && !/сумма|комисс/.test(t));
+    const op = score(t => /rrn|auth|код\s*авториз|номер\s*операц|id\s*операц|№\s*операц/.test(t));
+    return {
+      headerRow,
+      saleCol: (sale[0] || saleFallback[0] || null)?.c ?? -1,
+      feeCol: fee[0]?.c ?? -1,
+      dateCol: date[0]?.c ?? -1,
+      typeCol: type[0]?.c ?? -1,
+      opCol: op[0]?.c ?? -1,
+      bankCol: -1,
+      descCol: -1
+    };
+  }
+
+  const bank = score(t =>
+    /зачислен|перечисл|поступлен|кредит|приход|зачисл|оплачено\s*банк|сумма\s*зачисл/.test(t) &&
+    !/остат|сальдо|баланс|дебет|комисс|номер|счет|счёт|инн/.test(t)
+  );
+  const credit = score(t => (/^кредит$|\bкт\b|кредит\s*руб/.test(t)) && !/остат|сальдо|началь|конеч/.test(t));
+  const sumOk = score(t =>
+    /сумма/.test(t) && !/остат|сальдо|баланс|дебет|комисс|номер|счет|счёт/.test(t)
+  );
+  const date = score(t => /^дата$|дата\s*операц|дата\s*провод|date/.test(t));
+  const desc = score(t => /назначен|описан|комментар|плател|контрагент|текст/.test(t));
+  return {
+    headerRow,
+    saleCol: -1,
+    feeCol: -1,
+    dateCol: date[0]?.c ?? -1,
+    typeCol: -1,
+    opCol: -1,
+    bankCol: (bank[0] || credit[0] || sumOk[0] || null)?.c ?? -1,
+    descCol: desc[0]?.c ?? -1
+  };
+}
+
+function detectAcqOpType(raw, amount) {
+  const t = normalizeText(raw).toLowerCase().replace(/ё/g, "е");
+  if (/возврат|refund|cancel|отмен|chargeback|чардж/.test(t)) return "возврат";
+  if (/продаж|оплат|purchase|sale|оплата/.test(t)) return "продажа";
+  if (amount != null && amount < 0) return "возврат";
+  return "продажа";
+}
+
+function parseAcqTerminalRows(matrix) {
+  const cols = pickAcqColumns(matrix, "terminal");
+  if (cols.saleCol < 0) throw new Error("В реестре терминала не найдена колонка суммы продаж (Сумма / Продажи / Оборот).");
+  const rows = [];
+  for (let r = cols.headerRow + 1; r < matrix.length; r++) {
+    const row = matrix[r] || [];
+    const s = parseAmount(row[cols.saleCol]);
+    if (s == null || !isPlausibleMoney(s)) continue;
+    const fee = cols.feeCol >= 0 ? (parseAmount(row[cols.feeCol]) || 0) : 0;
+    const typeRaw = cols.typeCol >= 0 ? row[cols.typeCol] : "";
+    const type = detectAcqOpType(typeRaw, s);
+    const amount = Math.abs(s);
+    const feeAbs = Math.abs(fee || 0);
+    const net = type === "возврат"
+      ? Math.round((-amount + feeAbs) * 100) / 100
+      : Math.round((amount - feeAbs) * 100) / 100;
+    rows.push({
+      sourceRow: r + 1,
+      date: cols.dateCol >= 0 ? parseDate(row[cols.dateCol]) : null,
+      amount,
+      fee: feeAbs,
+      net,
+      type,
+      opId: cols.opCol >= 0 ? normalizeText(row[cols.opCol]) : "",
+      matched: false
+    });
+  }
+  return { rows, cols };
+}
+
+function parseAcqBankRows(matrix) {
+  const cols = pickAcqColumns(matrix, "bank");
+  if (cols.bankCol < 0) {
+    throw new Error("В выписке банка не найдена колонка поступления (Кредит / Зачисление / Поступление / Сумма).");
+  }
+  const rows = [];
+  for (let r = cols.headerRow + 1; r < matrix.length; r++) {
+    const row = matrix[r] || [];
+    const b = parseAmount(row[cols.bankCol]);
+    if (b == null || b <= 0 || !isPlausibleMoney(b)) continue;
+    rows.push({
+      sourceRow: r + 1,
+      date: cols.dateCol >= 0 ? parseDate(row[cols.dateCol]) : null,
+      amount: Math.round(b * 100) / 100,
+      desc: cols.descCol >= 0 ? normalizeText(row[cols.descCol]) : "",
+      matched: false
+    });
+  }
+  return { rows, cols };
+}
+
+function findAcqDuplicates(rows, side, amountField) {
+  const map = new Map();
+  rows.forEach((r, i) => {
+    const k = [dateKey(r.date), amtKey(r[amountField]), r.opId || ""].join("|");
+    if (!map.has(k)) map.set(k, []);
+    map.get(k).push(i);
+  });
+  const out = [];
+  for (const [, idxs] of map) {
+    if (idxs.length < 2) continue;
+    for (const i of idxs) {
+      const r = rows[i];
+      out.push({
+        "Сторона": side,
+        "Дата": fmtDate(r.date),
+        "Сумма": r[amountField],
+        "Операция": r.opId || "—",
+        "Тип": r.type || "—",
+        "Причина": "задвоение",
+        "Строка": r.sourceRow
+      });
+      withSeverity(out[out.length - 1], "warning");
+    }
+  }
+  return out;
+}
+
+function matchAcqRows(termRows, bankRows) {
+  const usedBank = new Set();
+  const matched = [];
+  const weak = [];
+  const returns = [];
+  const sales = termRows.filter(r => r.type !== "возврат");
+  const retRows = termRows.filter(r => r.type === "возврат");
+
+  function tryMatch(tr, allowDayShift, requireDate) {
+    let best = null, bestScore = -1;
+    for (let i = 0; i < bankRows.length; i++) {
+      if (usedBank.has(i)) continue;
+      const br = bankRows[i];
+      if (amtKey(Math.abs(tr.net)) !== amtKey(br.amount) && amtKey(tr.amount) !== amtKey(br.amount)) continue;
+      const td = dateKey(tr.date);
+      const bd = dateKey(br.date);
+      let score = 1;
+      let how = "сумма";
+      if (td && bd) {
+        if (td === bd) { score = 3; how = "дата+сумма"; }
+        else if (allowDayShift) {
+          const diff = Math.abs((tr.date - br.date) / 86400000);
+          if (diff <= 1) { score = 2; how = "дата±1+сумма"; }
+          else if (requireDate) continue;
+        } else if (requireDate) continue;
+      } else if (requireDate) continue;
+      if (amtKey(Math.abs(tr.net)) === amtKey(br.amount)) score += 1;
+      if (score > bestScore) { bestScore = score; best = { i, how, score }; }
+    }
+    return best;
+  }
+
+  for (const tr of sales) {
+    let hit = tryMatch(tr, false, true);
+    if (!hit) hit = tryMatch(tr, true, true);
+    if (!hit) hit = tryMatch(tr, true, false);
+    if (!hit) continue;
+    usedBank.add(hit.i);
+    tr.matched = true;
+    bankRows[hit.i].matched = true;
+    const br = bankRows[hit.i];
+    const row = {
+      "Дата терминал": fmtDate(tr.date),
+      "Дата банк": fmtDate(br.date),
+      "Операция": tr.opId || "—",
+      "Сумма": tr.amount,
+      "Комиссия": tr.fee,
+      "Нетто": tr.net,
+      "Банк": br.amount,
+      "Как нашли": hit.how,
+      "Назначение": br.desc || "—"
+    };
+    if (hit.how === "сумма") weak.push(withSeverity(row, "warning"));
+    else matched.push(row);
+  }
+
+  for (const tr of retRows) {
+    returns.push(withSeverity({
+      "Дата": fmtDate(tr.date),
+      "Операция": tr.opId || "—",
+      "Сумма возврата": tr.amount,
+      "Комиссия": tr.fee,
+      "Строка": tr.sourceRow
+    }, "info"));
+  }
+
+  const missBank = sales.filter(r => !r.matched).map(r => withSeverity({
+    "Дата": fmtDate(r.date),
+    "Операция": r.opId || "—",
+    "Сумма": r.amount,
+    "Комиссия": r.fee,
+    "Ожидаемое зачисление": r.net,
+    "Причина": "не найдено зачисление",
+    "Строка": r.sourceRow
+  }, "warning"));
+  const extraBank = bankRows.filter(r => !r.matched).map(r => withSeverity({
+    "Дата": fmtDate(r.date),
+    "Сумма": r.amount,
+    "Назначение": r.desc || "—",
+    "Причина": "лишнее / не сопоставлено",
+    "Строка": r.sourceRow
+  }, "warning"));
+
+  return { matched, weak, returns, missBank, extraBank };
+}
+
+function sumAcqFile(matrix, mode) {
+  if (mode === "terminal") {
+    const parsed = parseAcqTerminalRows(matrix);
+    let sales = 0, fees = 0, n = 0;
+    for (const r of parsed.rows) {
+      if (r.type === "возврат") continue;
+      sales += r.amount;
+      fees += r.fee;
+      n++;
+    }
+    return {
+      sales: Math.round(sales * 100) / 100,
+      fees: Math.round(fees * 100) / 100,
+      bank: 0,
+      n,
+      saleCol: parsed.cols.saleCol,
+      feeCol: parsed.cols.feeCol,
+      bankCol: -1,
+      headerRow: parsed.cols.headerRow,
+      rows: parsed.rows
+    };
+  }
+  const parsed = parseAcqBankRows(matrix);
+  let bank = 0;
+  for (const r of parsed.rows) bank += r.amount;
+  return {
+    sales: 0,
+    fees: 0,
+    bank: Math.round(bank * 100) / 100,
+    n: parsed.rows.length,
+    saleCol: -1,
+    feeCol: -1,
+    bankCol: parsed.cols.bankCol,
+    headerRow: parsed.cols.headerRow,
+    rows: parsed.rows
+  };
+}
+
+let LAST_ACQ = null;
+document.getElementById("btnAcqRun").addEventListener("click", async () => {
+  if (!hasModuleAccess("acq") && window.__DEMO_MODE !== "acq") {
+    showMsgIn("msgAcq", isTrialExpiredLocked()
+      ? "Тестовый период закончился. Все PRO-модули закрыты. Активируйте платный ключ."
+      : "Модуль PRO. Откройте «Демо» с главного экрана или активируйте ключ.", "err");
+    return;
+  }
+  const f1 = document.getElementById("acqTerm").files[0];
+  const f2 = document.getElementById("acqBank").files[0];
+  if (!f1 || !f2) { showMsgIn("msgAcq", "Загрузите оба файла.", "err"); return; }
+  showMsgIn("msgAcq", "Сверяю эквайринг…", "info");
+  try {
+    const [raw1, raw2] = await Promise.all([readFileToMatrix(f1), readFileToMatrix(f2)]);
+    const term = sumAcqFile(raw1.matrix, "terminal");
+    const bank = sumAcqFile(raw2.matrix, "bank");
+    const bankIn = bank.bank;
+    if (!term.n) throw new Error("В реестре терминала нет строк с суммами продаж.");
+    if (!bank.n) throw new Error("В выписке банка нет строк с поступлениями. Нужна колонка «Кредит» / «Поступление» / «Зачисление».");
+
+    const expected = Math.round((term.sales - term.fees) * 100) / 100;
+    const diff = Math.round((expected - bankIn) * 100) / 100;
+    const line = matchAcqRows(term.rows.slice(), bank.rows.slice());
+    const dupsTerm = findAcqDuplicates(term.rows, "Терминал", "amount");
+    const dupsBank = findAcqDuplicates(bank.rows, "Банк", "amount");
+    const summary = [
+      { "Показатель": "Продажи по терминалу", "Сумма": term.sales },
+      { "Показатель": "Комиссия (из файла терминала)", "Сумма": term.fees },
+      { "Показатель": "Ожидаемое перечисление", "Сумма": expected },
+      { "Показатель": "Банк перечислил", "Сумма": bankIn },
+      { "Показатель": "Расхождение", "Сумма": diff }
+    ];
+    LAST_ACQ = { rows: summary, diff, term, bankIn, line, dupsTerm, dupsBank };
+    document.getElementById("reportAcq").classList.remove("hidden");
+    const hintFee = term.fees === 0
+      ? '<div class="reason-box">Комиссия = 0: в файле терминала не найдена колонка «Комиссия» или она пустая. Ожидаемое перечисление = продажи.</div>'
+      : "";
+    const kpiAcq = renderKpi([
+      [fmtMoney(term.sales), "Продажи"],
+      [fmtMoney(term.fees), "Комиссия"],
+      [fmtMoney(bankIn), "Банк"],
+      [fmtMoney(diff), "Δ"],
+      [line.matched.length, "Совпали"],
+      [line.missBank.length, "Нет зачисл."]
+    ]);
+    const acqLegend = '<div class="legend" style="margin:0 0 12px">'
+      + '<span><i class="sev sev-warning" style="margin-right:4px">внимание</i>нет пары / только сумма / дубли</span>'
+      + '<span><i class="sev sev-info" style="margin-right:4px">справочно</i>возвраты</span></div>';
+    const fullAcq = kpiAcq + hintFee + acqLegend +
+      (Math.abs(diff) < 0.02
+        ? '<div class="reason-box">Агрегаты сходятся: продажи − комиссия ≈ перечисление банка.</div>'
+        : '<div class="reason-box">Есть расхождение агрегатов. Ниже — построчное сопоставление: дата+сумма, дата±1, только сумма.</div>') +
+      '<h3 class="section">Итоги (агрегат)</h3>' + renderTable(summary) +
+      '<h3 class="section">Совпали (дата+сумма)</h3>' + renderTable(line.matched, [], "Нет") +
+      '<h3 class="section">Совпали только по сумме (проверить)</h3>' + renderTable(line.weak, [], "Нет") +
+      '<h3 class="section">Нет зачисления</h3>' + renderTable(line.missBank, [], "Нет") +
+      '<h3 class="section">Лишнее в банке</h3>' + renderTable(line.extraBank, [], "Нет") +
+      '<h3 class="section">Возвраты</h3>' + renderTable(line.returns, [], "Нет") +
+      '<h3 class="section">Дубли терминала</h3>' + renderTable(dupsTerm, [], "Нет") +
+      '<h3 class="section">Дубли банка</h3>' + renderTable(dupsBank, [], "Нет");
+    const demoAcq = gateAfterProRun("acq", "panelsAcq", () => fullAcq, kpiAcq + '<div class="reason-box">Расхождение: <b>' + fmtMoney(diff) + '</b>; нет зачислений: <b>' + line.missBank.length + '</b></div>');
+    document.getElementById("btnAcqReset").classList.remove("hidden");
+    if (!demoAcq) document.getElementById("btnAcqXlsx").classList.remove("hidden");
+    showMsgIn("msgAcq", demoAcq ? "Демо: итоги посчитаны. Детали скрыты." : "Сверка эквайринга выполнена.", "ok");
+  } catch (e) {
+    console.error(e);
+    showMsgIn("msgAcq", e.message || String(e), "err");
+  }
+});
+document.getElementById("btnAcqXlsx").addEventListener("click", () => {
+  if (!LAST_ACQ) return;
+  const L = LAST_ACQ;
+  const wb = XLSX.utils.book_new();
+  const add = (name, title, rows) => {
+    XLSX.utils.book_append_sheet(wb, buildMultiSectionSheet([
+      { title, rows, emptyText: "Нет" }
+    ]), name.slice(0, 31));
+  };
+  add("Итоги", "Эквайринг — агрегат", L.rows);
+  add("Совпали", "Совпали дата+сумма", L.line.matched);
+  add("Слабые", "Только сумма", L.line.weak);
+  add("Нет зачисления", "Нет зачисления", L.line.missBank);
+  add("Лишнее в банке", "Лишнее в банке", L.line.extraBank);
+  add("Возвраты", "Возвраты", L.line.returns);
+  add("Дубли", "Дубли", (L.dupsTerm || []).concat(L.dupsBank || []));
+  XLSX.writeFile(wb, "SverkaFact_acquiring.xlsx");
+});
+
+function clearMsg(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = "";
+  el.className = "msg";
+}
+
+function resetRegMode() {
+  LAST_REG = null;
+  document.getElementById("reg1").value = "";
+  document.getElementById("reg2").value = "";
+  document.getElementById("panelsReg").innerHTML = "";
+  document.getElementById("reportReg").classList.add("hidden");
+  document.getElementById("btnRegXlsx").classList.add("hidden");
+  document.getElementById("btnRegReset").classList.add("hidden");
+  clearMsg("msgReg");
+}
+
+function resetOsvMode() {
+  LAST_OSV = null;
+  document.getElementById("osvFile").value = "";
+  const minAdv = document.getElementById("osvMinAdvance");
+  if (minAdv) minAdv.value = "1000";
+  const sf = document.getElementById("osvSfFile");
+  if (sf) sf.value = "";
+  document.getElementById("panelsOsv").innerHTML = "";
+  document.getElementById("reportOsv").classList.add("hidden");
+  document.getElementById("btnOsvXlsx").classList.add("hidden");
+  document.getElementById("btnOsvReset").classList.add("hidden");
+  clearMsg("msgOsv");
+}
+
+function resetNdsMode() {
+  LAST_NDS = null;
+  document.getElementById("nds1").value = "";
+  document.getElementById("nds2").value = "";
+  document.getElementById("panelsNds").innerHTML = "";
+  document.getElementById("reportNds").classList.add("hidden");
+  document.getElementById("btnNdsXlsx").classList.add("hidden");
+  document.getElementById("btnNdsReset").classList.add("hidden");
+  clearMsg("msgNds");
+}
+
+function resetAcqMode() {
+  LAST_ACQ = null;
+  document.getElementById("acqTerm").value = "";
+  document.getElementById("acqBank").value = "";
+  document.getElementById("panelsAcq").innerHTML = "";
+  document.getElementById("reportAcq").classList.add("hidden");
+  document.getElementById("btnAcqXlsx").classList.add("hidden");
+  document.getElementById("btnAcqReset").classList.add("hidden");
+  clearMsg("msgAcq");
+}
+
+document.getElementById("btnRegReset").addEventListener("click", resetRegMode);
+document.getElementById("btnOsvReset").addEventListener("click", resetOsvMode);
+document.getElementById("btnNdsReset").addEventListener("click", resetNdsMode);
+document.getElementById("btnAcqReset").addEventListener("click", resetAcqMode);
+
+document.getElementById("btnRun").addEventListener("click", async () => {
+  if (!hasModuleAccess("acts") && window.__DEMO_MODE !== "acts") {
+    showMsg(isTrialExpiredLocked()
+      ? "Тестовый период закончился. Активируйте платный ключ."
+      : "Модуль платный. Откройте «Демо» с главного экрана или активируйте ключ.", "err");
+    return;
+  }
+  const f1 = document.getElementById("act1").files[0];
+  const f2 = document.getElementById("act2").files[0];
+  const btn = document.getElementById("btnRun");
+  if (!f1 || !f2) { showMsg("Загрузите оба акта.", "err"); return; }
+  btn.disabled = true;
+  showMsg("Читаю файлы и выполняю сверку…", "info");
+  try {
+    const inside1 = document.querySelector('input[name="num1"]:checked').value === "inside";
+    const inside2 = document.querySelector('input[name="num2"]:checked').value === "inside";
+    const flags = {
+      1: document.getElementById("m1").checked,
+      2: document.getElementById("m2").checked,
+      3: document.getElementById("m3").checked,
+      4: document.getElementById("m4").checked
+    };
+    if (!flags[1] && !flags[2] && !flags[3] && !flags[4]) {
+      throw new Error("Включите хотя бы один метод поиска.");
+    }
+
+    const [raw1, raw2] = await Promise.all([readFileToMatrix(f1), readFileToMatrix(f2)]);
+    const act1 = parseAct(raw1.matrix, 1, raw1.fileName, inside1);
+    const act2 = parseAct(raw2.matrix, 2, raw2.fileName, inside2);
+    if (!act1.operations.length) {
+      throw new Error("В Акте 1 не найдено операций с датой и суммой.\n\n" + act1.warnings.join("\n"));
+    }
+    if (!act2.operations.length) {
+      throw new Error("В Акте 2 не найдено операций с датой и суммой.\n\n" + act2.warnings.join("\n"));
+    }
+
+    const comp = compareActs(act1, act2, flags);
+    LAST = { act1, act2, comp };
+
+    document.getElementById("report").classList.remove("hidden");
+    document.getElementById("btnReset").classList.remove("hidden");
+    renderReport(act1, act2, comp);
+    const panelsEl = document.getElementById("panels");
+    const fullActs = panelsEl.innerHTML;
+    const kpiActs = renderKpi([
+      [act1.operations.length, "Операций 1"],
+      [act2.operations.length, "Операций 2"],
+      [(comp.notFound1 || []).length + (comp.notFound2 || []).length, "Без пары"],
+      [(comp.reasons || []).length, "Пояснений"]
+    ]);
+    const demoActs = gateAfterProRun("acts", "panels", () => fullActs, kpiActs);
+    if (!demoActs) document.getElementById("btnXlsx").classList.remove("hidden");
+    else document.getElementById("btnXlsx").classList.add("hidden");
+
+    showMsg(demoActs ? "Демо: итоги посчитаны. Строки скрыты." : "Сверка выполнена.", "ok");
+  } catch (e) {
+    console.error(e);
+    showMsg(e.message || String(e), "err");
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+document.getElementById("btnXlsx").addEventListener("click", () => {
+  if (!LAST) return;
+  const wb = buildWorkbook(LAST.act1, LAST.act2, LAST.comp);
+  const safe = (s) => String(s || "").replace(/[\\/:*?"<>|]/g, "_").slice(0, 60);
+  const fname = `${safe(LAST.act2.name.replace(/\.[^.]+$/, ""))}. ${safe(LAST.act1.name.replace(/\.[^.]+$/, ""))}.xlsx`;
+  XLSX.writeFile(wb, fname);
+});
+
+function resetToInitial() {
+  LAST = null;
+  document.getElementById("act1").value = "";
+  document.getElementById("act2").value = "";
+  ["m1", "m2", "m3", "m4"].forEach(id => { document.getElementById(id).checked = true; });
+  document.querySelector('input[name="num1"][value="inside"]').checked = true;
+  document.querySelector('input[name="num2"][value="inside"]').checked = true;
+  document.getElementById("tabs").innerHTML = "";
+  document.getElementById("panels").innerHTML = "";
+  document.getElementById("report").classList.add("hidden");
+  document.getElementById("btnXlsx").classList.add("hidden");
+  document.getElementById("btnReset").classList.add("hidden");
+  const msg = document.getElementById("msg");
+  msg.textContent = "";
+  msg.className = "msg";
+  document.getElementById("btnRun").disabled = false;
+}
+
+document.getElementById("btnReset").addEventListener("click", resetToInitial);
+
+
+document.getElementById("btnShowLicense").addEventListener("click", () => {
+  document.getElementById("licensePanel").classList.toggle("open");
+});
+function showCopyToast(text) {
+  let toast = document.getElementById("copyToast");
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "copyToast";
+    toast.className = "copy-toast";
+    document.body.appendChild(toast);
+  }
+  toast.textContent = text;
+  toast.classList.remove("show");
+  void toast.offsetWidth;
+  toast.classList.add("show");
+  clearTimeout(showCopyToast._t);
+  showCopyToast._t = setTimeout(() => toast.classList.remove("show"), 2200);
+}
+function flashMachineCode() {
+  const chip = document.getElementById("machineChip");
+  const large = document.getElementById("machineCodeLarge");
+  [chip, large].forEach(el => {
+    if (!el) return;
+    el.classList.remove("flash");
+    void el.offsetWidth;
+    el.classList.add("flash");
+    setTimeout(() => el.classList.remove("flash"), 1200);
+  });
+}
+async function copyMachineCode() {
+  const id = getOrCreateDeviceId();
+  const small = document.getElementById("machineCodeDisplay");
+  const large = document.getElementById("machineCodeLarge");
+  const hint = document.getElementById("licenseHint");
+  if (small) small.textContent = id;
+  if (large) large.textContent = id;
+  flashMachineCode();
+  try {
+    await navigator.clipboard.writeText(id);
+    showCopyToast("Код ПК скопирован");
+    if (hint) hint.textContent = "Код ПК скопирован: " + id + " — отправьте его продавцу.";
+  } catch {
+    showCopyToast("Не удалось скопировать — выделите код вручную");
+    if (hint) hint.textContent = "Ваш код ПК: " + id + " — скопируйте вручную и отправьте продавцу.";
+  }
+  return id;
+}
+document.getElementById("machineChip").addEventListener("click", () => { copyMachineCode(); });
+document.getElementById("machineChip").addEventListener("keydown", (e) => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); copyMachineCode(); }
+});
+document.getElementById("machineCodeLarge").addEventListener("click", () => { copyMachineCode(); });
+document.getElementById("btnActivateKey").addEventListener("click", async () => {
+  const hint = document.getElementById("licenseHint");
+  const device = getOrCreateDeviceId();
+  const check = await validateAndParseKey(document.getElementById("licenseKeyInput").value, device);
+  if (!check.ok) { hint.textContent = check.error; return; }
+  activateEntitlement(check.product, check.expiryYmd);
+  document.getElementById("licenseKeyInput").value = "";
+  hint.textContent = "Активировано: " + check.product + " до " + fmtDateLicense(parseYmd(check.expiryYmd));
+  refreshLicenseUI();
+});
+(function initMachineCode() {
+  const id = getOrCreateDeviceId();
+  const small = document.getElementById("machineCodeDisplay");
+  const large = document.getElementById("machineCodeLarge");
+  if (small) small.textContent = id;
+  if (large) large.textContent = id;
+})();
+refreshLicenseUI();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>СверкаФакт — главный экран</title>
+  <style>
+    :root {
+      --bg: #eef2f6;
+      --card: #ffffff;
+      --text: #1a2332;
+      --muted: #5b6b7c;
+      --line: #d5dde7;
+      --accent: #1f4e79;
+      --accent2: #2563a8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 500px at 10% -10%, #d9e8f7 0%, transparent 55%),
+        radial-gradient(900px 400px at 100% 0%, #e8f0e4 0%, transparent 50%),
+        var(--bg);
+    }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 18px 40px; }
+    .hero {
+      background: linear-gradient(125deg, #163a68 0%, #1f4e79 45%, #2a6aa8 100%);
+      color: #fff;
+      border-radius: 20px;
+      padding: 28px 30px;
+      margin-bottom: 18px;
+      box-shadow: 0 16px 40px rgba(22, 58, 104, .22);
+    }
+    .hero h1 { margin: 0 0 8px; font-size: 30px; letter-spacing: -.02em; }
+    .hero p { margin: 0; max-width: 860px; line-height: 1.5; opacity: .95; font-size: 16px; }
+    .license-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      border: 1px solid #f0c36d;
+      background: #fffaf0;
+      border-radius: 14px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+    }
+    .license-bar .status { font-size: 14px; line-height: 1.4; }
+    .license-bar .status b { color: var(--accent); }
+    .license-actions { display: flex; gap: 8px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(26, 35, 50, .05);
+    }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .file {
+      border: 2px dashed #b8c6d8;
+      border-radius: 14px;
+      padding: 16px;
+      background: #f8fbfe;
+    }
+    label { display: block; font-weight: 700; margin-bottom: 8px; }
+    .picked {
+      border: 1px solid #9ec5e8;
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: #fff;
+      font-size: 14px;
+      color: #1a2332;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .hint { color: var(--muted); font-size: 13px; line-height: 1.45; margin-top: 8px; }
+    .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 14px; }
+    .optbox {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: #fafcfe;
+    }
+    .optbox h3 { margin: 0 0 8px; font-size: 14px; }
+    .checks { display: grid; gap: 6px; font-size: 14px; }
+    .checks label { font-weight: 500; display: flex; gap: 8px; align-items: center; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 14px; }
+    button {
+      border: 0;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 700;
+      font-size: 15px;
+      padding: 12px 18px;
+    }
+    button.secondary, button.reset {
+      background: #e8eef5;
+      color: var(--text);
+      font-size: 13px;
+      padding: 8px 12px;
+    }
+    .badge {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: #e9f8ef;
+      color: #0f766e;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>СверкаФакт</h1>
+      <p>Автоматическая сверка актов взаиморасчётов: 4 метода сопоставления, зеркальные стороны Дт/Кт, цветной отчёт и выгрузка в Excel. Обработка на вашем ПК — файлы никуда не отправляются.</p>
+    </section>
+
+    <section class="license-bar">
+      <div class="status">Пробный период: осталось <b>7 дней</b>. Можно сверять без ограничений.</div>
+      <div class="license-actions">
+        <button type="button" class="secondary">Активировать ключ</button>
+        <button type="button" class="reset">Код ПК</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="grid2">
+        <div class="file">
+          <label>Акт 1</label>
+          <div class="picked">Акт_сверки_взаиморасчетов_№_27_от_22_августа_2026_г.pdf</div>
+          <div class="hint">Файл вашей организации или контрагента. Колонки Дата / Документ / Дебет / Кредит. Поддерживается PDF.</div>
+        </div>
+        <div class="file">
+          <label>Акт 2</label>
+          <div class="picked">Центр СМ. Акт сверки (1).xlsx</div>
+          <div class="hint">Второй акт. Поддерживаются .xlsx, .xls, .csv, .pdf.</div>
+        </div>
+      </div>
+
+      <div class="opts">
+        <div class="optbox">
+          <h3>Методы поиска</h3>
+          <div class="checks">
+            <label><input type="checkbox" checked> 1 — Дата+Номер+Сумма</label>
+            <label><input type="checkbox" checked> 2 — Номер+Сумма</label>
+            <label><input type="checkbox" checked> 3 — Дата+Сумма</label>
+            <label><input type="checkbox" checked> 4 — только Сумма</label>
+          </div>
+        </div>
+        <div class="optbox">
+          <h3>Номер документа</h3>
+          <div class="checks">
+            <label><input type="radio" checked> Акт 1: номер из скобок</label>
+            <label><input type="radio"> Акт 1: номер вне скобок</label>
+            <label><input type="radio" checked> Акт 2: номер из скобок</label>
+            <label><input type="radio"> Акт 2: номер вне скобок</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <button type="button">Сверить акты</button>
+        <span class="hint" style="margin:0">Обработка полностью в браузере, файлы никуда не отправляются.</span>
+      </div>
+      <div class="badge">Готово к сверке: выберите два акта и нажмите «Сверить акты».</div>
+    </section>
+  </div>
+</body>
+</html>

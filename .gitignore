@@ -1,0 +1,38 @@
+# Dependencies
+avito/node_modules/
+node_modules/
+
+# Backups / temp
+*.bak
+*.bak-*
+*.tmp
+.syntax-tmp*/
+avito/.syntax-tmp*/
+avito/*.txt
+avito/test-*-out.txt
+
+# Seller tooling (keep local)
+KeyGen*.html
+
+# VBA dump / Excel source
+_vba_dump/
+*.xlsb
+
+# Real client documents — do not publish
+/*.xlsx
+/*.xls
+/*.pdf
+/*.docx
+
+# OS / editor
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+
+# Vercel
+.vercel
+.env
+.env.*
+!.env.example

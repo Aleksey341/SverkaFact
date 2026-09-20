@@ -1,0 +1,9 @@
+{
+  "name": "sverkafact",
+  "private": true,
+  "version": "2.0.0",
+  "description": "СверкаФакт — сверка актов и модулей учёта 1С в браузере",
+  "scripts": {
+    "sync-index": "node -e \"require('fs').copyFileSync('SverkaFact _v2.html','index.html'); console.log('index.html ← SverkaFact _v2.html')\""
+  }
+}

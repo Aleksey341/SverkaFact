@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>СверкаФакт — отчёт</title>
+  <style>
+    :root {
+      --bg: #eef2f6;
+      --card: #ffffff;
+      --text: #1a2332;
+      --muted: #5b6b7c;
+      --line: #d5dde7;
+      --accent: #1f4e79;
+      --m1: #80FF80;
+      --m2: #FFFF80;
+      --m0: #FF8080;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Tahoma, Arial, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+    }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 18px 32px; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 14px;
+      box-shadow: 0 8px 24px rgba(26, 35, 50, .05);
+    }
+    h2 { margin: 0 0 12px; font-size: 20px; }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 10px;
+    }
+    .kpi {
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fff;
+    }
+    .kpi span { display: block; color: var(--muted); font-size: 12px; }
+    .kpi strong { display: block; margin-top: 4px; font-size: 22px; color: var(--accent); }
+    .kpi.good strong { color: #0f766e; }
+    .kpi.warn strong { color: #b45309; }
+    .tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 0 0 12px; }
+    .tab {
+      background: #eef3f8;
+      color: var(--text);
+      border: 1px solid var(--line);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .table-wrap { overflow: hidden; border: 1px solid var(--line); border-radius: 10px; }
+    table.data {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 13px;
+    }
+    table.data th, table.data td {
+      border-bottom: 1px solid #e6ebf1;
+      padding: 8px 10px;
+      text-align: left;
+    }
+    table.data th {
+      background: #1f4e79;
+      color: #fff;
+    }
+    .num { text-align: right; white-space: nowrap; }
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+    .legend i {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      margin-right: 5px;
+      vertical-align: -2px;
+      border: 1px solid #00000022;
+    }
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .pill {
+      background: #e9f8ef;
+      color: #0f766e;
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    button {
+      border: 0;
+      border-radius: 12px;
+      background: #44566c;
+      color: #fff;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 10px 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="card">
+      <div class="topline">
+        <h2>Результат сверки</h2>
+        <span class="pill">Сопоставлено 12 из 13 операций (92,3%)</span>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><span>Операций Акт 1</span><strong>13</strong></div>
+        <div class="kpi"><span>Операций Акт 2</span><strong>16</strong></div>
+        <div class="kpi good"><span>Сопоставлено 1</span><strong>12</strong></div>
+        <div class="kpi good"><span>Сопоставлено 2</span><strong>12</strong></div>
+        <div class="kpi warn"><span>Не найдено 1</span><strong>1</strong></div>
+        <div class="kpi warn"><span>Не найдено 2</span><strong>4</strong></div>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--m1)"></i>Дата+Номер+Сумма</span>
+        <span><i style="background:var(--m2)"></i>Номер+Сумма</span>
+        <span><i style="background:var(--m0)"></i>Не найдено</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="topline">
+        <div class="tabs">
+          <span class="tab">Сводка</span>
+          <span class="tab active">Акт 1</span>
+          <span class="tab">Акт 2</span>
+          <span class="tab">Расхождения</span>
+          <span class="tab">Разные суммы/даты</span>
+        </div>
+        <button type="button">Скачать Excel-отчёт</button>
+      </div>
+      <div class="table-wrap">
+        <table class="data">
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Документ</th>
+              <th class="num">Дебет</th>
+              <th class="num">Кредит</th>
+              <th>Метод</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background:#80FF80">
+              <td>15.07.2026</td>
+              <td>Платежное поручение № 184 от 15.07.2026</td>
+              <td class="num">125 400,00</td>
+              <td class="num"></td>
+              <td>Дата+Номер+Сумма</td>
+            </tr>
+            <tr style="background:#80FF80">
+              <td>22.07.2026</td>
+              <td>УПД № 512 от 22.07.2026</td>
+              <td class="num">89 150,00</td>
+              <td class="num"></td>
+              <td>Дата+Номер+Сумма</td>
+            </tr>
+            <tr style="background:#FFFF80">
+              <td>05.08.2026</td>
+              <td>Счёт-фактура № 88</td>
+              <td class="num">34 800,00</td>
+              <td class="num"></td>
+              <td>Номер+Сумма</td>
+            </tr>
+            <tr style="background:#80FF80">
+              <td>12.08.2026</td>
+              <td>Акт № 19 от 12.08.2026</td>
+              <td class="num"></td>
+              <td class="num">56 200,00</td>
+              <td>Дата+Номер+Сумма</td>
+            </tr>
+            <tr style="background:#FF8080">
+              <td>18.08.2026</td>
+              <td>Корректировка № 3</td>
+              <td class="num">12 500,00</td>
+              <td class="num"></td>
+              <td>Не найдено</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
