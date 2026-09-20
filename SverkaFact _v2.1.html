@@ -488,14 +488,23 @@
       color: var(--muted);
       align-items: center;
     }
-    .legend i {
+    .legend > span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .legend i:not(.sev) {
       display: inline-block;
       width: 14px;
       height: 14px;
       border-radius: 3px;
-      margin-right: 5px;
-      vertical-align: -2px;
+      flex: 0 0 14px;
       border: 1px solid #00000018;
+    }
+    .legend .sev {
+      margin: 0;
+      flex: 0 0 auto;
     }
     .hidden { display: none !important; }
     h2 { margin: 0 0 12px; font-size: 1.25rem; font-weight: 700; }
