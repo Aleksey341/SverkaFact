@@ -36,3 +36,16 @@ Desktop.ini
 .env
 .env.*
 !.env.example
+
+# Internal development workspace (keep local/private)
+/avito/
+/kb/
+/.cursor/
+/DESIGN.md
+/SverkaFact*.html
+
+# License signing material (never commit)
+/.license-private/
+/*.pem
+/legacy-license-keys*.txt
+/legacy-license-hashes*.txt
