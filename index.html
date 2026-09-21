@@ -2542,7 +2542,6 @@ function buildWorkbook(act1, act2, comp) {
 /* ========== Лицензия модулей ========== */
 const LICENSE_CFG = {
   PUBLIC_KEY_SPKI_B64: "MCowBQYDK2VwAyEA+uFhqL91VZvEc7jpuswBpfRXK7WC66efDvXWL2DcanQ=",
-  MIGRATION_ENDPOINT: "/api/license/migrate",
   STORE_DEVICE: "sverkafact_device_id",
   STORE_ENTS: "sverkafact_ents_v2",
   STORE_DEMO: "sverkafact_demo_v2",
@@ -2658,30 +2657,6 @@ async function verifySf2License(rawKey, deviceId) {
   }
   return { ok: true, product, expiryYmd: ymd, key: String(rawKey).trim(), v: 2 };
 }
-async function migrateLegacyLicense(rawKey, deviceId) {
-  const endpoint = location.protocol === "file:"
-    ? "https://sverka-fact.vercel.app/api/license/migrate"
-    : LICENSE_CFG.MIGRATION_ENDPOINT;
-  let response, data;
-  try {
-    response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ key: rawKey, deviceId })
-    });
-    data = await response.json().catch(() => ({}));
-  } catch {
-    return { ok: false, error: "Для переноса старого ключа нужен интернет. Повторите активацию при подключении." };
-  }
-  if (!response.ok || !data.license) {
-    return { ok: false, error: data.error || "Старый ключ не удалось перенести. Обратитесь к продавцу." };
-  }
-  const checked = await verifySf2License(data.license, deviceId);
-  if (!checked.ok) return checked;
-  checked.migrated = true;
-  checked.key = data.license;
-  return checked;
-}
 function loadEntitlements() {
   try {
     const raw = JSON.parse(localStorage.getItem(LICENSE_CFG.STORE_ENTS) || "{}");
@@ -2772,14 +2747,10 @@ function consumeDemo(mode) {
 }
 async function validateAndParseKey(key, deviceId) {
   const typed = String(key || "").trim();
-  if (typed.startsWith("SF2.")) return verifySf2License(typed, deviceId);
-
-  const legacy = typed.toUpperCase().replace(/\s+/g, "");
-  if (/^SP-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-\d{8}-[A-Z0-9]{10}$/.test(legacy) ||
-      /^SF-(PRO|ACT|REG|OSV|NDS|ACQ)-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-\d{8}-[A-Z0-9]{10}$/.test(legacy)) {
-    return migrateLegacyLicense(legacy, deviceId);
+  if (!typed.startsWith("SF2.")) {
+    return { ok: false, error: "Используйте лицензионный ключ нового формата SF2." };
   }
-  return { ok: false, error: "Неверный формат ключа." };
+  return verifySf2License(typed, deviceId);
 }
 function activateEntitlement(product, expiryYmd) {
   const ents = loadEntitlements();
