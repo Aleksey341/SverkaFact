@@ -7,9 +7,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:wght@600;700&display=swap" rel="stylesheet">
   <title>СверкаФакт</title>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <script>pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";</script>
+  <script src="vendor/xlsx.bundle.js"></script>
+  <script src="vendor/pdf.min.js"></script>
+  <script>pdfjsLib.GlobalWorkerOptions.workerSrc = "vendor/pdf.worker.min.js";</script>
   <style>
     :root {
       --bg: #e8eef4;
@@ -761,35 +761,6 @@
       </div>
     </div>
 
-    <div id="page-regs" class="page page-mode">
-      <button type="button" class="nav-back" data-back>← К выбору режима</button>
-      <h2 class="mode-title">Две базы / реестры документов</h2>
-      <p class="mode-sub">Выгрузки из УТ и БП (или любых систем): дата, номер/документ, сумма; контрагент желателен.</p>
-      <section class="card">
-        <div class="grid2">
-          <div class="file"><label for="reg1">Реестр A (источник)</label><input id="reg1" type="file" accept=".xlsx,.xls,.csv"></div>
-          <div class="file"><label for="reg2">Реестр B (приёмник)</label><input id="reg2" type="file" accept=".xlsx,.xls,.csv"></div>
-        </div>
-        <div class="row">
-          <button id="btnRegRun" type="button">Сверить реестры</button>
-          <button id="btnRegXlsx" class="secondary hidden" type="button">Скачать Excel</button>
-          <button id="btnRegReset" class="reset hidden" type="button">Новая сверка</button>
-          <span class="hint" style="margin:0">Обработка полностью в браузере.</span>
-        </div>
-
-        <details class="faq-box">
-          <summary>Кратко: реестры УТ ↔ БП</summary>
-          <ul>
-            <li>Нужны колонки: дата, номер/документ, сумма; контрагент желателен.</li>
-            <li>Сопоставление похоже на акты: ищем пары и показываем, чего нет с одной стороны.</li>
-            <li>Выгрузки из любых систем, не только 1С УТ/БП.</li>
-          </ul>
-        </details>
-        <div id="msgReg" class="msg"></div>
-      </section>
-      <section id="reportReg" class="card hidden"><div id="panelsReg"></div></section>
-    </div>
-
     <div id="page-r6062" class="page page-mode">
       <button type="button" class="nav-back" data-back>← К выбору режима</button>
       <h2 class="mode-title">Доктор 60/62</h2>
@@ -823,13 +794,13 @@
         </div>
 
         <details class="faq-box">
-          <summary>Кратко: авансы и 76.ВА / 76.АВ</summary>
+          <summary>Кратко: договор и порог «Аванс от»</summary>
           <ul>
-            <li>К ОСВ <b>60</b> — второй файл ОСВ <b>76.ВА</b> (авансовые СФ полученные / книга покупок).</li>
-            <li>К ОСВ <b>62</b> — ОСВ <b>76.АВ</b> (авансовые СФ выданные / книга продаж).</li>
-            <li>Аванс выданный без 76.ВА — <b>справочно</b>: вычет НДС с аванса — право, не обязанность.</li>
-            <li>Аванс полученный без 76.АВ — <b>ошибка</b>: СФ на аванс обязательна.</li>
-            <li>Порог «Аванс от, ₽» отсекает копеечные переплаты.</li>
+            <li><b>Договор в ОСВ:</b> без субконто «Договор» встречные остатки 01↔02 и развёрнутое сальдо идут как <b>справочно (недостаточно данных)</b>, не в «К зачёту». Перевыгрузите ОСВ с договором.</li>
+            <li><b>Пустые договоры</b> не считаются «одним договором» — зачёт между разными обязательствами не предлагается автоматически.</li>
+            <li><b>Аванс от, ₽:</b> порог отсекает мелкие переплаты из сверки авансов с 76.ВА/76.АВ (по умолчанию 1&nbsp;000 ₽).</li>
+            <li>К ОСВ <b>60</b> — второй файл ОСВ <b>76.ВА</b>; к ОСВ <b>62</b> — ОСВ <b>76.АВ</b> (или книги покупок/продаж).</li>
+            <li>Аванс выданный без 76.ВА — <b>справочно</b>; аванс полученный без 76.АВ — <b>ошибка</b> (СФ на аванс обязательна).</li>
           </ul>
         </details>
         <div id="msgOsv" class="msg"></div>
@@ -866,44 +837,7 @@
       <section id="reportNds" class="card hidden"><div id="panelsNds"></div></section>
     </div>
 
-    <div id="page-acq" class="page page-mode">
-      <button type="button" class="nav-back" data-back>← К выбору режима</button>
-      <h2 class="mode-title">Эквайринг</h2>
-      <p class="mode-sub">Реестр терминала ↔ банк: агрегаты и построчное сопоставление (дата, сумма, комиссия, возвраты, дубли).</p>
-      <section class="card">
-        <div class="grid2">
-          <div class="file">
-            <label for="acqTerm">Реестр эквайринга</label>
-            <input id="acqTerm" type="file" accept=".xlsx,.xls,.csv">
-            <div class="hint">Суммы продаж и желательно колонка комиссии.</div>
-          </div>
-          <div class="file">
-            <label for="acqBank">Банковская выписка</label>
-            <input id="acqBank" type="file" accept=".xlsx,.xls,.csv">
-            <div class="hint">Поступления от банка-эквайера: колонка «Кредит» / «Поступление» / «Зачисление» (не «Остаток»).</div>
-          </div>
-        </div>
-        <div class="row">
-          <button id="btnAcqRun" type="button">Сверить эквайринг</button>
-          <button id="btnAcqXlsx" class="secondary hidden" type="button">Скачать Excel</button>
-          <button id="btnAcqReset" class="reset hidden" type="button">Новая сверка</button>
-          <span class="hint" style="margin:0">Обработка полностью в браузере.</span>
-        </div>
-
-        <details class="faq-box">
-          <summary>Кратко: эквайринг</summary>
-          <ul>
-            <li>Терминал ↔ банк: учтите T+1/T+2 и комиссию в выписке.</li>
-            <li>«Совпали только по сумме» — проверить вручную (часто сдвиг даты).</li>
-            <li>Возвраты и дубли выносятся отдельными блоками.</li>
-          </ul>
-        </details>
-        <div id="msgAcq" class="msg"></div>
-      </section>
-      <section id="reportAcq" class="card hidden"><div id="panelsAcq"></div></section>
-    </div>
-  </div>
-
+    
 <script>
 /* ========== СверкаФакт v2.0 — production ========== */
 
@@ -3072,79 +3006,6 @@ function renderKpi(items) {
   ).join("") + '</div>';
 }
 
-let LAST_REG = null;
-document.getElementById("btnRegRun").addEventListener("click", async () => {
-  if (!hasModuleAccess("regs") && window.__DEMO_MODE !== "regs") {
-    showMsgIn("msgReg", isTrialExpiredLocked()
-      ? "Тестовый период закончился. Все PRO-модули закрыты. Активируйте платный ключ."
-      : "Модуль PRO. Откройте «Демо» с главного экрана или активируйте ключ.", "err");
-    return;
-  }
-  const f1 = document.getElementById("reg1").files[0];
-  const f2 = document.getElementById("reg2").files[0];
-  if (!f1 || !f2) { showMsgIn("msgReg", "Загрузите оба реестра.", "err"); return; }
-  showMsgIn("msgReg", "Сверяю реестры…", "info");
-  try {
-    const [raw1, raw2] = await Promise.all([readFileToMatrix(f1), readFileToMatrix(f2)]);
-    const a = parseGenericRegistry(raw1.matrix, raw1.fileName);
-    const b = parseGenericRegistry(raw2.matrix, raw2.fileName);
-    if (!a.rows.length) throw new Error("В реестре A не найдено строк с суммой.");
-    if (!b.rows.length) throw new Error("В реестре B не найдено строк с суммой.");
-    const comp = compareRegistries(a, b);
-    LAST_REG = { a, b, comp };
-    const missBRows = comp.missB.map(r => withSeverity({ "Дата": fmtDate(r.date), "№": r.number, "Документ": r.doc, "Сумма": r.amount, "Контрагент": r.partner || "—", "Строка": r.sourceRow }, "warning"));
-    const missARows = comp.missA.map(r => withSeverity({ "Дата": fmtDate(r.date), "№": r.number, "Документ": r.doc, "Сумма": r.amount, "Контрагент": r.partner || "—", "Строка": r.sourceRow }, "warning"));
-    document.getElementById("reportReg").classList.remove("hidden");
-    const kpiReg = renderKpi([
-        [a.rows.length, "Строк в A"],
-        [b.rows.length, "Строк в B"],
-        [comp.matched.length, "Совпали"],
-        [(comp.weakNum || []).length, "Только №"],
-        [comp.missB.length, "Нет в B"],
-        [comp.missA.length, "Нет в A"],
-        [comp.sumDiff.length, "Σ отличается"],
-        [comp.dateDiff.length, "Дата отличается"]
-      ]);
-    const regLegend = '<div class="legend" style="margin:0 0 12px">'
-      + '<span><i class="sev sev-warning" style="margin-right:4px">внимание</i>нет пары / сумма / только №</span>'
-      + '<span><i class="sev sev-info" style="margin-right:4px">справочно</i>даты разные</span></div>';
-    const fullReg = kpiReg + regLegend +
-      '<div class="reason-box">Сначала ищем пару по <b>номеру+сумме</b>, затем по номеру+дате. Блок «только по номеру» — на ручную проверку.</div>' +
-      '<h3 class="section">Нет в B (есть в A)</h3>' + renderTable(missBRows, [], "Все документы A найдены в B") +
-      '<h3 class="section">Нет в A (есть в B)</h3>' + renderTable(missARows, [], "Все документы B найдены в A") +
-      '<h3 class="section">Отличается сумма</h3>' + renderTable(comp.sumDiff, [], "Нет") +
-      '<h3 class="section">Отличается дата</h3>' + renderTable(comp.dateDiff, [], "Нет") +
-      '<h3 class="section">Совпали только по номеру (проверить)</h3>' + renderTable(comp.weakNum || [], [], "Нет") +
-      '<h3 class="section">Совпадения</h3>' + renderTable(comp.matched.slice(0, 500), [], "Нет совпадений");
-    const demoReg = gateAfterProRun("regs", "panelsReg", () => fullReg, kpiReg + '<div class="reason-box">Найдено расхождений (нет в A/B + Σ/дата): <b>' + (comp.missA.length + comp.missB.length + comp.sumDiff.length + comp.dateDiff.length) + '</b></div>');
-    document.getElementById("btnRegReset").classList.remove("hidden");
-    if (!demoReg) document.getElementById("btnRegXlsx").classList.remove("hidden");
-    showMsgIn("msgReg", demoReg ? "Демо: итоги посчитаны. Строки скрыты." : "Сверка реестров выполнена.", "ok");
-  } catch (e) {
-    console.error(e);
-    showMsgIn("msgReg", e.message || String(e), "err");
-  }
-});
-document.getElementById("btnRegXlsx").addEventListener("click", () => {
-  if (!LAST_REG) return;
-  const { comp } = LAST_REG;
-  const wb = XLSX.utils.book_new();
-  const missBRows = comp.missB.map(r => ({ "Дата": fmtDate(r.date), "№": r.number, "Документ": r.doc, "Сумма": r.amount, "Контрагент": r.partner || "" }));
-  const missARows = comp.missA.map(r => ({ "Дата": fmtDate(r.date), "№": r.number, "Документ": r.doc, "Сумма": r.amount, "Контрагент": r.partner || "" }));
-  const add = (name, title, rows) => {
-    XLSX.utils.book_append_sheet(wb, buildMultiSectionSheet([
-      { title, rows, emptyText: "Нет" }
-    ]), name.slice(0, 31));
-  };
-  add("Нет в B", "Нет в B (есть в A)", missBRows);
-  add("Нет в A", "Нет в A (есть в B)", missARows);
-  add("Сумма", "Отличается сумма", comp.sumDiff);
-  add("Дата", "Отличается дата", comp.dateDiff);
-  add("Только номер", "Совпали только по номеру", comp.weakNum || []);
-  add("Совпадения", "Совпадения", comp.matched);
-  XLSX.writeFile(wb, "SverkaFact_reestry.xlsx");
-});
-
 function normalizePartnerKey(name) {
   let s = normalizeText(name).toLowerCase().replace(/ё/g, "е");
   s = s.replace(/["«»„“”']/g, "");
@@ -4455,33 +4316,6 @@ function parseAcqBankRows(matrix) {
   return { rows, cols };
 }
 
-function findAcqDuplicates(rows, side, amountField) {
-  const map = new Map();
-  rows.forEach((r, i) => {
-    const k = [dateKey(r.date), amtKey(r[amountField]), r.opId || ""].join("|");
-    if (!map.has(k)) map.set(k, []);
-    map.get(k).push(i);
-  });
-  const out = [];
-  for (const [, idxs] of map) {
-    if (idxs.length < 2) continue;
-    for (const i of idxs) {
-      const r = rows[i];
-      out.push({
-        "Сторона": side,
-        "Дата": fmtDate(r.date),
-        "Сумма": r[amountField],
-        "Операция": r.opId || "—",
-        "Тип": r.type || "—",
-        "Причина": "задвоение",
-        "Строка": r.sourceRow
-      });
-      withSeverity(out[out.length - 1], "warning");
-    }
-  }
-  return out;
-}
-
 function matchAcqRows(termRows, bankRows) {
   const usedBank = new Set();
   const matched = [];
@@ -4606,110 +4440,11 @@ function sumAcqFile(matrix, mode) {
   };
 }
 
-let LAST_ACQ = null;
-document.getElementById("btnAcqRun").addEventListener("click", async () => {
-  if (!hasModuleAccess("acq") && window.__DEMO_MODE !== "acq") {
-    showMsgIn("msgAcq", isTrialExpiredLocked()
-      ? "Тестовый период закончился. Все PRO-модули закрыты. Активируйте платный ключ."
-      : "Модуль PRO. Откройте «Демо» с главного экрана или активируйте ключ.", "err");
-    return;
-  }
-  const f1 = document.getElementById("acqTerm").files[0];
-  const f2 = document.getElementById("acqBank").files[0];
-  if (!f1 || !f2) { showMsgIn("msgAcq", "Загрузите оба файла.", "err"); return; }
-  showMsgIn("msgAcq", "Сверяю эквайринг…", "info");
-  try {
-    const [raw1, raw2] = await Promise.all([readFileToMatrix(f1), readFileToMatrix(f2)]);
-    const term = sumAcqFile(raw1.matrix, "terminal");
-    const bank = sumAcqFile(raw2.matrix, "bank");
-    const bankIn = bank.bank;
-    if (!term.n) throw new Error("В реестре терминала нет строк с суммами продаж.");
-    if (!bank.n) throw new Error("В выписке банка нет строк с поступлениями. Нужна колонка «Кредит» / «Поступление» / «Зачисление».");
-
-    const expected = Math.round((term.sales - term.fees) * 100) / 100;
-    const diff = Math.round((expected - bankIn) * 100) / 100;
-    const line = matchAcqRows(term.rows.slice(), bank.rows.slice());
-    const dupsTerm = findAcqDuplicates(term.rows, "Терминал", "amount");
-    const dupsBank = findAcqDuplicates(bank.rows, "Банк", "amount");
-    const summary = [
-      { "Показатель": "Продажи по терминалу", "Сумма": term.sales },
-      { "Показатель": "Комиссия (из файла терминала)", "Сумма": term.fees },
-      { "Показатель": "Ожидаемое перечисление", "Сумма": expected },
-      { "Показатель": "Банк перечислил", "Сумма": bankIn },
-      { "Показатель": "Расхождение", "Сумма": diff }
-    ];
-    LAST_ACQ = { rows: summary, diff, term, bankIn, line, dupsTerm, dupsBank };
-    document.getElementById("reportAcq").classList.remove("hidden");
-    const hintFee = term.fees === 0
-      ? '<div class="reason-box">Комиссия = 0: в файле терминала не найдена колонка «Комиссия» или она пустая. Ожидаемое перечисление = продажи.</div>'
-      : "";
-    const kpiAcq = renderKpi([
-      [fmtMoney(term.sales), "Продажи"],
-      [fmtMoney(term.fees), "Комиссия"],
-      [fmtMoney(bankIn), "Банк"],
-      [fmtMoney(diff), "Δ"],
-      [line.matched.length, "Совпали"],
-      [line.missBank.length, "Нет зачисл."]
-    ]);
-    const acqLegend = '<div class="legend" style="margin:0 0 12px">'
-      + '<span><i class="sev sev-warning" style="margin-right:4px">внимание</i>нет пары / только сумма / дубли</span>'
-      + '<span><i class="sev sev-info" style="margin-right:4px">справочно</i>возвраты</span></div>';
-    const fullAcq = kpiAcq + hintFee + acqLegend +
-      (Math.abs(diff) < 0.02
-        ? '<div class="reason-box">Агрегаты сходятся: продажи − комиссия ≈ перечисление банка.</div>'
-        : '<div class="reason-box">Есть расхождение агрегатов. Ниже — построчное сопоставление: дата+сумма, дата±1, только сумма.</div>') +
-      '<h3 class="section">Итоги (агрегат)</h3>' + renderTable(summary) +
-      '<h3 class="section">Совпали (дата+сумма)</h3>' + renderTable(line.matched, [], "Нет") +
-      '<h3 class="section">Совпали только по сумме (проверить)</h3>' + renderTable(line.weak, [], "Нет") +
-      '<h3 class="section">Нет зачисления</h3>' + renderTable(line.missBank, [], "Нет") +
-      '<h3 class="section">Лишнее в банке</h3>' + renderTable(line.extraBank, [], "Нет") +
-      '<h3 class="section">Возвраты</h3>' + renderTable(line.returns, [], "Нет") +
-      '<h3 class="section">Дубли терминала</h3>' + renderTable(dupsTerm, [], "Нет") +
-      '<h3 class="section">Дубли банка</h3>' + renderTable(dupsBank, [], "Нет");
-    const demoAcq = gateAfterProRun("acq", "panelsAcq", () => fullAcq, kpiAcq + '<div class="reason-box">Расхождение: <b>' + fmtMoney(diff) + '</b>; нет зачислений: <b>' + line.missBank.length + '</b></div>');
-    document.getElementById("btnAcqReset").classList.remove("hidden");
-    if (!demoAcq) document.getElementById("btnAcqXlsx").classList.remove("hidden");
-    showMsgIn("msgAcq", demoAcq ? "Демо: итоги посчитаны. Детали скрыты." : "Сверка эквайринга выполнена.", "ok");
-  } catch (e) {
-    console.error(e);
-    showMsgIn("msgAcq", e.message || String(e), "err");
-  }
-});
-document.getElementById("btnAcqXlsx").addEventListener("click", () => {
-  if (!LAST_ACQ) return;
-  const L = LAST_ACQ;
-  const wb = XLSX.utils.book_new();
-  const add = (name, title, rows) => {
-    XLSX.utils.book_append_sheet(wb, buildMultiSectionSheet([
-      { title, rows, emptyText: "Нет" }
-    ]), name.slice(0, 31));
-  };
-  add("Итоги", "Эквайринг — агрегат", L.rows);
-  add("Совпали", "Совпали дата+сумма", L.line.matched);
-  add("Слабые", "Только сумма", L.line.weak);
-  add("Нет зачисления", "Нет зачисления", L.line.missBank);
-  add("Лишнее в банке", "Лишнее в банке", L.line.extraBank);
-  add("Возвраты", "Возвраты", L.line.returns);
-  add("Дубли", "Дубли", (L.dupsTerm || []).concat(L.dupsBank || []));
-  XLSX.writeFile(wb, "SverkaFact_acquiring.xlsx");
-});
-
 function clearMsg(id) {
   const el = document.getElementById(id);
   if (!el) return;
   el.textContent = "";
   el.className = "msg";
-}
-
-function resetRegMode() {
-  LAST_REG = null;
-  document.getElementById("reg1").value = "";
-  document.getElementById("reg2").value = "";
-  document.getElementById("panelsReg").innerHTML = "";
-  document.getElementById("reportReg").classList.add("hidden");
-  document.getElementById("btnRegXlsx").classList.add("hidden");
-  document.getElementById("btnRegReset").classList.add("hidden");
-  clearMsg("msgReg");
 }
 
 function resetOsvMode() {
@@ -4735,17 +4470,6 @@ function resetNdsMode() {
   document.getElementById("btnNdsXlsx").classList.add("hidden");
   document.getElementById("btnNdsReset").classList.add("hidden");
   clearMsg("msgNds");
-}
-
-function resetAcqMode() {
-  LAST_ACQ = null;
-  document.getElementById("acqTerm").value = "";
-  document.getElementById("acqBank").value = "";
-  document.getElementById("panelsAcq").innerHTML = "";
-  document.getElementById("reportAcq").classList.add("hidden");
-  document.getElementById("btnAcqXlsx").classList.add("hidden");
-  document.getElementById("btnAcqReset").classList.add("hidden");
-  clearMsg("msgAcq");
 }
 
 document.getElementById("btnRegReset").addEventListener("click", resetRegMode);
