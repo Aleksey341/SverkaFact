@@ -621,10 +621,6 @@
         <section id="licenseBar" class="license-bar free">
       <div class="status" id="licenseStatus">Нет активного ключа — доступен демо-запуск модулей</div>
       <div class="license-actions">
-        <div class="machine-chip" id="machineChip" title="Нажмите, чтобы скопировать код ПК" role="button" tabindex="0">
-          <span class="machine-chip-label">Код ПК</span>
-          <code id="machineCodeDisplay">····-····-····</code>
-        </div>
         <button type="button" class="secondary" id="btnShowLicense" style="padding:8px 12px;font-size:13px">Активировать</button>
       </div>
       <div class="license-panel" id="licensePanel">
@@ -4817,9 +4813,9 @@ function showCopyToast(text) {
   showCopyToast._t = setTimeout(() => toast.classList.remove("show"), 2200);
 }
 function flashMachineCode() {
-  const chip = document.getElementById("machineChip");
   const large = document.getElementById("machineCodeLarge");
-  [chip, large].forEach(el => {
+  const box = document.getElementById("machineBox");
+  [box, large].forEach(el => {
     if (!el) return;
     el.classList.remove("flash");
     void el.offsetWidth;
@@ -4829,10 +4825,8 @@ function flashMachineCode() {
 }
 async function copyMachineCode() {
   const id = getOrCreateDeviceId();
-  const small = document.getElementById("machineCodeDisplay");
   const large = document.getElementById("machineCodeLarge");
   const hint = document.getElementById("licenseHint");
-  if (small) small.textContent = id;
   if (large) large.textContent = id;
   flashMachineCode();
   try {
@@ -4845,10 +4839,6 @@ async function copyMachineCode() {
   }
   return id;
 }
-document.getElementById("machineChip").addEventListener("click", () => { copyMachineCode(); });
-document.getElementById("machineChip").addEventListener("keydown", (e) => {
-  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); copyMachineCode(); }
-});
 document.getElementById("machineCodeLarge").addEventListener("click", () => { copyMachineCode(); });
 document.getElementById("btnActivateKey").addEventListener("click", async () => {
   const hint = document.getElementById("licenseHint");
@@ -4862,9 +4852,7 @@ document.getElementById("btnActivateKey").addEventListener("click", async () => 
 });
 (function initMachineCode() {
   const id = getOrCreateDeviceId();
-  const small = document.getElementById("machineCodeDisplay");
   const large = document.getElementById("machineCodeLarge");
-  if (small) small.textContent = id;
   if (large) large.textContent = id;
 })();
 refreshLicenseUI();
