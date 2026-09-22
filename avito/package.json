@@ -1,9 +1,0 @@
-{
-  "name": "sverkapro-avito-screenshots",
-  "private": true,
-  "type": "module",
-  "dependencies": {
-    "docx": "^9.7.1",
-    "playwright": "^1.62.1"
-  }
-}

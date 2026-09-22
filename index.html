@@ -634,7 +634,7 @@
           <code id="machineCodeLarge" title="Нажмите, чтобы скопировать"></code>
         </div>
         <div class="row" style="margin:8px 0 0">
-          <input id="licenseKeyInput" type="text" placeholder="Вставьте ключ (SF-PRO-… / SF-ACT-…)" autocomplete="off" spellcheck="false">
+          <input id="licenseKeyInput" type="text" placeholder="Вставьте ключ SF2.… (новый формат)" autocomplete="off" spellcheck="false">
           <button type="button" id="btnActivateKey">Активировать</button>
         </div>
         <div class="hint" id="licenseHint" style="margin-top:8px"></div>
@@ -2545,7 +2545,7 @@ function buildWorkbook(act1, act2, comp) {
 
 /* ========== Лицензия модулей ========== */
 const LICENSE_CFG = {
-  SECRET: "SverkaPro-Avito-2026-K7mQ9xWp2nR4",
+  PUBLIC_KEY_SPKI_B64: "MCowBQYDK2VwAyEA+uFhqL91VZvEc7jpuswBpfRXK7WC66efDvXWL2DcanQ=",
   STORE_DEVICE: "sverkafact_device_id",
   STORE_ENTS: "sverkafact_ents_v2",
   STORE_DEMO: "sverkafact_demo_v2",
@@ -2610,13 +2610,56 @@ function getOrCreateDeviceId() {
   localStorage.setItem(LICENSE_CFG.STORE_DEVICE, id);
   return id;
 }
-async function makeSig(deviceId, expiryYmd, product) {
-  const payload = normalizeDeviceId(deviceId) + "|" + expiryYmd + "|" + product + "|" + LICENSE_CFG.SECRET;
-  return (await sha256Hex(payload)).slice(0, 10).toUpperCase();
+function b64UrlToBytes(value) {
+  const s = String(value || "").replace(/-/g, "+").replace(/_/g, "/");
+  const pad = s + "=".repeat((4 - (s.length % 4)) % 4);
+  const bin = atob(pad);
+  return Uint8Array.from(bin, ch => ch.charCodeAt(0));
 }
-async function makeSigLegacy(deviceId, expiryYmd) {
-  const payload = normalizeDeviceId(deviceId) + "|" + expiryYmd + "|" + LICENSE_CFG.SECRET;
-  return (await sha256Hex(payload)).slice(0, 10).toUpperCase();
+function spkiB64ToBytes(value) {
+  return Uint8Array.from(atob(String(value || "")), ch => ch.charCodeAt(0));
+}
+async function importLicensePublicKey() {
+  if (window.__SF2_PUBLIC_KEY) return window.__SF2_PUBLIC_KEY;
+  try {
+    window.__SF2_PUBLIC_KEY = await crypto.subtle.importKey(
+      "spki",
+      spkiB64ToBytes(LICENSE_CFG.PUBLIC_KEY_SPKI_B64),
+      { name: "Ed25519" },
+      false,
+      ["verify"]
+    );
+    return window.__SF2_PUBLIC_KEY;
+  } catch (e) {
+    throw new Error("Браузер не поддерживает проверку лицензии Ed25519. Обновите Chrome или Edge.");
+  }
+}
+async function verifySf2License(rawKey, deviceId) {
+  const parts = String(rawKey || "").trim().split(".");
+  if (parts.length !== 3 || parts[0] !== "SF2") return { ok: false, error: "Неверный формат ключа." };
+  let payloadBytes, sigBytes, payload;
+  try {
+    payloadBytes = b64UrlToBytes(parts[1]);
+    sigBytes = b64UrlToBytes(parts[2]);
+    payload = JSON.parse(new TextDecoder().decode(payloadBytes));
+  } catch {
+    return { ok: false, error: "Повреждённый ключ лицензии." };
+  }
+  const pubKey = await importLicensePublicKey();
+  const valid = await crypto.subtle.verify({ name: "Ed25519" }, pubKey, sigBytes, payloadBytes);
+  if (!valid) return { ok: false, error: "Неверная подпись ключа." };
+  const product = String(payload.p || "").toUpperCase();
+  const ymd = String(payload.e || "");
+  const dev = normalizeDeviceId(payload.d);
+  if (payload.v !== 2 || !["PRO","ACT","REG","OSV","NDS","ACQ"].includes(product)) {
+    return { ok: false, error: "Неверные данные лицензии." };
+  }
+  if (dev !== normalizeDeviceId(deviceId)) return { ok: false, error: "Ключ выдан для другого компьютера." };
+  const exp = parseYmd(ymd);
+  if (!exp || exp < new Date(new Date().toDateString())) {
+    return { ok: false, error: "Срок ключа истёк. Доступ закрыт — активируйте платный ключ." };
+  }
+  return { ok: true, product, expiryYmd: ymd, key: String(rawKey).trim(), v: 2 };
 }
 function loadEntitlements() {
   try {
@@ -2707,24 +2750,11 @@ function consumeDemo(mode) {
   saveDemo(d);
 }
 async function validateAndParseKey(key, deviceId) {
-  const raw = String(key || "").trim().toUpperCase().replace(/\s+/g, "");
-  const legacy = raw.match(/^SP-([A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4})-(\d{8})-([A-Z0-9]{10})$/);
-  if (legacy) {
-    const dev = legacy[1], ymd = legacy[2], sig = legacy[3];
-    if (normalizeDeviceId(dev) !== normalizeDeviceId(deviceId)) return { ok: false, error: "Ключ выдан для другого компьютера." };
-    const exp = parseYmd(ymd);
-    if (!exp || exp < new Date(new Date().toDateString())) return { ok: false, error: "Срок ключа истёк." };
-    if (sig !== await makeSigLegacy(dev, ymd)) return { ok: false, error: "Неверный ключ." };
-    return { ok: true, product: "PRO", expiryYmd: ymd, key: raw, legacy: true };
+  const typed = String(key || "").trim();
+  if (!typed.startsWith("SF2.")) {
+    return { ok: false, error: "Используйте лицензионный ключ нового формата SF2." };
   }
-  const m = raw.match(/^SF-(PRO|ACT|REG|OSV|NDS|ACQ)-([A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4})-(\d{8})-([A-Z0-9]{10})$/);
-  if (!m) return { ok: false, error: "Неверный формат ключа." };
-  const product = m[1], dev = m[2], ymd = m[3], sig = m[4];
-  if (normalizeDeviceId(dev) !== normalizeDeviceId(deviceId)) return { ok: false, error: "Ключ выдан для другого компьютера." };
-  const exp = parseYmd(ymd);
-  if (!exp || exp < new Date(new Date().toDateString())) return { ok: false, error: "Срок ключа истёк. Доступ закрыт — активируйте платный ключ." };
-  if (sig !== await makeSig(dev, ymd, product)) return { ok: false, error: "Неверный ключ." };
-  return { ok: true, product, expiryYmd: ymd, key: raw };
+  return verifySf2License(typed, deviceId);
 }
 function activateEntitlement(product, expiryYmd) {
   const ents = loadEntitlements();
