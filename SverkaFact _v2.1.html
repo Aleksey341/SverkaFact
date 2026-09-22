@@ -1696,8 +1696,8 @@ function buildActReasons(act1, act2, comp) {
   for (const r of (comp.diffDateNumber || [])) {
     rows.push(withSeverity({
       "Тип": "Сумма отличается",
-      "Вероятная причина": "Документ найден по дате и номеру, но суммы разные. Возможны корректировка, частичное отражение, НДС или ошибка ввода.",
-      "Что сделать": "Открыть оба документа в учёте и сверить сумму с первичкой / УПД.",
+      "Вероятная причина": "Документ найден по дате и номеру, но суммы разные. Возможны частичная оплата/отгрузка, корректировка, разный учёт НДС или ошибка ввода. Само по себе расхождение суммы — не доказательство ошибки.",
+      "Что сделать": "Открыть оба документа в учёте и сверить сумму с первичкой / УПД; проверить частичные оплаты и корректировочные СФ.",
       "Дата Акт 1": r["Дата Акт 1"],
       "Документ Акт 1": r["Документ Акт 1"],
       "Дата Акт 2": r["Дата Акт 2"],
@@ -1739,22 +1739,26 @@ function buildActReasons(act1, act2, comp) {
     let pairDoc = "", pairDate = "";
 
     if (op1.number) {
-      const cands = idx2ByNum.get(normDocNum(op1.number)) || [];
-      const free = cands.find(o => !o.matched && !used2.has(o));
-      if (free) {
+      const cands = (idx2ByNum.get(normDocNum(op1.number)) || []).filter(o => !o.matched && !used2.has(o));
+      if (cands.length === 1) {
+        const free = cands[0];
         tip = "Номер есть, не сошлось по сумме/дате/стороне";
         cause = "В акте 2 есть документ с тем же номером, но сверка не связала строки (сумма, дата или сторона Дт/Кт).";
         todo = "Сверить вручную документ " + (free.doc || free.number) + ".";
         pairDoc = free.doc; pairDate = fmtDate(free.date);
         used2.add(free);
+      } else if (cands.length > 1) {
+        tip = "Несколько кандидатов по номеру";
+        cause = "В акте 2 несколько непропарённых строк с тем же номером — автоматический выбор первой недопустим (как DOC-001: без first-match).";
+        todo = "Сопоставить вручную по сумме, дате и стороне Дт/Кт.";
       }
     }
-    if (!pairDoc) {
+    if (!pairDoc && tip !== "Несколько кандидатов по номеру") {
       const cands = (idx2ByAmt.get(amtKey(op1.amount)) || []).filter(o => !o.matched && !used2.has(o));
       if (cands.length === 1) {
         const free = cands[0];
         tip = "Возможная пара только по сумме";
-        cause = "В акте 2 есть единственная операция на ту же сумму без пары. Часто это та же операция с другим номером/датой.";
+        cause = "В акте 2 есть единственная операция на ту же сумму без пары. Часто это та же операция с другим номером/датой. Сумма — лишь подсказка, не ключ сопоставления.";
         todo = "Сверить вручную: " + (free.doc || "");
         pairDoc = free.doc; pairDate = fmtDate(free.date);
         used2.add(free);
@@ -3002,6 +3006,106 @@ function issueRow(it, problem, cause, action, extra) {
   return withSeverity(row, level);
 }
 
+function osvAccountFamily(account) {
+  const a = String(account || "").replace(/\s/g, "");
+  if (/^60\b|^60\.|сч\.?\s*60/i.test(a)) return "60";
+  if (/^62\b|^62\.|сч\.?\s*62/i.test(a)) return "62";
+  return "";
+}
+/** Субсчёт аванса: 60.02 (Дт) / 62.02 (Кт). */
+function osvIsAdvanceSub(account, family) {
+  const a = String(account || "").replace(/\s/g, "").toUpperCase().replace(/Ё/g, "Е");
+  if (family === "60") return /\.0?2\b|\.02|\/02|02$/.test(a) || /60\.02|60\.2\b/.test(a);
+  if (family === "62") return /\.0?2\b|\.02|\/02|02$/.test(a) || /62\.02|62\.2\b/.test(a);
+  return false;
+}
+function osvIsDebtSub(account, family) {
+  const a = String(account || "").replace(/\s/g, "").toUpperCase().replace(/Ё/g, "Е");
+  if (family === "60") return /\.0?1\b|\.01|\/01|01$/.test(a) || /60\.01|60\.1\b/.test(a);
+  if (family === "62") return /\.0?1\b|\.01|\/01|01$/.test(a) || /62\.01|62\.1\b/.test(a);
+  return false;
+}
+function osvPartnerKey(it) {
+  if (it.inn) return "inn:" + it.inn;
+  const k = normalizePartnerKey(it.name);
+  return k ? "name:" + k : "";
+}
+/**
+ * SETTLE-001 (из 1C-AI / check_60_62): встречные остатки на разных строках —
+ * стандартная пара 60.01↔60.02 / 62.01↔62.02 и прочее развёрнутое сальдо по контрагенту.
+ * Не объявляет автоматическую ошибку: severity warning, «требует проверки».
+ */
+function findCrossRowSettlements(data) {
+  const EPS = 0.009;
+  const byPartner = new Map();
+  for (const it of data.items || []) {
+    const key = osvPartnerKey(it);
+    if (!key) continue;
+    const fam = osvAccountFamily(it.account) || osvAccountFamily(data.mainAccount);
+    if (!fam) continue;
+    const gkey = key + "|" + fam;
+    if (!byPartner.has(gkey)) byPartner.set(gkey, { fam, items: [] });
+    byPartner.get(gkey).items.push({
+      it,
+      remD: Math.max(0, Math.round(it.debit * 100) / 100),
+      remC: Math.max(0, Math.round(it.credit * 100) / 100)
+    });
+  }
+  const found = [];
+  for (const [, group] of byPartner) {
+    const fam = group.fam;
+    const rows = group.items.map(x => ({ it: x.it, remD: x.remD, remC: x.remC }));
+
+    const matchBuckets = (debitRows, creditRows, kind) => {
+      // Сначала один договор, затем разные (как в check_60_62).
+      for (const sameContractOnly of [true, false]) {
+        for (const dr of debitRows) {
+          if (dr.remD <= EPS) continue;
+          for (const cr of creditRows) {
+            if (cr.remC <= EPS) continue;
+            if (dr.it === cr.it) continue;
+            const sameC = normalizeText(dr.it.contract || "") === normalizeText(cr.it.contract || "");
+            if (sameContractOnly !== sameC) continue;
+            const amount = Math.round(Math.min(dr.remD, cr.remC) * 100) / 100;
+            if (amount <= EPS) continue;
+            found.push({
+              kind,
+              fam,
+              amount,
+              sameContract: sameC,
+              debitIt: dr.it,
+              creditIt: cr.it,
+              debitAfter: Math.round((dr.remD - amount) * 100) / 100,
+              creditAfter: Math.round((cr.remC - amount) * 100) / 100
+            });
+            dr.remD = Math.round((dr.remD - amount) * 100) / 100;
+            cr.remC = Math.round((cr.remC - amount) * 100) / 100;
+          }
+        }
+      }
+    };
+
+    // Стандартная пара субсчетов
+    const advDebit = rows.filter(r => osvIsAdvanceSub(r.it.account, fam) && r.remD > EPS);
+    const debtCredit = rows.filter(r => osvIsDebtSub(r.it.account, fam) && r.remC > EPS);
+    // Для 62: долг на Дт 62.01, аванс на Кт 62.02
+    const debtDebit = rows.filter(r => osvIsDebtSub(r.it.account, fam) && r.remD > EPS);
+    const advCredit = rows.filter(r => osvIsAdvanceSub(r.it.account, fam) && r.remC > EPS);
+
+    if (fam === "60") {
+      matchBuckets(advDebit, debtCredit, "standard");
+    } else if (fam === "62") {
+      matchBuckets(debtDebit, advCredit, "standard");
+    }
+
+    // Остаточное развёрнутое: любой Дт vs любой Кт по контрагенту (разные строки)
+    const leftD = rows.filter(r => r.remD > EPS);
+    const leftC = rows.filter(r => r.remC > EPS);
+    matchBuckets(leftD, leftC, "residual");
+  }
+  return found;
+}
+
 function diagnose6062(data, opts) {
   const overdueDays = Math.max(1, Number(opts && opts.overdueDays) || 30);
   const sfPartners = opts && opts.sfPartners ? opts.sfPartners : null;
@@ -3117,6 +3221,48 @@ function diagnose6062(data, opts) {
       vatNotRestored.push(row);
       issues.push(row);
     }
+  }
+
+  // SETTLE-001: встречные остатки на разных строках ОСВ (субсчета 01↔02 и прочее)
+  const cross = findCrossRowSettlements(data);
+  for (const c of cross) {
+    const contractNote = c.sameContract
+      ? "в одном договоре"
+      : "по разным договорам одного контрагента (взаимозачёт между договорами требует основания и может не выполняться автоматически)";
+    const accPair = (c.debitIt.account || "?") + " ↔ " + (c.creditIt.account || "?");
+    const problem = c.kind === "standard"
+      ? ("Встречные остатки " + c.fam + ".01/" + c.fam + ".02 (" + accPair + ")")
+      : ("Прочее развёрнутое сальдо по контрагенту (" + accPair + ")");
+    const cause = c.kind === "standard"
+      ? ("Требует проверки: одновременно долг и аванс на субсчетах " + c.fam + " " + contractNote
+        + ". Возможны незачтённый аванс, разные документы расчётов или нормальные отдельные обязательства.")
+      : ("Требует проверки: встречные Дт/Кт на разных строках " + contractNote
+        + ". Не считать автоматической ошибкой до сверки карточки.");
+    const action = "Открыть ОСВ " + c.fam + " с контрагентом и договором; проверить оплату/поставку и оформить зачёт аванса при необходимости. Возможный зачёт ≈ "
+      + (Math.round(c.amount * 100) / 100);
+    const row = issueRow(c.debitIt, problem, cause, action, {
+      severity: "warning",
+      "Контрагент": c.debitIt.name,
+      "Счёт Дт": c.debitIt.account || "",
+      "Сальдо Дт": c.debitIt.debit,
+      "Счёт Кт": c.creditIt.account || "",
+      "Сальдо Кт": c.creditIt.credit,
+      "Сумма зачёта": Math.round(c.amount * 100) / 100,
+      "Договор Дт": c.debitIt.contract || "",
+      "Договор Кт": c.creditIt.contract || ""
+    });
+    issues.push(row);
+    corrections.push({
+      "Контрагент": c.debitIt.name,
+      "Договор": (c.debitIt.contract || c.creditIt.contract || ""),
+      "ИНН": c.debitIt.inn || c.creditIt.inn || "",
+      "Счёт": accPair,
+      "Сальдо Дт": c.debitIt.debit,
+      "Сальдо Кт": c.creditIt.credit,
+      "Сумма зачёта": Math.round(c.amount * 100) / 100,
+      "Рекомендация": "Проверить зачёт аванса / корректировку долга на сумму зачёта (черновик для 1С, программа в базу не пишет).",
+      "Строка ОСВ": c.debitIt.sourceRow + " / " + c.creditIt.sourceRow
+    });
   }
 
   // дубли контрагентов
