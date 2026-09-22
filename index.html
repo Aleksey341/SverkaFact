@@ -905,7 +905,7 @@
   </div>
 
 <script>
-/* ========== СверкаФакт v2.1 — тестовая версия без лицензии ========== */
+/* ========== СверкаФакт v2.0 — production ========== */
 
 const METHOD_NAMES = {
   1: "1 - Дата+Номер+Сумма",
@@ -2647,7 +2647,7 @@ async function verifySf2License(rawKey, deviceId) {
   const product = String(payload.p || "").toUpperCase();
   const ymd = String(payload.e || "");
   const dev = normalizeDeviceId(payload.d);
-  if (payload.v !== 2 || !["PRO","ACT","REG","OSV","NDS","ACQ"].includes(product)) {
+  if (payload.v !== 2 || !["PRO","ACT","OSV","NDS"].includes(product)) {
     return { ok: false, error: "Неверные данные лицензии." };
   }
   if (dev !== normalizeDeviceId(deviceId)) return { ok: false, error: "Ключ выдан для другого компьютера." };
