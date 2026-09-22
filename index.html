@@ -3344,7 +3344,8 @@ function parseOsv6062(matrix, fileName) {
     vatKind: detectAccount76Kind(mainAccount),
     skippedDocs,
     hasDates: items.some(it => it.date),
-    hasAccounts: items.some(it => it.account)
+    hasAccounts: items.some(it => !!String(it.account || "").replace(/\s/g, "")),
+    hasContracts: contractCol >= 0 && items.some(it => !!it.contract)
   };
 }
 
@@ -3556,22 +3557,25 @@ function findCrossRowSettlements(data) {
     const rows = group.items.map(x => ({ it: x.it, remD: x.remD, remC: x.remC }));
 
     const matchBuckets = (debitRows, creditRows, kind) => {
-      // Сначала один договор, затем разные (как в check_60_62).
-      for (const sameContractOnly of [true, false]) {
+      // same → diff → unknown (пустые договоры не считаем «одним договором»)
+      for (const want of ["same", "diff", "unknown"]) {
         for (const dr of debitRows) {
           if (dr.remD <= EPS) continue;
           for (const cr of creditRows) {
             if (cr.remC <= EPS) continue;
             if (dr.it === cr.it) continue;
-            const sameC = normalizeText(dr.it.contract || "") === normalizeText(cr.it.contract || "");
-            if (sameContractOnly !== sameC) continue;
+            const c1 = normalizeText(dr.it.contract || "");
+            const c2 = normalizeText(cr.it.contract || "");
+            const contractStatus = (!c1 && !c2) ? "unknown" : (c1 === c2 ? "same" : "diff");
+            if (contractStatus !== want) continue;
             const amount = Math.round(Math.min(dr.remD, cr.remC) * 100) / 100;
             if (amount <= EPS) continue;
             found.push({
               kind,
               fam,
               amount,
-              sameContract: sameC,
+              sameContract: contractStatus === "same",
+              contractStatus,
               debitIt: dr.it,
               creditIt: cr.it,
               debitAfter: Math.round((dr.remD - amount) * 100) / 100,
@@ -3618,6 +3622,8 @@ function diagnose6062(data, opts) {
   const advanceNoSf = [];
   const vatNotRestored = [];
   const corrections = [];
+  const inconclusive = [];
+  const settle = { standard: 0, residual: 0, inconclusive: 0, sameRow: 0 };
   const today = new Date();
   const todayUtc = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
 
@@ -3645,25 +3651,36 @@ function diagnose6062(data, opts) {
     if (d > 0.009 && c > 0.009) {
       const same = Math.abs(d - c) < 0.02;
       const offset = Math.min(d, c);
-      const row = issueRow(it,
-        same ? "Незачтённый аванс (развёрнутое сальдо, суммы близки)" : "Развёрнутое сальдо (долг и аванс одновременно)",
-        same
+      const noContract = !data.hasContracts || !normalizeText(it.contract || "");
+      const sev = noContract ? "info" : "warning";
+      const problem = noContract
+        ? (same ? "Недостаточно данных: развёрнутое сальдо без договора" : "Недостаточно данных: Дт и Кт без договора")
+        : (same ? "Незачтённый аванс (развёрнутое сальдо, суммы близки)" : "Развёрнутое сальдо (долг и аванс одновременно)");
+      const cause = noContract
+        ? "В выгрузке ОСВ нет договора — нельзя отличить зачёт внутри одного договора от разных обязательств. Статус: недостаточно данных, не ошибка."
+        : (same
           ? "Аванс не зачтён в погашение задолженности (или наоборот)."
-          : "Часть суммы на одном договоре/документе расчётов, часть — на другом.",
-        "Сверить карточку и оформить зачёт аванса / корректировку долга.",
-        { severity: "warning" });
+          : "Часть суммы на одном договоре/документе расчётов, часть — на другом.");
+      const action = noContract
+        ? "Выгрузить ОСВ с субконто «Договор» и повторить проверку."
+        : "Сверить карточку и оформить зачёт аванса / корректировку долга.";
+      const row = issueRow(it, problem, cause, action, { severity: sev });
       issues.push(row);
-      corrections.push({
-        "Контрагент": it.name,
-        "Договор": it.contract || "",
-        "ИНН": it.inn || "",
-        "Счёт": it.account || "",
-        "Сальдо Дт": d,
-        "Сальдо Кт": c,
-        "Сумма зачёта": Math.round(offset * 100) / 100,
-        "Рекомендация": "Создать в 1С непроведённую корректировку долга на сумму зачёта и проверить аналитику.",
-        "Строка ОСВ": it.sourceRow
-      });
+      if (noContract) { inconclusive.push(row); settle.inconclusive++; }
+      else {
+        settle.sameRow++;
+        corrections.push({
+          "Контрагент": it.name,
+          "Договор": it.contract || "",
+          "ИНН": it.inn || "",
+          "Счёт": it.account || "",
+          "Сальдо Дт": d,
+          "Сальдо Кт": c,
+          "Сумма зачёта": Math.round(offset * 100) / 100,
+          "Рекомендация": "Создать в 1С непроведённую корректировку долга на сумму зачёта и проверить аналитику.",
+          "Строка ОСВ": it.sourceRow
+        });
+      }
     } else if (d < -0.009 || c < -0.009) {
       issues.push(issueRow(it, "Красное сальдо",
         "Ошибка стороны проводки или лишнее сторно.",
@@ -3725,22 +3742,30 @@ function diagnose6062(data, opts) {
   // SETTLE-001: встречные остатки на разных строках ОСВ (субсчета 01↔02 и прочее)
   const cross = findCrossRowSettlements(data);
   for (const c of cross) {
-    const contractNote = c.sameContract
-      ? "в одном договоре"
-      : "по разным договорам одного контрагента (взаимозачёт между договорами требует основания и может не выполняться автоматически)";
+    const noContract = !data.hasContracts || c.contractStatus === "unknown";
+    const contractNote = noContract
+      ? "без договора в выгрузке"
+      : (c.contractStatus === "same"
+        ? "в одном договоре"
+        : "по разным договорам одного контрагента (взаимозачёт между договорами требует основания и может не выполняться автоматически)");
     const accPair = (c.debitIt.account || "?") + " ↔ " + (c.creditIt.account || "?");
-    const problem = c.kind === "standard"
+    const baseProblem = c.kind === "standard"
       ? ("Встречные остатки " + c.fam + ".01/" + c.fam + ".02 (" + accPair + ")")
       : ("Прочее развёрнутое сальдо по контрагенту (" + accPair + ")");
-    const cause = c.kind === "standard"
-      ? ("Требует проверки: одновременно долг и аванс на субсчетах " + c.fam + " " + contractNote
-        + ". Возможны незачтённый аванс, разные документы расчётов или нормальные отдельные обязательства.")
-      : ("Требует проверки: встречные Дт/Кт на разных строках " + contractNote
-        + ". Не считать автоматической ошибкой до сверки карточки.");
-    const action = "Открыть ОСВ " + c.fam + " с контрагентом и договором; проверить оплату/поставку и оформить зачёт аванса при необходимости. Возможный зачёт ≈ "
-      + (Math.round(c.amount * 100) / 100);
+    const problem = noContract ? ("Недостаточно данных: " + baseProblem) : baseProblem;
+    const cause = noContract
+      ? ("Недостаточно данных: в ОСВ нет договора — статус inconclusive, не ошибка. " + baseProblem + ".")
+      : (c.kind === "standard"
+        ? ("Требует проверки: одновременно долг и аванс на субсчетах " + c.fam + " " + contractNote
+          + ". Возможны незачтённый аванс, разные документы расчётов или нормальные отдельные обязательства.")
+        : ("Требует проверки: встречные Дт/Кт на разных строках " + contractNote
+          + ". Не считать автоматической ошибкой до сверки карточки."));
+    const action = noContract
+      ? "Выгрузить ОСВ 60/62 с субконто «Договор» и повторить. Возможный зачёт ≈ " + (Math.round(c.amount * 100) / 100)
+      : ("Открыть ОСВ " + c.fam + " с контрагентом и договором; проверить оплату/поставку и оформить зачёт аванса при необходимости. Возможный зачёт ≈ "
+        + (Math.round(c.amount * 100) / 100));
     const row = issueRow(c.debitIt, problem, cause, action, {
-      severity: "warning",
+      severity: noContract ? "info" : "warning",
       "Контрагент": c.debitIt.name,
       "Счёт Дт": c.debitIt.account || "",
       "Сальдо Дт": c.debitIt.debit,
@@ -3751,17 +3776,24 @@ function diagnose6062(data, opts) {
       "Договор Кт": c.creditIt.contract || ""
     });
     issues.push(row);
-    corrections.push({
-      "Контрагент": c.debitIt.name,
-      "Договор": (c.debitIt.contract || c.creditIt.contract || ""),
-      "ИНН": c.debitIt.inn || c.creditIt.inn || "",
-      "Счёт": accPair,
-      "Сальдо Дт": c.debitIt.debit,
-      "Сальдо Кт": c.creditIt.credit,
-      "Сумма зачёта": Math.round(c.amount * 100) / 100,
-      "Рекомендация": "Проверить зачёт аванса / корректировку долга на сумму зачёта (черновик для 1С, программа в базу не пишет).",
-      "Строка ОСВ": c.debitIt.sourceRow + " / " + c.creditIt.sourceRow
-    });
+    if (noContract) {
+      inconclusive.push(row);
+      settle.inconclusive++;
+    } else {
+      if (c.kind === "standard") settle.standard++;
+      else settle.residual++;
+      corrections.push({
+        "Контрагент": c.debitIt.name,
+        "Договор": (c.debitIt.contract || c.creditIt.contract || ""),
+        "ИНН": c.debitIt.inn || c.creditIt.inn || "",
+        "Счёт": accPair,
+        "Сальдо Дт": c.debitIt.debit,
+        "Сальдо Кт": c.creditIt.credit,
+        "Сумма зачёта": Math.round(c.amount * 100) / 100,
+        "Рекомендация": "Проверить зачёт аванса / корректировку долга на сумму зачёта (черновик для 1С, программа в базу не пишет).",
+        "Строка ОСВ": c.debitIt.sourceRow + " / " + c.creditIt.sourceRow
+      });
+    }
   }
 
   // дубли контрагентов
@@ -3825,10 +3857,13 @@ function diagnose6062(data, opts) {
     advanceNoSf,
     duplicates,
     corrections,
+    inconclusive,
+    settle,
     vatNotRestored,
     vatAdvance,
     mainAccount: data.mainAccount || "",
     overdueSkipped: !data.hasDates,
+    contractsMissing: !data.hasContracts,
     sfChecked: !!(sfPartners || vatIndex),
     vatChecked: !!vatIndex
   };
@@ -3882,10 +3917,16 @@ document.getElementById("btnOsvRun").addEventListener("click", async () => {
     const diag = diagnose6062(data, { overdueDays, sfPartners, vatIndex, minAdvance });
     LAST_OSV = { data, diag };
     document.getElementById("reportOsv").classList.remove("hidden");
+    const settle01 = (diag.settle && diag.settle.standard) || 0;
+    const settleRes = (diag.settle && diag.settle.residual) || 0;
+    const settleSame = (diag.settle && diag.settle.sameRow) || 0;
+    const settleInc = (diag.settle && diag.settle.inconclusive) || 0;
     const kpiOsv = renderKpi([
       [data.items.length, "Строк аналитики"],
       [diag.issues.length, "Замечаний"],
-      [diag.corrections.length, "К зачёту"],
+      [settle01, "Встречные 01↔02"],
+      [settleSame + settleRes, "К зачёту"],
+      [settleInc, "Недостаточно данных"],
       [diag.av76.length, "76.АВ/ВА"],
       [diag.overdue.length, "Просрочка"],
       [diag.duplicates.length, "Дубли"],
@@ -3903,8 +3944,16 @@ document.getElementById("btnOsvRun").addEventListener("click", async () => {
       + '<span><i class="sev sev-info" style="margin-right:4px">справочно</i>право / не блокер</span>'
       + '</div>';
     let notes = sevLegend + '<div class="reason-box">Счёт по ОСВ: <b>' + (diag.mainAccount || "не определён")
-      + '</b>. Проверки: развёрнутое/незачтённый аванс, красное сальдо, 76.АВ/76.ВА, аналитика, дубли, просрочка'
+      + '</b>. Проверки: развёрнутое/незачтённый аванс, встречные 01↔02, красное сальдо, 76.АВ/76.ВА, аналитика, дубли, просрочка'
       + (diag.sfChecked ? ", авансы без СФ" : "") + ".</div>";
+    if (diag.contractsMissing) {
+      notes += '<div class="reason-box">В ОСВ <b>нет договора</b> — встречные остатки помечены как «недостаточно данных» (справочно), без рекомендации автозачёта. Выгрузите ОСВ с субконто «Договор».</div>';
+    }
+    if (settle01 || settleRes || settleSame) {
+      notes += '<div class="reason-box">Зачёты SETTLE-001: встречные 01↔02 — <b>' + settle01
+        + '</b>; развёрнутое (одна строка / прочее) — <b>' + (settleSame + settleRes)
+        + '</b>; недостаточно данных — <b>' + settleInc + '</b>.</div>';
+    }
     if (advSource) {
       notes += '<div class="reason-box">Второй файл распознан как: ' + advSource + ".</div>";
     }
@@ -3928,6 +3977,7 @@ document.getElementById("btnOsvRun").addEventListener("click", async () => {
     }
     const fullOsv = kpiOsv + notes +
       '<h3 class="section">Все замечания</h3>' + renderTable(diag.issues, [], "Критических замечаний не найдено") +
+      '<h3 class="section">Недостаточно данных (нет договора)</h3>' + renderTable(diag.inconclusive || [], [], "Нет") +
       '<h3 class="section">76.АВ / 76.ВА</h3>' + renderTable(diag.av76, [], "Нет") +
       '<h3 class="section">Просрочка</h3>' + renderTable(diag.overdue, [], "Нет") +
       '<h3 class="section">Аналитика</h3>' + renderTable(diag.analytics, [], "Нет") +
@@ -3955,6 +4005,7 @@ document.getElementById("btnOsvXlsx").addEventListener("click", () => {
     ]), name.slice(0, 31));
   };
   add("Проблемы", "Все замечания 60/62", d.issues);
+  add("Недостаточно", "Недостаточно данных (нет договора)", d.inconclusive || []);
   add("76АВ_ВА", "76.АВ / 76.ВА", d.av76);
   add("Просрочка", "Просроченная задолженность", d.overdue);
   add("Дубли", "Дубли контрагентов", d.duplicates);
