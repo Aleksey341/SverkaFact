@@ -4539,10 +4539,8 @@ function resetNdsMode() {
   clearMsg("msgNds");
 }
 
-document.getElementById("btnRegReset").addEventListener("click", resetRegMode);
 document.getElementById("btnOsvReset").addEventListener("click", resetOsvMode);
 document.getElementById("btnNdsReset").addEventListener("click", resetNdsMode);
-document.getElementById("btnAcqReset").addEventListener("click", resetAcqMode);
 
 document.getElementById("btnRun").addEventListener("click", async () => {
   if (!hasModuleAccess("acts") && window.__DEMO_MODE !== "acts") {
