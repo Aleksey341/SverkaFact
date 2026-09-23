@@ -194,6 +194,18 @@ check("dup-a", () => {
   assert(comp.dupsA.length >= 2, "both dup rows listed");
 });
 
+check("nds-router plan", () => {
+  const { a, b, comp } = runPair(loadSample("sum-diff.json"));
+  assert(comp.router, "router present");
+  assert(comp.evidence && comp.evidence.sf_a && comp.evidence.sf_b, "evidence sf_a/b");
+  assert((comp.router.applicable || []).indexOf("NDS-SUM") >= 0, "NDS-SUM applicable");
+  assert((comp.router.applicable || []).indexOf("NDS-DUP") >= 0, "NDS-DUP applicable");
+  assert(["COMPLETE", "PARTIAL"].indexOf(comp.datasetSufficiency) >= 0, "suf " + comp.datasetSufficiency);
+  assert(!a.hasMultiRateCols && !b.hasMultiRateCols, "samples without multi-rate cols");
+  assert(comp.evidence.multi_rate === false, "evidence.multi_rate false");
+  assert((comp.router.deferred || []).some((d) => d.code === "NDS-MULTI"), "NDS-MULTI deferred");
+});
+
 if (fail) {
   console.error("\n" + fail + " failed");
   process.exit(1);

@@ -39,6 +39,11 @@ check("html has assessControlSufficiency", html.includes("function assessControl
 check("html has attachEvidence", html.includes("function attachEvidence"));
 check("issueRow sets Источник", /"Источник"\s*:/.test(html) && html.includes("attachEvidence(row"));
 check("verify-nds exists", fs.existsSync(path.join(root, "tools", "verify-nds.cjs")));
+check("html has routeNdsControls", html.includes("function routeNdsControls"));
+check("html has buildNdsEvidence", html.includes("function buildNdsEvidence"));
+check("html has REGULATORY", html.includes("const REGULATORY"));
+check("regulatory vat-rates file", fs.existsSync(path.join(root, "regulatory", "vat-rates.json")));
+check("router modules nds", !!(reg.router && reg.router.modules && reg.router.modules.nds));
 
 // Every registry id should appear as string literal in HTML (except we allow embedding only via JSON)
 const embeddedMatch = html.match(/const CONTROL_REGISTRY = (\{.*?\});\s*\nfunction getControlDef/s);

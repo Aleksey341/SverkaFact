@@ -272,7 +272,10 @@
         "sf_a",
         "sf_b"
       ],
-      "version": 1
+      "version": 1,
+      "optional": [
+        "rate"
+      ]
     },
     "NDS-INN": {
       "name": "Расхождение ИНН",
@@ -283,7 +286,10 @@
         "sf_a",
         "sf_b"
       ],
-      "version": 1
+      "version": 1,
+      "optional": [
+        "inn"
+      ]
     },
     "NDS-KPP": {
       "name": "Расхождение КПП",
@@ -294,7 +300,10 @@
         "sf_a",
         "sf_b"
       ],
-      "version": 1
+      "version": 1,
+      "optional": [
+        "kpp"
+      ]
     },
     "NDS-CORR": {
       "name": "Расхождение исправления СФ",
@@ -305,7 +314,10 @@
         "sf_a",
         "sf_b"
       ],
-      "version": 1
+      "version": 1,
+      "optional": [
+        "corr_meta"
+      ]
     },
     "NDS-TYPE": {
       "name": "Расхождение типа СФ (корр.)",
@@ -316,7 +328,10 @@
         "sf_a",
         "sf_b"
       ],
-      "version": 1
+      "version": 1,
+      "optional": [
+        "corr_meta"
+      ]
     },
     "NDS-MISS-A": {
       "name": "СФ нет в файле A",
@@ -358,7 +373,10 @@
       "requires": [
         "sf"
       ],
-      "version": 1
+      "version": 1,
+      "optional": [
+        "multi_rate"
+      ]
     }
   },
   "data_sufficiency": {
@@ -398,12 +416,22 @@
       "sales_book": "Книга продаж / реестр выданных СФ",
       "sf_a": "Реестр СФ A",
       "sf_b": "Реестр СФ B",
-      "sf": "Реестр СФ"
+      "sf": "Реестр СФ",
+      "rate": "Ставка НДС в реестре СФ",
+      "kpp": "КПП контрагента",
+      "corr_meta": "Признаки исправления / корр. СФ",
+      "multi_rate": "Колонки НДС по ставкам (0/10/20) или несколько ставок в строке"
     }
   },
   "router": {
     "schema": "CONTROL_ROUTER_V1",
-    "module": "r6062",
-    "description": "Выбирает применимые контроли Доктора 60/62 по профилю evidence"
+    "modules": {
+      "r6062": {
+        "description": "Выбирает применимые контроли Доктора 60/62 по профилю evidence"
+      },
+      "nds": {
+        "description": "Выбирает применимые контроли сверки НДС (реестры СФ A/B) по профилю evidence"
+      }
+    }
   }
 }
