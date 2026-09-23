@@ -1981,10 +1981,10 @@ function shortActTitle(name) {
 function renderTable(rows, moneyCols = [], emptyText) {
   if (!rows || !rows.length) return `<div class="hint">${emptyText || NO_MATCHES_TEXT}</div>`;
   const keys = Object.keys(rows[0]).filter(k => !k.startsWith("_"));
-  // Колонку «Тип» (severity) ставим сразу после ключевых полей, если есть
-  const ordered = keys.includes("Важность")
-    ? ["Важность", ...keys.filter(k => k !== "Важность")]
-    : keys;
+  // Код проверки и важность — первыми колонками
+  let ordered = keys.slice();
+  if (ordered.includes("Важность")) ordered = ["Важность", ...ordered.filter(k => k !== "Важность")];
+  if (ordered.includes("Код")) ordered = ["Код", ...ordered.filter(k => k !== "Код")];
   let html = '<div class="table-wrap"><table class="data"><thead><tr>';
   for (const k of ordered) html += `<th>${k}</th>`;
   html += "</tr></thead><tbody>";
@@ -3206,7 +3206,9 @@ function parseOsv6062(matrix, fileName) {
     skippedDocs,
     hasDates: items.some(it => it.date),
     hasAccounts: items.some(it => !!String(it.account || "").replace(/\s/g, "")),
-    hasContracts: contractCol >= 0 && items.some(it => !!it.contract)
+    hasContracts: contractCol >= 0 && items.some(it => !!it.contract),
+    hasInns: items.some(it => !!it.inn),
+    hasSubaccounts: items.some(it => /\.[0-9A-Za-zА-Яа-я]{1,3}\b/.test(String(it.account || "").replace(/\s/g, "")))
   };
 }
 
@@ -3292,6 +3294,7 @@ function checkAdvanceVat(mainData, vatIndex, opts) {
       ? "Выставить СФ на аванс (5 календарных дней) и начислить НДС на 76.АВ."
       : "Запросить у поставщика СФ на аванс. Вычет — право, а не обязанность: если вычет не заявляете, замечание справочное.";
     row["Строка"] = it.sourceRow;
+    row["Код"] = isReceived ? "VAT-ADV-62" : "VAT-ADV-60";
     missing.push(withSeverity(row, isReceived ? "error" : "info"));
   }
 
@@ -3310,6 +3313,7 @@ function checkAdvanceVat(mainData, vatIndex, opts) {
       ? "Проверить вычет НДС с аванса в периоде реализации (Дт 68.02 / Кт 76.АВ)."
       : "Проверить восстановление НДС с аванса в периоде поставки (Дт 76.ВА / Кт 68.02).";
     row["Строка"] = rec.sourceRow;
+    row["Код"] = "VAT-001";
     notRestored.push(withSeverity(row, "warning"));
   }
 
@@ -3348,7 +3352,9 @@ function withSeverity(row, level) {
 function issueRow(it, problem, cause, action, extra) {
   const ex = extra || {};
   const level = ex.severity || ex._severity || "warning";
+  const code = ex.code || ex["Код"] || "";
   const row = {
+    "Код": code,
     "Счёт": it.account || "—",
     "Контрагент / аналитика": it.name,
     "Договор": it.contract || "—",
@@ -3363,7 +3369,9 @@ function issueRow(it, problem, cause, action, extra) {
     "Строка": it.sourceRow
   };
   Object.assign(row, ex);
+  if (code) row["Код"] = code;
   delete row.severity;
+  delete row.code;
   return withSeverity(row, level);
 }
 
@@ -3470,6 +3478,36 @@ function findCrossRowSettlements(data) {
   return found;
 }
 
+/** Качество входа ОСВ: что деградирует проверки (баннер в отчёте). */
+function assessOsvInputQuality(data) {
+  const flags = [];
+  if (!data.hasContracts) {
+    flags.push({
+      id: "NO-CONTRACT",
+      text: "Нет субконто «Договор» — встречные остатки и развёрнутое сальдо идут как «недостаточно данных», без «К зачёту»."
+    });
+  }
+  if (!data.hasSubaccounts) {
+    flags.push({
+      id: "NO-SUBACC",
+      text: "Нет субсчетов (60.01/60.02…) — проверка встречных 01↔02 ограничена или недоступна."
+    });
+  }
+  if (!data.hasInns) {
+    flags.push({
+      id: "NO-INN",
+      text: "Нет ИНН — сопоставление с 76.ВА/76.АВ и реестром СФ только по имени (менее надёжно)."
+    });
+  }
+  if (!data.hasDates) {
+    flags.push({
+      id: "NO-DATE",
+      text: "Нет даты — проверка просрочки пропущена."
+    });
+  }
+  return flags;
+}
+
 function diagnose6062(data, opts) {
   const overdueDays = Math.max(1, Number(opts && opts.overdueDays) || 30);
   const sfPartners = opts && opts.sfPartners ? opts.sfPartners : null;
@@ -3484,7 +3522,7 @@ function diagnose6062(data, opts) {
   const vatNotRestored = [];
   const corrections = [];
   const inconclusive = [];
-  const settle = { standard: 0, residual: 0, inconclusive: 0, sameRow: 0 };
+  const settle = { standard: 0, residual: 0, inconclusive: 0, sameRow: 0, candidates: 0 };
   const today = new Date();
   const todayUtc = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
 
@@ -3496,7 +3534,7 @@ function diagnose6062(data, opts) {
       const row = issueRow(it, kind76 + " с остатком",
         "На счёте НДС с авансов висит сальдо — часто незакрытый аванс или неснятый НДС.",
         "Сверить авансы и счета-фактуры на аванс; закрыть или уточнить остаток.",
-        { severity: "warning" });
+        { severity: "warning", code: "VAT-76" });
       av76.push(row);
       issues.push(row);
     }
@@ -3505,7 +3543,7 @@ function diagnose6062(data, opts) {
       const row = issueRow(it, "Нет обязательной аналитики",
         "Сальдо без контрагента/субконто — риск потери контроля взаиморасчётов.",
         "Заполнить аналитику (контрагент, договор) и перепровести документы.",
-        { severity: "warning" });
+        { severity: "warning", code: "ANL-001" });
       analytics.push(row);
       issues.push(row);
     }
@@ -3514,23 +3552,28 @@ function diagnose6062(data, opts) {
       const offset = Math.min(d, c);
       const noContract = !data.hasContracts || !normalizeText(it.contract || "");
       const sev = noContract ? "info" : "warning";
+      const code = noContract ? "SETTLE-INC" : (same ? "SETTLE-002" : "SETTLE-002");
       const problem = noContract
         ? (same ? "Недостаточно данных: развёрнутое сальдо без договора" : "Недостаточно данных: Дт и Кт без договора")
-        : (same ? "Незачтённый аванс (развёрнутое сальдо, суммы близки)" : "Развёрнутое сальдо (долг и аванс одновременно)");
+        : (same
+          ? "Кандидат к зачёту: незачтённый аванс (суммы близки, один договор/строка)"
+          : "Развёрнутое сальдо (долг и аванс одновременно)");
       const cause = noContract
         ? "В выгрузке ОСВ нет договора — нельзя отличить зачёт внутри одного договора от разных обязательств. Статус: недостаточно данных, не ошибка."
         : (same
-          ? "Аванс не зачтён в погашение задолженности (или наоборот)."
+          ? "Аванс не зачтён в погашение задолженности (или наоборот). При одном договоре — типичный кандидат к зачёту."
           : "Часть суммы на одном договоре/документе расчётов, часть — на другом.");
       const action = noContract
         ? "Выгрузить ОСВ с субконто «Договор» и повторить проверку."
         : "Сверить карточку и оформить зачёт аванса / корректировку долга.";
-      const row = issueRow(it, problem, cause, action, { severity: sev });
+      const row = issueRow(it, problem, cause, action, { severity: sev, code });
       issues.push(row);
       if (noContract) { inconclusive.push(row); settle.inconclusive++; }
       else {
         settle.sameRow++;
+        if (same) settle.candidates++;
         corrections.push({
+          "Код": same ? "SETTLE-002" : "SETTLE-002",
           "Контрагент": it.name,
           "Договор": it.contract || "",
           "ИНН": it.inn || "",
@@ -3538,7 +3581,9 @@ function diagnose6062(data, opts) {
           "Сальдо Дт": d,
           "Сальдо Кт": c,
           "Сумма зачёта": Math.round(offset * 100) / 100,
-          "Рекомендация": "Создать в 1С непроведённую корректировку долга на сумму зачёта и проверить аналитику.",
+          "Рекомендация": same
+            ? "Кандидат к зачёту: создать в 1С непроведённую корректировку долга на сумму зачёта и проверить аналитику."
+            : "Создать в 1С непроведённую корректировку долга на сумму зачёта и проверить аналитику.",
           "Строка ОСВ": it.sourceRow
         });
       }
@@ -3546,7 +3591,7 @@ function diagnose6062(data, opts) {
       issues.push(issueRow(it, "Красное сальдо",
         "Ошибка стороны проводки или лишнее сторно.",
         "Открыть карточку счёта и проверить знак операций.",
-        { severity: "error" }));
+        { severity: "error", code: "RED-001" }));
     }
     if (it.date) {
       const age = Math.floor((todayUtc - Date.UTC(it.date.getUTCFullYear(), it.date.getUTCMonth(), it.date.getUTCDate())) / 86400000);
@@ -3558,7 +3603,7 @@ function diagnose6062(data, opts) {
         const row = issueRow(it, "Просроченная задолженность",
           "Дата старше " + overdueDays + " дн. (факт: " + age + " дн.).",
           "Запросить акт сверки / оплату / уточнить срок договора.",
-          { "Дней": age, severity: "warning" });
+          { "Дней": age, severity: "warning", code: "AGE-001" });
         overdue.push(row);
         issues.push(row);
       }
@@ -3579,7 +3624,7 @@ function diagnose6062(data, opts) {
             mainIs62
               ? "Проверить выставление СФ на аванс и начисление НДС (76.АВ)."
               : "Точнее проверить можно, загрузив ОСВ по счёту 76.ВА — тогда сверка идёт 60 Дт ↔ 76.ВА.",
-            { severity: mainIs62 ? "error" : "info" });
+            { severity: mainIs62 ? "error" : "info", code: mainIs62 ? "VAT-ADV-62" : "VAT-ADV-60" });
           advanceNoSf.push(row);
           if (mainIs62) issues.push(row);
         }
@@ -3604,6 +3649,8 @@ function diagnose6062(data, opts) {
   const cross = findCrossRowSettlements(data);
   for (const c of cross) {
     const noContract = !data.hasContracts || c.contractStatus === "unknown";
+    const sameContract = !noContract && c.contractStatus === "same";
+    const isCandidate = sameContract && (c.kind === "standard" || c.kind === "residual");
     const contractNote = noContract
       ? "без договора в выгрузке"
       : (c.contractStatus === "same"
@@ -3613,20 +3660,29 @@ function diagnose6062(data, opts) {
     const baseProblem = c.kind === "standard"
       ? ("Встречные остатки " + c.fam + ".01/" + c.fam + ".02 (" + accPair + ")")
       : ("Прочее развёрнутое сальдо по контрагенту (" + accPair + ")");
-    const problem = noContract ? ("Недостаточно данных: " + baseProblem) : baseProblem;
+    const code = noContract
+      ? "SETTLE-INC"
+      : (c.kind === "standard" ? "SETTLE-001" : "SETTLE-001R");
+    const problem = noContract
+      ? ("Недостаточно данных: " + baseProblem)
+      : (isCandidate ? ("Кандидат к зачёту: " + baseProblem) : baseProblem);
     const cause = noContract
       ? ("Недостаточно данных: в ОСВ нет договора — статус inconclusive, не ошибка. " + baseProblem + ".")
-      : (c.kind === "standard"
-        ? ("Требует проверки: одновременно долг и аванс на субсчетах " + c.fam + " " + contractNote
-          + ". Возможны незачтённый аванс, разные документы расчётов или нормальные отдельные обязательства.")
-        : ("Требует проверки: встречные Дт/Кт на разных строках " + contractNote
-          + ". Не считать автоматической ошибкой до сверки карточки."));
+      : (sameContract
+        ? ("Кандидат к зачёту " + contractNote + ": одновременно долг и аванс. Проверьте карточку; при подтверждении оформите зачёт.")
+        : (c.kind === "standard"
+          ? ("Требует проверки: одновременно долг и аванс на субсчетах " + c.fam + " " + contractNote
+            + ". Возможны незачтённый аванс, разные документы расчётов или нормальные отдельные обязательства.")
+          : ("Требует проверки: встречные Дт/Кт на разных строках " + contractNote
+            + ". Не считать автоматической ошибкой до сверки карточки.")));
     const action = noContract
       ? "Выгрузить ОСВ 60/62 с субконто «Договор» и повторить. Возможный зачёт ≈ " + (Math.round(c.amount * 100) / 100)
-      : ("Открыть ОСВ " + c.fam + " с контрагентом и договором; проверить оплату/поставку и оформить зачёт аванса при необходимости. Возможный зачёт ≈ "
-        + (Math.round(c.amount * 100) / 100));
+      : ("Открыть ОСВ " + c.fam + " с контрагентом и договором; проверить оплату/поставку"
+        + (isCandidate ? " и оформить зачёт аванса" : " и при необходимости оформить зачёт аванса")
+        + ". Возможный зачёт ≈ " + (Math.round(c.amount * 100) / 100));
     const row = issueRow(c.debitIt, problem, cause, action, {
       severity: noContract ? "info" : "warning",
+      code,
       "Контрагент": c.debitIt.name,
       "Счёт Дт": c.debitIt.account || "",
       "Сальдо Дт": c.debitIt.debit,
@@ -3643,7 +3699,9 @@ function diagnose6062(data, opts) {
     } else {
       if (c.kind === "standard") settle.standard++;
       else settle.residual++;
+      if (isCandidate) settle.candidates++;
       corrections.push({
+        "Код": code,
         "Контрагент": c.debitIt.name,
         "Договор": (c.debitIt.contract || c.creditIt.contract || ""),
         "ИНН": c.debitIt.inn || c.creditIt.inn || "",
@@ -3651,7 +3709,9 @@ function diagnose6062(data, opts) {
         "Сальдо Дт": c.debitIt.debit,
         "Сальдо Кт": c.creditIt.credit,
         "Сумма зачёта": Math.round(c.amount * 100) / 100,
-        "Рекомендация": "Проверить зачёт аванса / корректировку долга на сумму зачёта (черновик для 1С, программа в базу не пишет).",
+        "Рекомендация": isCandidate
+          ? "Кандидат к зачёту (один договор): проверить и оформить зачёт / корректировку долга (черновик для 1С, программа в базу не пишет)."
+          : "Проверить зачёт аванса / корректировку долга на сумму зачёта (черновик для 1С, программа в базу не пишет).",
         "Строка ОСВ": c.debitIt.sourceRow + " / " + c.creditIt.sourceRow
       });
     }
@@ -3688,7 +3748,7 @@ function diagnose6062(data, opts) {
             ? "Похожие наименования: " + uniqNames.slice(0, 4).join(" | ")
             : "Один ключ имени, разные ИНН: " + inns.join(", "),
           "Объединить карточки контрагентов в справочнике 1С.",
-          { severity: "warning" });
+          { severity: "warning", code: "DUP-NAME" });
         duplicates.push(row);
         issues.push(row);
       }
@@ -3704,7 +3764,7 @@ function diagnose6062(data, opts) {
       const row = issueRow(it, "Дубль по ИНН (разные имена)",
         "ИНН " + inn + " встречается под разными наименованиями.",
         "Оставить одну карточку контрагента с корректным наименованием.",
-        { severity: "warning" });
+        { severity: "warning", code: "DUP-INN" });
       duplicates.push(row);
       issues.push(row);
     }
@@ -3725,6 +3785,7 @@ function diagnose6062(data, opts) {
     mainAccount: data.mainAccount || "",
     overdueSkipped: !data.hasDates,
     contractsMissing: !data.hasContracts,
+    inputQuality: assessOsvInputQuality(data),
     sfChecked: !!(sfPartners || vatIndex),
     vatChecked: !!vatIndex
   };
@@ -3782,11 +3843,13 @@ document.getElementById("btnOsvRun").addEventListener("click", async () => {
     const settleRes = (diag.settle && diag.settle.residual) || 0;
     const settleSame = (diag.settle && diag.settle.sameRow) || 0;
     const settleInc = (diag.settle && diag.settle.inconclusive) || 0;
+    const settleCand = (diag.settle && diag.settle.candidates) || 0;
     const kpiOsv = renderKpi([
       [data.items.length, "Строк аналитики"],
       [diag.issues.length, "Замечаний"],
       [settle01, "Встречные 01↔02"],
-      [settleSame + settleRes, "К зачёту"],
+      [settleCand, "Кандидаты к зачёту"],
+      [settleSame + settleRes, "К зачёту (с договором)"],
       [settleInc, "Недостаточно данных"],
       [diag.av76.length, "76.АВ/ВА"],
       [diag.overdue.length, "Просрочка"],
@@ -3807,13 +3870,17 @@ document.getElementById("btnOsvRun").addEventListener("click", async () => {
     let notes = sevLegend + '<div class="reason-box">Счёт по ОСВ: <b>' + (diag.mainAccount || "не определён")
       + '</b>. Проверки: развёрнутое/незачтённый аванс, встречные 01↔02, красное сальдо, 76.АВ/76.ВА, аналитика, дубли, просрочка'
       + (diag.sfChecked ? ", авансы без СФ" : "") + ".</div>";
-    if (diag.contractsMissing) {
-      notes += '<div class="reason-box">В ОСВ <b>нет договора</b> — встречные остатки помечены как «недостаточно данных» (справочно), без рекомендации автозачёта. Выгрузите ОСВ с субконто «Договор».</div>';
+    const qFlags = diag.inputQuality || [];
+    if (qFlags.length) {
+      notes += '<div class="reason-box" style="border-left:4px solid #d4a017"><b>Качество выгрузки ОСВ</b> — часть проверок ослаблена:<ul style="margin:8px 0 0;padding-left:18px">'
+        + qFlags.map(f => '<li><code>' + escapeHtml(f.id) + '</code> — ' + escapeHtml(f.text) + '</li>').join("")
+        + '</ul></div>';
     }
-    if (settle01 || settleRes || settleSame) {
-      notes += '<div class="reason-box">Зачёты SETTLE-001: встречные 01↔02 — <b>' + settle01
-        + '</b>; развёрнутое (одна строка / прочее) — <b>' + (settleSame + settleRes)
-        + '</b>; недостаточно данных — <b>' + settleInc + '</b>.</div>';
+    if (settle01 || settleRes || settleSame || settleCand) {
+      notes += '<div class="reason-box">Зачёты: встречные 01↔02 — <b>' + settle01
+        + '</b>; кандидаты (один договор) — <b>' + settleCand
+        + '</b>; к зачёту с договором — <b>' + (settleSame + settleRes)
+        + '</b>; недостаточно данных — <b>' + settleInc + '</b>. Коды в таблице: SETTLE-001 / SETTLE-002 / SETTLE-INC.</div>';
     }
     if (advSource) {
       notes += '<div class="reason-box">Второй файл распознан как: ' + advSource + ".</div>";
