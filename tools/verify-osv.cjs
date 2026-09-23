@@ -153,6 +153,11 @@ check("settle-candidate", () => {
   assert(diag.router && diag.router.applicable.indexOf("SETTLE-001") >= 0, "router has SETTLE-001");
   assert(diag.evidence && diag.evidence.contract === true, "evidence.contract");
   assert(["COMPLETE", "PARTIAL"].indexOf(diag.datasetSufficiency) >= 0, "sufficiency " + diag.datasetSufficiency);
+  const settleRow = diag.issues.find((r) => r["Код"] === "SETTLE-001");
+  assert(settleRow && settleRow["Источник"], "SETTLE-001 Источник");
+  assert(settleRow["Строка"] != null && settleRow["Строка"] !== "", "SETTLE-001 Строка");
+  assert(Array.isArray(settleRow._evidence) && settleRow._evidence.length >= 2, "SETTLE-001 _evidence dual");
+  assert(settleRow._evidence.every((e) => e.source && e.row != null), "evidence source+row");
 });
 
 // --- Sample: no contract → SETTLE-INC ---

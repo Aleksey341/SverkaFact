@@ -36,6 +36,8 @@ check("router schema", !!(reg.router && reg.router.schema === "CONTROL_ROUTER_V1
 check("html has routeR6062", html.includes("function routeR6062Controls"));
 check("html has buildOsvEvidence", html.includes("function buildOsvEvidence"));
 check("html has assessControlSufficiency", html.includes("function assessControlSufficiency"));
+check("html has attachEvidence", html.includes("function attachEvidence"));
+check("issueRow sets Источник", /"Источник"\s*:/.test(html) && html.includes("attachEvidence(row"));
 
 // Every registry id should appear as string literal in HTML (except we allow embedding only via JSON)
 const embeddedMatch = html.match(/const CONTROL_REGISTRY = (\{.*?\});\s*\nfunction getControlDef/s);

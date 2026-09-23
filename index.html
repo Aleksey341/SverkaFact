@@ -2124,10 +2124,11 @@ function shortActTitle(name) {
 function renderTable(rows, moneyCols = [], emptyText) {
   if (!rows || !rows.length) return `<div class="hint">${emptyText || NO_MATCHES_TEXT}</div>`;
   const keys = Object.keys(rows[0]).filter(k => !k.startsWith("_"));
-  // Код → Статус → Важность первыми
+  // Код → Статус → Важность → Источник первыми
   let ordered = keys.slice();
   if (ordered.includes("Важность")) ordered = ["Важность", ...ordered.filter(k => k !== "Важность")];
   if (ordered.includes("Статус")) ordered = ["Статус", ...ordered.filter(k => k !== "Статус")];
+  if (ordered.includes("Источник")) ordered = ["Источник", ...ordered.filter(k => k !== "Источник")];
   if (ordered.includes("Код")) ordered = ["Код", ...ordered.filter(k => k !== "Код")];
   let html = '<div class="table-wrap"><table class="data"><thead><tr>';
   for (const k of ordered) html += `<th>${k}</th>`;
@@ -2312,9 +2313,11 @@ function isCountHeader(h) {
 function rowsToTable(rows, emptyText) {
   if (!rows || !rows.length) return { headers: ["Сообщение"], data: [[emptyText || NO_MATCHES_TEXT]] };
   const keys = Object.keys(rows[0]).filter(k => !k.startsWith("_"));
-  const headers = keys.includes("Важность")
-    ? ["Важность", ...keys.filter(k => k !== "Важность")]
-    : keys;
+  let headers = keys.slice();
+  if (headers.includes("Важность")) headers = ["Важность", ...headers.filter(k => k !== "Важность")];
+  if (headers.includes("Статус")) headers = ["Статус", ...headers.filter(k => k !== "Статус")];
+  if (headers.includes("Источник")) headers = ["Источник", ...headers.filter(k => k !== "Источник")];
+  if (headers.includes("Код")) headers = ["Код", ...headers.filter(k => k !== "Код")];
   const data = rows.map(r => headers.map(h => r[h] ?? ""));
   return { headers, data, meta: rows };
 }
@@ -3448,6 +3451,11 @@ function checkAdvanceVat(mainData, vatIndex, opts) {
       : "Запросить у поставщика СФ на аванс. Вычет — право, а не обязанность: если вычет не заявляете, замечание справочное.";
     row["Строка"] = it.sourceRow;
     row["Код"] = isReceived ? "VAT-ADV-62" : "VAT-ADV-60";
+    row["Источник"] = (mainData.name || "ОСВ") + (vatIndex.name ? " + " + vatIndex.name : "");
+    attachEvidence(row, [
+      { source: mainData.name || "ОСВ", row: it.sourceRow },
+      { source: vatIndex.name || kind, row: rec ? rec.sourceRow : null }
+    ]);
     missing.push(withSeverity(row, isReceived ? "error" : "info"));
   }
 
@@ -3467,6 +3475,8 @@ function checkAdvanceVat(mainData, vatIndex, opts) {
       : "Проверить восстановление НДС с аванса в периоде поставки (Дт 76.ВА / Кт 68.02).";
     row["Строка"] = rec.sourceRow;
     row["Код"] = "VAT-001";
+    row["Источник"] = vatIndex.name || kind;
+    attachEvidence(row, [{ source: vatIndex.name || kind, row: rec.sourceRow }]);
     notRestored.push(withSeverity(row, "warning"));
   }
 
@@ -3486,6 +3496,29 @@ function checkAdvanceVat(mainData, vatIndex, opts) {
   };
 }
 
+
+/** Evidence-пакет: где программа нашла факт. entries: [{ source, row }] */
+function attachEvidence(row, entries) {
+  const list = (entries || []).filter(e => e && (e.source || e.row != null));
+  row._evidence = list.map(e => ({
+    source: e.source || "",
+    row: e.row != null ? e.row : null
+  }));
+  if (!list.length) {
+    if (row["Источник"] == null) row["Источник"] = "—";
+    return row;
+  }
+  const sources = [...new Set(list.map(e => e.source).filter(Boolean))];
+  const rows = list.map(e => e.row).filter(r => r != null && r !== "");
+  row["Источник"] = sources.length ? sources.join(" + ") : (row["Источник"] || "—");
+  if (list.length > 1) {
+    row["Строка"] = rows.length ? rows.join(" / ") : (row["Строка"] || "—");
+    row["Evidence"] = list.map(e => (e.source || "?") + ":" + (e.row != null ? e.row : "?")).join("; ");
+  } else if (rows.length && (row["Строка"] == null || row["Строка"] === "" || row["Строка"] === "—")) {
+    row["Строка"] = rows.join(" / ");
+  }
+  return row;
+}
 
 function severityMeta(level) {
   const s = level === "error" ? "error" : (level === "info" ? "info" : "warning");
@@ -3512,9 +3545,11 @@ function issueRow(it, problem, cause, action, extra) {
   const level = ex.severity || ex._severity || "warning";
   const code = ex.code || ex["Код"] || "";
   const status = ex.status || ex._status || null;
+  const sourceName = ex.source || ex["Источник"] || it.sourceFile || it.source || "";
   const row = {
     "Код": code,
     "Статус": "",
+    "Источник": sourceName || "—",
     "Счёт": it.account || "—",
     "Контрагент / аналитика": it.name,
     "Договор": it.contract || "—",
@@ -3528,11 +3563,16 @@ function issueRow(it, problem, cause, action, extra) {
     "Что сделать": action,
     "Строка": it.sourceRow
   };
+  const evidence = ex.evidence || [{ source: sourceName || "ОСВ", row: it.sourceRow }];
   Object.assign(row, ex);
   if (code) row["Код"] = code;
+  if (sourceName) row["Источник"] = sourceName;
   delete row.severity;
   delete row.code;
   delete row.status;
+  delete row.source;
+  delete row.evidence;
+  attachEvidence(row, evidence);
   return withSeverity(row, level, status);
 }
 
@@ -3683,6 +3723,11 @@ function diagnose6062(data, opts) {
   const vatIndex = opts.vatIndex ? opts.vatIndex : null;
   const evidence = buildOsvEvidence(data, { sfPartners, vatIndex });
   const router = routeR6062Controls(evidence);
+  const srcMain = data.name || "ОСВ";
+  const srcVat = (vatIndex && vatIndex.name) || "ОСВ 76.*";
+  for (const it of data.items || []) {
+    if (!it.sourceFile) it.sourceFile = srcMain;
+  }
   const mainAcc = String(data.mainAccount || "").replace(/\s/g, "");
   const mainIs62 = /^62/.test(mainAcc);
   const issues = [];
@@ -3745,6 +3790,7 @@ function diagnose6062(data, opts) {
         if (same) settle.candidates++;
         corrections.push({
           "Код": same ? "SETTLE-002" : "SETTLE-002",
+          "Источник": srcMain,
           "Контрагент": it.name,
           "Договор": it.contract || "",
           "ИНН": it.inn || "",
@@ -3755,7 +3801,8 @@ function diagnose6062(data, opts) {
           "Рекомендация": same
             ? "Кандидат к зачёту: создать в 1С непроведённую корректировку долга на сумму зачёта и проверить аналитику."
             : "Создать в 1С непроведённую корректировку долга на сумму зачёта и проверить аналитику.",
-          "Строка ОСВ": it.sourceRow
+          "Строка ОСВ": it.sourceRow,
+          "Evidence": srcMain + ":" + it.sourceRow
         });
       }
     } else if (d < -0.009 || c < -0.009) {
@@ -3906,6 +3953,11 @@ function diagnose6062(data, opts) {
     const row = issueRow(c.debitIt, problem, cause, action, {
       severity: noContract ? "info" : "warning",
       code,
+      source: srcMain,
+      evidence: [
+        { source: srcMain, row: c.debitIt.sourceRow },
+        { source: srcMain, row: c.creditIt.sourceRow }
+      ],
       "Контрагент": c.debitIt.name,
       "Счёт Дт": c.debitIt.account || "",
       "Сальдо Дт": c.debitIt.debit,
@@ -3925,6 +3977,7 @@ function diagnose6062(data, opts) {
       if (isCandidate) settle.candidates++;
       corrections.push({
         "Код": code,
+        "Источник": srcMain,
         "Контрагент": c.debitIt.name,
         "Договор": (c.debitIt.contract || c.creditIt.contract || ""),
         "ИНН": c.debitIt.inn || c.creditIt.inn || "",
@@ -3935,7 +3988,8 @@ function diagnose6062(data, opts) {
         "Рекомендация": isCandidate
           ? "Кандидат к зачёту (один договор): проверить и оформить зачёт / корректировку долга (черновик для 1С, программа в базу не пишет)."
           : "Проверить зачёт аванса / корректировку долга на сумму зачёта (черновик для 1С, программа в базу не пишет).",
-        "Строка ОСВ": c.debitIt.sourceRow + " / " + c.creditIt.sourceRow
+        "Строка ОСВ": c.debitIt.sourceRow + " / " + c.creditIt.sourceRow,
+        "Evidence": srcMain + ":" + c.debitIt.sourceRow + "; " + srcMain + ":" + c.creditIt.sourceRow
       });
     }
   }
@@ -4098,7 +4152,8 @@ document.getElementById("btnOsvRun").addEventListener("click", async () => {
       + '</div>';
     let notes = sevLegend + '<div class="reason-box">Счёт по ОСВ: <b>' + (diag.mainAccount || "не определён")
       + '</b>. Проверки: развёрнутое/незачтённый аванс, встречные 01↔02, красное сальдо, 76.АВ/76.ВА, аналитика, дубли, просрочка'
-      + (diag.sfChecked ? ", авансы без СФ" : "") + ".</div>";
+      + (diag.sfChecked ? ", авансы без СФ" : "")
+      + '. В таблице — колонки <b>Источник</b> и <b>Строка</b> (где найдено).</div>';
     const qFlags = diag.inputQuality || [];
     const sufMeta = (CONTROL_REGISTRY.data_sufficiency && CONTROL_REGISTRY.data_sufficiency.levels) || {};
     const sufLevel = diag.datasetSufficiency || "PARTIAL";
@@ -4363,6 +4418,7 @@ function compareNds(a, b) {
     if (!!ra.isCorr !== !!rb.isCorr) reasons.push("тип СФ ≠");
     const row = {
       "№ норм.": ra.number || rb.number,
+      "Источник": (a.name || "A") + " + " + (b.name || "B"),
       "Дата A": fmtDate(ra.date), "Дата B": fmtDate(rb.date),
       "Сумма A": ra.amount, "Сумма B": rb.amount,
       "НДС A": ra.nds, "НДС B": rb.nds,
@@ -4373,8 +4429,13 @@ function compareNds(a, b) {
       "Исп. дата A": fmtDate(ra.corrDate), "Исп. дата B": fmtDate(rb.corrDate),
       "Корр. A": ra.isCorr ? "да" : "нет", "Корр. B": rb.isCorr ? "да" : "нет",
       "Контрагент A": ra.partner, "Контрагент B": rb.partner,
+      "Строка A": ra.sourceRow, "Строка B": rb.sourceRow,
       "Причина": reasons.join("; ") || "OK"
     };
+    attachEvidence(row, [
+      { source: a.name || "A", row: ra.sourceRow },
+      { source: b.name || "B", row: rb.sourceRow }
+    ]);
     if (!reasons.length) ok.push(row);
     else {
       if (reasons.includes("сумма ≠")) sumDiff.push(row);
@@ -4406,34 +4467,51 @@ function compareNds(a, b) {
       }
     }
   }
-  const tag = (arr, level, code) => (arr || []).map(r => {
+  const tag = (arr, level, code, side) => (arr || []).map(r => {
     const row = Object.assign({ "Код": code }, r);
+    if (!row["Источник"]) {
+      if (side === "A") row["Источник"] = a.name || "A";
+      else if (side === "B") row["Источник"] = b.name || "B";
+      else if (side === "AB") row["Источник"] = (a.name || "A") + " + " + (b.name || "B");
+    }
+    if (!row._evidence) {
+      if (side === "A") attachEvidence(row, [{ source: a.name || "A", row: r.sourceRow || r["Строка"] || r["Строка A"] }]);
+      else if (side === "B") attachEvidence(row, [{ source: b.name || "B", row: r.sourceRow || r["Строка"] || r["Строка B"] }]);
+      else if (row["Строка A"] != null || row["Строка B"] != null) {
+        attachEvidence(row, [
+          { source: a.name || "A", row: row["Строка A"] },
+          { source: b.name || "B", row: row["Строка B"] }
+        ]);
+      }
+    }
     return withSeverity(row, level);
   });
   return {
     ok,
-    sumDiff: tag(sumDiff, "error", "NDS-SUM"),
-    ndsDiff: tag(ndsDiff, "error", "NDS-VAT"),
-    rateDiff: tag(rateDiff, "warning", "NDS-RATE"),
-    innDiff: tag(innDiff, "warning", "NDS-INN"),
-    kppDiff: tag(kppDiff, "info", "NDS-KPP"),
-    corrDiff: tag(corrDiff, "warning", "NDS-CORR"),
-    typeDiff: tag(typeDiff, "warning", "NDS-TYPE"),
+    sumDiff: tag(sumDiff, "error", "NDS-SUM", "AB"),
+    ndsDiff: tag(ndsDiff, "error", "NDS-VAT", "AB"),
+    rateDiff: tag(rateDiff, "warning", "NDS-RATE", "AB"),
+    innDiff: tag(innDiff, "warning", "NDS-INN", "AB"),
+    kppDiff: tag(kppDiff, "info", "NDS-KPP", "AB"),
+    corrDiff: tag(corrDiff, "warning", "NDS-CORR", "AB"),
+    typeDiff: tag(typeDiff, "warning", "NDS-TYPE", "AB"),
     missB: tag(missB.map(r => ({
       "№": r.number, "Дата": fmtDate(r.date), "Сумма": r.amount, "НДС": r.nds,
       "Ставка": r.rate, "ИНН": r.inn || "—", "КПП": r.kpp || "—",
       "Корр.": r.isCorr ? "да" : "нет", "Контрагент": r.partner,
+      "Строка": r.sourceRow,
       "Причина": r.reason || "нет в паре"
-    })), "warning", "NDS-MISS-B"),
+    })), "warning", "NDS-MISS-B", "A"),
     missA: tag(missA.map(r => ({
       "№": r.number, "Дата": fmtDate(r.date), "Сумма": r.amount, "НДС": r.nds,
       "Ставка": r.rate, "ИНН": r.inn || "—", "КПП": r.kpp || "—",
       "Корр.": r.isCorr ? "да" : "нет", "Контрагент": r.partner,
+      "Строка": r.sourceRow,
       "Причина": r.reason || "нет в паре"
-    })), "warning", "NDS-MISS-A"),
-    dupsA: tag(dupsA, "warning", "NDS-DUP"),
-    dupsB: tag(dupsB, "warning", "NDS-DUP"),
-    multiRateWarn: tag(multiRateWarn, "info", "NDS-MULTI")
+    })), "warning", "NDS-MISS-A", "B"),
+    dupsA: tag(dupsA, "warning", "NDS-DUP", "A"),
+    dupsB: tag(dupsB, "warning", "NDS-DUP", "B"),
+    multiRateWarn: tag(multiRateWarn, "info", "NDS-MULTI", "AB")
   };
 }
 
@@ -4473,7 +4551,7 @@ document.getElementById("btnNdsRun").addEventListener("click", async () => {
       + '<span><i class="sev sev-warning" style="margin-right:4px">внимание</i>нет пары, ставка, ИНН, дубли</span>'
       + '<span><i class="sev sev-info" style="margin-right:4px">справочно</i>КПП / несколько ставок</span></div>';
     const fullNds = kpiNds + ndsLegend +
-      '<div class="reason-box">Сопоставление: номер → номер+дата / ИНН. Колонки «Код» и «Важность»: NDS-SUM, NDS-VAT, NDS-MISS-A/B, NDS-DUP…</div>' +
+      '<div class="reason-box">Сопоставление: номер → номер+дата / ИНН. Колонки «Код», «Статус», «Источник», «Строка A/B» — где найдено расхождение.</div>' +
       '<h3 class="section">Нет в B</h3>' + renderTable(comp.missB, [], "Нет") +
       '<h3 class="section">Нет в A</h3>' + renderTable(comp.missA, [], "Нет") +
       '<h3 class="section">Отличается стоимость</h3>' + renderTable(comp.sumDiff, [], "Нет") +
