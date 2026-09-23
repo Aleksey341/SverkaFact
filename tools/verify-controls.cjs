@@ -38,6 +38,7 @@ check("html has buildOsvEvidence", html.includes("function buildOsvEvidence"));
 check("html has assessControlSufficiency", html.includes("function assessControlSufficiency"));
 check("html has attachEvidence", html.includes("function attachEvidence"));
 check("issueRow sets Источник", /"Источник"\s*:/.test(html) && html.includes("attachEvidence(row"));
+check("verify-nds exists", fs.existsSync(path.join(root, "tools", "verify-nds.cjs")));
 
 // Every registry id should appear as string literal in HTML (except we allow embedding only via JSON)
 const embeddedMatch = html.match(/const CONTROL_REGISTRY = (\{.*?\});\s*\nfunction getControlDef/s);

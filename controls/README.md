@@ -5,6 +5,8 @@
 - Источник правды: [`index.json`](index.json)
 - В `index.html` — встроенная копия `CONTROL_REGISTRY` (для работы без сети / file://)
 - Синхронизация и проверка: `node tools/verify-controls.cjs`
+- Регрессия OSV: `node tools/verify-osv.cjs`
+- Регрессия НДС: `node tools/verify-nds.cjs`
 
 ## Semantic status → UI
 
