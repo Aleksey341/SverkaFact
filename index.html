@@ -856,6 +856,39 @@ const METHOD_COLORS = {
   0: "#FF8080"
 };
 
+/* ========== CONTROL_REGISTRY_V1 (synced from controls/index.json) ========== */
+const CONTROL_REGISTRY = {"schema":"CONTROL_REGISTRY_V1","product":"SverkaFact","updated":"2026-09-23","semantic_status":{"PASS":{"ui":"info","label":"ок"},"ACCOUNTING_ERROR":{"ui":"error","label":"ошибка учёта"},"REVIEW":{"ui":"warning","label":"проверить"},"INSUFFICIENT_DATA":{"ui":"info","label":"мало данных"},"DEFERRED":{"ui":"info","label":"отложено"},"NOT_APPLICABLE":{"ui":"info","label":"не применимо"}},"input_quality":{"NO-CONTRACT":{"degrades":["SETTLE-001","SETTLE-002","SETTLE-001R"]},"NO-SUBACC":{"degrades":["SETTLE-001","AGE-001","AGE-002"]},"NO-INN":{"degrades":["VAT-ADV-60","VAT-ADV-62","DUP-INN"]},"NO-DATE":{"degrades":["AGE-001","AGE-002"]},"NO-ARITH":{"degrades":["ARITH-001"]}},"controls":{"RED-001":{"name":"Красное сальдо","domain":"settlements","module":"r6062","default_status":"ACCOUNTING_ERROR","requires":["osv"],"version":1},"SETTLE-001":{"name":"Встречные остатки 01↔02","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv","subaccounts"],"optional":["contract","inn"],"version":1},"SETTLE-001R":{"name":"Прочее развёрнутое сальдо (разные строки)","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":1},"SETTLE-002":{"name":"Развёрнутое сальдо / незачтённый аванс (одна строка)","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv"],"optional":["contract"],"version":1},"SETTLE-INC":{"name":"Недостаточно данных для зачёта (нет договора)","domain":"settlements","module":"r6062","default_status":"INSUFFICIENT_DATA","requires":["osv"],"version":1},"AGE-001":{"name":"Просроченная задолженность (.01)","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv","date"],"version":1},"AGE-002":{"name":"Просроченный аванс (.02)","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv","date","subaccounts"],"version":1},"ARITH-001":{"name":"Арифметика ОСВ: СН + обороты ≠ СК","domain":"data_quality","module":"r6062","default_status":"REVIEW","requires":["osv","start_balance","turnovers"],"version":1},"ANL-001":{"name":"Нет обязательной аналитики","domain":"data_quality","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":1},"VAT-76":{"name":"76.АВ / 76.ВА с остатком","domain":"vat","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":1},"VAT-ADV-60":{"name":"Аванс выданный без авансовой СФ (60 ↔ 76.ВА)","domain":"vat","module":"r6062","default_status":"REVIEW","requires":["osv60"],"optional":["osv76va","purchase_book"],"version":1},"VAT-ADV-62":{"name":"Аванс полученный без СФ (62 ↔ 76.АВ)","domain":"vat","module":"r6062","default_status":"ACCOUNTING_ERROR","requires":["osv62"],"optional":["osv76av","sales_book"],"version":1},"VAT-001":{"name":"76.* без аванса на 60/62","domain":"vat","module":"r6062","default_status":"REVIEW","requires":["osv","osv76"],"version":1},"DUP-NAME":{"name":"Возможный дубль контрагента по имени","domain":"master_data","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":1},"DUP-INN":{"name":"Дубль по ИНН (разные имена)","domain":"master_data","module":"r6062","default_status":"REVIEW","requires":["osv","inn"],"version":1},"NDS-SUM":{"name":"Расхождение суммы СФ","domain":"vat","module":"nds","default_status":"ACCOUNTING_ERROR","requires":["sf_a","sf_b"],"version":1},"NDS-VAT":{"name":"Расхождение суммы НДС","domain":"vat","module":"nds","default_status":"ACCOUNTING_ERROR","requires":["sf_a","sf_b"],"version":1},"NDS-RATE":{"name":"Расхождение ставки НДС","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-INN":{"name":"Расхождение ИНН","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-KPP":{"name":"Расхождение КПП","domain":"vat","module":"nds","default_status":"INSUFFICIENT_DATA","requires":["sf_a","sf_b"],"version":1},"NDS-CORR":{"name":"Расхождение исправления СФ","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-TYPE":{"name":"Расхождение типа СФ (корр.)","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-MISS-A":{"name":"СФ нет в файле A","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-MISS-B":{"name":"СФ нет в файле B","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-DUP":{"name":"Дубль СФ в одном файле","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf"],"version":1},"NDS-MULTI":{"name":"Несколько ставок в одной СФ","domain":"vat","module":"nds","default_status":"INSUFFICIENT_DATA","requires":["sf"],"version":1}}};
+
+function getControlDef(code) {
+  if (!code) return null;
+  const c = CONTROL_REGISTRY.controls || {};
+  return c[code] || null;
+}
+
+function statusToSeverity(status) {
+  const map = (CONTROL_REGISTRY.semantic_status || {})[status];
+  return map && map.ui ? map.ui : "warning";
+}
+
+function statusLabel(status) {
+  const map = (CONTROL_REGISTRY.semantic_status || {})[status];
+  return map && map.label ? map.label : (status || "");
+}
+
+function severityToStatus(level) {
+  if (level === "error") return "ACCOUNTING_ERROR";
+  if (level === "info") return "INSUFFICIENT_DATA";
+  return "REVIEW";
+}
+
+function resolveControlStatus(code, explicitStatus, explicitSeverity) {
+  if (explicitStatus) return explicitStatus;
+  const def = getControlDef(code);
+  if (def && def.default_status) return def.default_status;
+  return severityToStatus(explicitSeverity || "warning");
+}
+
+
 function normalizeText(v) {
   if (v == null || v === undefined) return "";
   return String(v).replace(/\u00a0|\u202f/g, " ").replace(/\s+/g, " ").trim();
@@ -1981,9 +2014,10 @@ function shortActTitle(name) {
 function renderTable(rows, moneyCols = [], emptyText) {
   if (!rows || !rows.length) return `<div class="hint">${emptyText || NO_MATCHES_TEXT}</div>`;
   const keys = Object.keys(rows[0]).filter(k => !k.startsWith("_"));
-  // Код проверки и важность — первыми колонками
+  // Код → Статус → Важность первыми
   let ordered = keys.slice();
   if (ordered.includes("Важность")) ordered = ["Важность", ...ordered.filter(k => k !== "Важность")];
+  if (ordered.includes("Статус")) ordered = ["Статус", ...ordered.filter(k => k !== "Статус")];
   if (ordered.includes("Код")) ordered = ["Код", ...ordered.filter(k => k !== "Код")];
   let html = '<div class="table-wrap"><table class="data"><thead><tr>';
   for (const k of ordered) html += `<th>${k}</th>`;
@@ -3350,9 +3384,14 @@ function severityMeta(level) {
   return { severity: s, label, color };
 }
 
-function withSeverity(row, level) {
-  const m = severityMeta(level);
+function withSeverity(row, level, statusOpt) {
+  const code = row["Код"] || "";
+  const status = resolveControlStatus(code, statusOpt || row._status || null, level);
+  const uiLevel = statusToSeverity(status);
+  const m = severityMeta(uiLevel);
+  row["Статус"] = statusLabel(status);
   row["Важность"] = m.label;
+  row._status = status;
   row._severity = m.severity;
   row._color = row._color || m.color;
   return row;
@@ -3362,8 +3401,10 @@ function issueRow(it, problem, cause, action, extra) {
   const ex = extra || {};
   const level = ex.severity || ex._severity || "warning";
   const code = ex.code || ex["Код"] || "";
+  const status = ex.status || ex._status || null;
   const row = {
     "Код": code,
+    "Статус": "",
     "Счёт": it.account || "—",
     "Контрагент / аналитика": it.name,
     "Договор": it.contract || "—",
@@ -3381,7 +3422,8 @@ function issueRow(it, problem, cause, action, extra) {
   if (code) row["Код"] = code;
   delete row.severity;
   delete row.code;
-  return withSeverity(row, level);
+  delete row.status;
+  return withSeverity(row, level, status);
 }
 
 function osvAccountFamily(account) {
@@ -3932,9 +3974,9 @@ document.getElementById("btnOsvRun").addEventListener("click", async () => {
         : "Аванс выдан, авансовая СФ не получена (60 Дт ↔ 76.ВА)")
       : "Аванс без счёта-фактуры (по реестру полученных СФ)";
     const sevLegend = '<div class="legend" style="margin:0 0 12px">'
-      + '<span><i class="sev sev-error" style="margin-right:4px">ошибка</i>обязательно исправить</span>'
-      + '<span><i class="sev sev-warning" style="margin-right:4px">внимание</i>проверить</span>'
-      + '<span><i class="sev sev-info" style="margin-right:4px">справочно</i>право / не блокер</span>'
+      + '<span><i class="sev sev-error" style="margin-right:4px">ошибка</i>ошибка учёта</span>'
+      + '<span><i class="sev sev-warning" style="margin-right:4px">внимание</i>проверить (REVIEW)</span>'
+      + '<span><i class="sev sev-info" style="margin-right:4px">справочно</i>мало данных / не блокер</span>'
       + '</div>';
     let notes = sevLegend + '<div class="reason-box">Счёт по ОСВ: <b>' + (diag.mainAccount || "не определён")
       + '</b>. Проверки: развёрнутое/незачтённый аванс, встречные 01↔02, красное сальдо, 76.АВ/76.ВА, аналитика, дубли, просрочка'
