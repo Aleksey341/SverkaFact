@@ -214,6 +214,17 @@ check("inclusive-vat-22-122", () => {
   assert(Math.abs(c20.vat - 20000) < 0.011, "2025 vat got " + c20.vat);
 });
 
+check("control-results-pass-deferred", () => {
+  const { matrix, fileName } = loadSample("settle-candidate.json");
+  const data = parseOsv6062(matrix, fileName);
+  const diag = diagnose6062(data, { overdueDays: 30 });
+  assert(Array.isArray(diag.controlResults) && diag.controlResults.length > 0, "controlResults");
+  assert(diag.controlResults.some((r) => r.schema === "CONTROL_RESULT_SCHEMA_V1"), "schema");
+  assert(diag.controlResults.some((r) => r.control === "SETTLE-001" && r.finding_count >= 1), "SETTLE finding");
+  assert(diag.controlResults.some((r) => r.execution === "DEFERRED"), "has deferred");
+  assert(diag.controlResults.some((r) => r.execution === "EXECUTED" && r.status === "PASS" && r.finding_count === 0), "has PASS");
+});
+
 if (fail) {
   console.error("\n" + fail + " failed");
   process.exit(1);

@@ -857,8 +857,16 @@ const METHOD_COLORS = {
 };
 
 /* ========== CONTROL_REGISTRY_V1 (synced from controls/index.json) ========== */
-const CONTROL_REGISTRY = {"schema":"CONTROL_REGISTRY_V1","product":"SverkaFact","updated":"2026-09-23","semantic_status":{"PASS":{"ui":"info","label":"ок"},"ACCOUNTING_ERROR":{"ui":"error","label":"ошибка учёта"},"REVIEW":{"ui":"warning","label":"проверить"},"INSUFFICIENT_DATA":{"ui":"info","label":"мало данных"},"DEFERRED":{"ui":"info","label":"отложено"},"NOT_APPLICABLE":{"ui":"info","label":"не применимо"}},"input_quality":{"NO-CONTRACT":{"degrades":["SETTLE-001","SETTLE-002","SETTLE-001R"]},"NO-SUBACC":{"degrades":["SETTLE-001","AGE-001","AGE-002"]},"NO-INN":{"degrades":["VAT-ADV-60","VAT-ADV-62","DUP-INN"]},"NO-DATE":{"degrades":["AGE-001","AGE-002"]},"NO-ARITH":{"degrades":["ARITH-001"]}},"controls":{"RED-001":{"name":"Красное сальдо","domain":"settlements","module":"r6062","default_status":"ACCOUNTING_ERROR","requires":["osv"],"version":1},"SETTLE-001":{"name":"Встречные остатки 01↔02","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv","subaccounts"],"optional":["contract","inn"],"version":1,"blocking_for_candidate":["contract"]},"SETTLE-001R":{"name":"Прочее развёрнутое сальдо (разные строки)","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":1},"SETTLE-002":{"name":"Развёрнутое сальдо / незачтённый аванс (одна строка)","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv"],"optional":["contract"],"version":1},"SETTLE-INC":{"name":"Недостаточно данных для зачёта (нет договора)","domain":"settlements","module":"r6062","default_status":"INSUFFICIENT_DATA","requires":["osv"],"version":1},"AGE-001":{"name":"Просроченная задолженность (.01)","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv","date"],"version":1},"AGE-002":{"name":"Просроченный аванс (.02)","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv","date","subaccounts"],"version":1},"ARITH-001":{"name":"Арифметика ОСВ: СН + обороты ≠ СК","domain":"data_quality","module":"r6062","default_status":"REVIEW","requires":["osv","start_balance","turnovers"],"version":1},"ANL-001":{"name":"Нет обязательной аналитики","domain":"data_quality","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":1},"VAT-76":{"name":"76.АВ / 76.ВА с остатком","domain":"vat","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":1},"VAT-ADV-60":{"name":"Аванс выданный без авансовой СФ (60 ↔ 76.ВА)","domain":"vat","module":"r6062","default_status":"REVIEW","requires":["osv60"],"optional":["osv76va","purchase_book","inn"],"version":1},"VAT-ADV-62":{"name":"Аванс полученный без СФ (62 ↔ 76.АВ)","domain":"vat","module":"r6062","default_status":"ACCOUNTING_ERROR","requires":["osv62"],"optional":["osv76av","sales_book","inn"],"version":1},"VAT-001":{"name":"76.* без аванса на 60/62","domain":"vat","module":"r6062","default_status":"REVIEW","requires":["osv","osv76"],"version":1},"DUP-NAME":{"name":"Возможный дубль контрагента по имени","domain":"master_data","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":1},"DUP-INN":{"name":"Дубль по ИНН (разные имена)","domain":"master_data","module":"r6062","default_status":"REVIEW","requires":["osv","inn"],"version":1},"NDS-SUM":{"name":"Расхождение суммы СФ","domain":"vat","module":"nds","default_status":"ACCOUNTING_ERROR","requires":["sf_a","sf_b"],"version":1},"NDS-VAT":{"name":"Расхождение суммы НДС","domain":"vat","module":"nds","default_status":"ACCOUNTING_ERROR","requires":["sf_a","sf_b"],"version":1},"NDS-RATE":{"name":"Расхождение ставки НДС","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1,"optional":["rate"]},"NDS-INN":{"name":"Расхождение ИНН","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1,"optional":["inn"]},"NDS-KPP":{"name":"Расхождение КПП","domain":"vat","module":"nds","default_status":"INSUFFICIENT_DATA","requires":["sf_a","sf_b"],"version":1,"optional":["kpp"]},"NDS-CORR":{"name":"Расхождение исправления СФ","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1,"optional":["corr_meta"]},"NDS-TYPE":{"name":"Расхождение типа СФ (корр.)","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1,"optional":["corr_meta"]},"NDS-MISS-A":{"name":"СФ нет в файле A","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-MISS-B":{"name":"СФ нет в файле B","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-DUP":{"name":"Дубль СФ в одном файле","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf"],"version":1},"NDS-MULTI":{"name":"Несколько ставок в одной СФ","domain":"vat","module":"nds","default_status":"INSUFFICIENT_DATA","requires":["sf"],"version":1,"optional":["multi_rate"]}},"data_sufficiency":{"schema":"DATA_SUFFICIENCY_V1","levels":{"COMPLETE":{"label":"полный ввод","ui":"ok"},"PARTIAL":{"label":"частичный ввод","ui":"warn"},"INSUFFICIENT":{"label":"недостаточно данных","ui":"info"},"INVALID":{"label":"данные непригодны","ui":"err"}},"evidence_keys":{"osv":"ОСВ / взаиморасчёты загружены","subaccounts":"Субсчета 60.01/60.02 (или 62.*)","contract":"Субконто «Договор»","inn":"ИНН контрагентов","date":"Дата в строках ОСВ","start_balance":"Сальдо на начало","turnovers":"Обороты за период","osv60":"Основной счёт 60","osv62":"Основной счёт 62","osv76":"Второй файл — ОСВ 76.*","osv76va":"ОСВ 76.ВА","osv76av":"ОСВ 76.АВ","purchase_book":"Книга покупок / реестр полученных СФ","sales_book":"Книга продаж / реестр выданных СФ","sf_a":"Реестр СФ A","sf_b":"Реестр СФ B","sf":"Реестр СФ","rate":"Ставка НДС в реестре СФ","kpp":"КПП контрагента","corr_meta":"Признаки исправления / корр. СФ","multi_rate":"Колонки НДС по ставкам (0/10/20) или несколько ставок в строке"}},"router":{"schema":"CONTROL_ROUTER_V1","modules":{"r6062":{"description":"Выбирает применимые контроли Доктора 60/62 по профилю evidence"},"nds":{"description":"Выбирает применимые контроли сверки НДС (реестры СФ A/B) по профилю evidence"}}}};
+/* SF_ENGINE_BEGIN */
+const CONTROL_REGISTRY = {"schema":"CONTROL_REGISTRY_V1","product":"SverkaFact","updated":"2026-09-23","semantic_status":{"PASS":{"ui":"info","label":"ок"},"ACCOUNTING_ERROR":{"ui":"error","label":"ошибка учёта"},"REVIEW":{"ui":"warning","label":"проверить"},"INSUFFICIENT_DATA":{"ui":"info","label":"мало данных"},"DEFERRED":{"ui":"info","label":"отложено"},"NOT_APPLICABLE":{"ui":"info","label":"не применимо"}},"input_quality":{"NO-CONTRACT":{"degrades":["SETTLE-001","SETTLE-002","SETTLE-001R"]},"NO-SUBACC":{"degrades":["SETTLE-001","AGE-001","AGE-002"]},"NO-INN":{"degrades":["VAT-ADV-60","VAT-ADV-62","DUP-INN"]},"NO-DATE":{"degrades":["AGE-001","AGE-002"]},"NO-ARITH":{"degrades":["ARITH-001"]}},"controls":{"RED-001":{"name":"Красное сальдо","domain":"settlements","module":"r6062","default_status":"ACCOUNTING_ERROR","requires":["osv"],"version":1},"SETTLE-001":{"name":"Встречные остатки 01↔02","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv","subaccounts"],"optional":["contract","inn"],"version":1,"blocking_for_candidate":["contract"]},"SETTLE-001R":{"name":"Прочее развёрнутое сальдо (разные строки)","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":1},"SETTLE-002":{"name":"Развёрнутое сальдо / незачтённый аванс (одна строка)","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv"],"optional":["contract"],"version":1},"SETTLE-INC":{"name":"Недостаточно данных для зачёта (нет договора)","domain":"settlements","module":"r6062","default_status":"INSUFFICIENT_DATA","requires":["osv"],"version":1},"AGE-001":{"name":"Просроченная задолженность (.01)","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv","date"],"version":1},"AGE-002":{"name":"Просроченный аванс (.02)","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv","date","subaccounts"],"version":1},"ARITH-001":{"name":"Арифметика ОСВ: СН + обороты ≠ СК","domain":"data_quality","module":"r6062","default_status":"REVIEW","requires":["osv","start_balance","turnovers"],"version":1},"ANL-001":{"name":"Нет обязательной аналитики","domain":"data_quality","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":1},"VAT-76":{"name":"76.АВ / 76.ВА с остатком","domain":"vat","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":1},"VAT-ADV-60":{"name":"Аванс выданный без авансовой СФ (60 ↔ 76.ВА)","domain":"vat","module":"r6062","default_status":"REVIEW","requires":["osv60"],"optional":["inn"],"version":2,"requires_any":[["osv76va","purchase_book"]]},"VAT-ADV-62":{"name":"Аванс полученный без СФ (62 ↔ 76.АВ)","domain":"vat","module":"r6062","default_status":"ACCOUNTING_ERROR","requires":["osv62"],"optional":["inn"],"version":2,"requires_any":[["osv76av","sales_book"]]},"VAT-001":{"name":"76.* без аванса на 60/62","domain":"vat","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":2,"requires_any":[["osv76"]],"optional":[]},"DUP-NAME":{"name":"Возможный дубль контрагента по имени","domain":"master_data","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":1},"DUP-INN":{"name":"Дубль по ИНН (разные имена)","domain":"master_data","module":"r6062","default_status":"REVIEW","requires":["osv","inn"],"version":1},"NDS-SUM":{"name":"Расхождение суммы СФ","domain":"vat","module":"nds","default_status":"ACCOUNTING_ERROR","requires":["sf_a","sf_b"],"version":1},"NDS-VAT":{"name":"Расхождение суммы НДС","domain":"vat","module":"nds","default_status":"ACCOUNTING_ERROR","requires":["sf_a","sf_b"],"version":1},"NDS-RATE":{"name":"Расхождение ставки НДС","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1,"optional":["rate"]},"NDS-INN":{"name":"Расхождение ИНН","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1,"optional":["inn"]},"NDS-KPP":{"name":"Расхождение КПП","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":2,"optional":["kpp"]},"NDS-CORR":{"name":"Расхождение исправления СФ","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1,"optional":["corr_meta"]},"NDS-TYPE":{"name":"Расхождение типа СФ (корр.)","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1,"optional":["corr_meta"]},"NDS-MISS-A":{"name":"СФ нет в файле A","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-MISS-B":{"name":"СФ нет в файле B","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-DUP":{"name":"Дубль СФ в одном файле","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf"],"version":1},"NDS-MULTI":{"name":"Несколько ставок в одной СФ","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf"],"version":2,"requires_any":[["multi_rate"]]}},"data_sufficiency":{"schema":"DATA_SUFFICIENCY_V1","levels":{"COMPLETE":{"label":"полный ввод","ui":"ok"},"PARTIAL":{"label":"частичный ввод","ui":"warn"},"INSUFFICIENT":{"label":"недостаточно данных","ui":"info"},"INVALID":{"label":"данные непригодны","ui":"err"}},"evidence_keys":{"osv":"ОСВ / взаиморасчёты загружены","subaccounts":"Субсчета 60.01/60.02 (или 62.*)","contract":"Субконто «Договор»","inn":"ИНН контрагентов","date":"Дата в строках ОСВ","start_balance":"Сальдо на начало","turnovers":"Обороты за период","osv60":"Основной счёт 60","osv62":"Основной счёт 62","osv76":"Второй файл — ОСВ 76.*","osv76va":"ОСВ 76.ВА","osv76av":"ОСВ 76.АВ","purchase_book":"Книга покупок / реестр полученных СФ","sales_book":"Книга продаж / реестр выданных СФ","sf_a":"Реестр СФ A","sf_b":"Реестр СФ B","sf":"Реестр СФ","rate":"Ставка НДС в реестре СФ","kpp":"КПП контрагента","corr_meta":"Признаки исправления / корр. СФ","multi_rate":"Колонки НДС по ставкам (0/10/20) или несколько ставок в строке"}},"router":{"schema":"CONTROL_ROUTER_V1","modules":{"r6062":{"description":"Выбирает применимые контроли Доктора 60/62 по профилю evidence"},"nds":{"description":"Выбирает применимые контроли сверки НДС (реестры СФ A/B) по профилю evidence"}}},"control_result":{"schema":"CONTROL_RESULT_SCHEMA_V1","execution":["EXECUTED","DEFERRED","NOT_APPLICABLE"],"description":"Нормализованный итог контроля: PASS vs findings vs deferred"}};
 
+const REGULATORY = {"schema":"REGULATORY_V1","vat":{"schema":"REGULATORY_VAT_RATES_V1","product":"SverkaFact","updated":"2026-09-23","disclaimer":"Справочник для сверки файлов, не юридическая консультация. Стандартная ставка с 01.01.2026 — 22% (НК РФ / разъяснения ФНС). При смене ставки — обновить этот файл и выполнить node tools/sync-embedded.cjs.","standard":[{"rate":18,"from":"2004-01-01","to":"2018-12-31"},{"rate":20,"from":"2019-01-01","to":"2025-12-31"},{"rate":22,"from":"2026-01-01","to":null}],"reduced":[10,0],"known_rates":[0,10,18,20,22]}};
+
+/* --- engine/01-control-result.js --- */
+/**
+ * CONTROL_RESULT_SCHEMA_V1 + status helpers.
+ * Expects global CONTROL_REGISTRY.
+ */
 function getControlDef(code) {
   if (!code) return null;
   const c = CONTROL_REGISTRY.controls || {};
@@ -888,11 +896,143 @@ function resolveControlStatus(code, explicitStatus, explicitSeverity) {
   return severityToStatus(explicitSeverity || "warning");
 }
 
+/** CONTROL_RESULT_SCHEMA_V1 */
+function makeControlResult(opts) {
+  opts = opts || {};
+  const code = opts.control || opts.code || "";
+  const def = getControlDef(code);
+  return {
+    schema: "CONTROL_RESULT_SCHEMA_V1",
+    control: code,
+    execution: opts.execution || "EXECUTED",
+    status: opts.status || "PASS",
+    sufficiency: opts.sufficiency || null,
+    finding_count: opts.finding_count != null ? opts.finding_count : 0,
+    evidence: opts.evidence || [],
+    missing: opts.missing || [],
+    match_confidence: opts.match_confidence || null,
+    rule_version: (def && def.version) || 1,
+    regulatory_version: opts.regulatory_version || null
+  };
+}
+
+/**
+ * Сводка по плану router + найденным строкам (по Код).
+ * findingsByCode: { "VAT-ADV-60": [rows...] }
+ */
+function buildControlResults(plan, findingsByCode, opts) {
+  opts = opts || {};
+  const out = [];
+  const byCode = findingsByCode || {};
+  const applicable = (plan && plan.applicable) || [];
+  const deferred = (plan && plan.deferred) || [];
+  const notApplicable = (plan && plan.notApplicable) || [];
+  const seen = new Set();
+
+  for (const d of deferred) {
+    const code = d.code || d;
+    seen.add(code);
+    out.push(makeControlResult({
+      control: code,
+      execution: "DEFERRED",
+      status: "INSUFFICIENT_DATA",
+      sufficiency: d.sufficiency || "INSUFFICIENT",
+      finding_count: 0,
+      missing: d.missing || [],
+      regulatory_version: opts.regulatory_version || null
+    }));
+  }
+  for (const d of notApplicable) {
+    const code = d.code || d;
+    seen.add(code);
+    out.push(makeControlResult({
+      control: code,
+      execution: "NOT_APPLICABLE",
+      status: "NOT_APPLICABLE",
+      finding_count: 0,
+      regulatory_version: opts.regulatory_version || null
+    }));
+  }
+  for (const code of applicable) {
+    seen.add(code);
+    const rows = byCode[code] || [];
+    const suf = opts.evidence ? assessControlSufficiency(code, opts.evidence) : { level: null };
+    if (!rows.length) {
+      out.push(makeControlResult({
+        control: code,
+        execution: "EXECUTED",
+        status: "PASS",
+        sufficiency: suf.level,
+        finding_count: 0,
+        regulatory_version: opts.regulatory_version || null
+      }));
+    } else {
+      const status = resolveControlStatus(code, rows[0]._status || null, rows[0]._severity);
+      const ev = [];
+      for (const r of rows.slice(0, 20)) {
+        if (Array.isArray(r._evidence)) ev.push(...r._evidence);
+      }
+      out.push(makeControlResult({
+        control: code,
+        execution: "EXECUTED",
+        status,
+        sufficiency: suf.level,
+        finding_count: rows.length,
+        evidence: ev.slice(0, 40),
+        match_confidence: rows[0] && rows[0]._matchConfidence ? rows[0]._matchConfidence : null,
+        regulatory_version: opts.regulatory_version || null
+      }));
+    }
+  }
+  // findings for codes not in plan (shouldn't happen often)
+  for (const code of Object.keys(byCode)) {
+    if (seen.has(code)) continue;
+    const rows = byCode[code] || [];
+    if (!rows.length) continue;
+    out.push(makeControlResult({
+      control: code,
+      execution: "EXECUTED",
+      status: resolveControlStatus(code, rows[0]._status || null, rows[0]._severity),
+      finding_count: rows.length,
+      evidence: (rows[0]._evidence || []).slice(0, 10),
+      regulatory_version: opts.regulatory_version || null
+    }));
+  }
+  return out;
+}
+
+function groupFindingsByCode(rowLists) {
+  const map = {};
+  for (const list of rowLists || []) {
+    for (const r of list || []) {
+      const code = r["Код"] || r.code;
+      if (!code) continue;
+      if (!map[code]) map[code] = [];
+      map[code].push(r);
+    }
+  }
+  return map;
+}
+
+function latestRegulatoryVersion() {
+  const list = (REGULATORY && REGULATORY.vat && REGULATORY.vat.standard) || [];
+  let best = null;
+  for (const row of list) {
+    if (!best || String(row.from) > String(best)) best = row.from;
+  }
+  return best;
+}
+
+/* --- engine/02-evidence.js --- */
+/**
+ * Evidence helpers + attachEvidence.
+ * Expects normalizeText / fmt helpers only where needed — attachEvidence is self-contained.
+ */
 function buildOsvEvidence(data, opts) {
   opts = opts || {};
   const mainAcc = String((data && data.mainAccount) || "").replace(/\s/g, "");
   const vatKind = opts.vatIndex && opts.vatIndex.kind ? opts.vatIndex.kind : "";
-  const ev = {
+  return {
     osv: !!(data && data.items && data.items.length),
     subaccounts: !!(data && data.hasSubaccounts),
     contract: !!(data && data.hasContracts),
@@ -911,149 +1051,6 @@ function buildOsvEvidence(data, opts) {
     sf_a: false,
     sf_b: false
   };
-  return ev;
-}
-
-function assessControlSufficiency(code, evidence) {
-  const def = getControlDef(code);
-  if (!def) return { level: "INVALID", missingRequired: ["unknown_control"], missingOptional: [] };
-  const req = def.requires || [];
-  const opt = def.optional || [];
-  const missingRequired = req.filter(k => !evidence[k]);
-  const missingOptional = opt.filter(k => !evidence[k]);
-  if (!evidence.osv && req.indexOf("osv") >= 0) {
-    return { level: "INVALID", missingRequired, missingOptional };
-  }
-  if ((req.indexOf("sf") >= 0 || req.indexOf("sf_a") >= 0 || req.indexOf("sf_b") >= 0)
-      && !evidence.sf && !evidence.sf_a && !evidence.sf_b) {
-    return { level: "INVALID", missingRequired, missingOptional };
-  }
-  if (missingRequired.length) {
-    return { level: "INSUFFICIENT", missingRequired, missingOptional };
-  }
-  if (missingOptional.length) {
-    return { level: "PARTIAL", missingRequired, missingOptional };
-  }
-  return { level: "COMPLETE", missingRequired: [], missingOptional: [] };
-}
-
-function assessDatasetSufficiency(evidence, plan) {
-  if (!evidence.osv) return "INVALID";
-  const codes = plan && plan.applicable || [];
-  let worst = "COMPLETE";
-  const rank = { COMPLETE: 0, PARTIAL: 1, INSUFFICIENT: 2, INVALID: 3 };
-  for (const code of codes) {
-    const a = assessControlSufficiency(code, evidence);
-    if (rank[a.level] > rank[worst]) worst = a.level;
-  }
-  // Core settle degradation without contract
-  if (!evidence.contract && evidence.osv) {
-    if (rank.PARTIAL > rank[worst] || worst === "COMPLETE") worst = "PARTIAL";
-  }
-  return worst;
-}
-
-/** CONTROL_ROUTER_V1 — какие контроли 60/62 применимы к текущему набору файлов. */
-function routeR6062Controls(evidence) {
-  const all = Object.keys((CONTROL_REGISTRY.controls) || {}).filter(id => {
-    const d = getControlDef(id);
-    return d && d.module === "r6062";
-  });
-  const applicable = [];
-  const partial = [];
-  const deferred = [];
-  const notApplicable = [];
-  for (const code of all) {
-    const def = getControlDef(code);
-    // Account-family gating
-    if (code === "VAT-ADV-60" && evidence.osv62 && !evidence.osv60) {
-      notApplicable.push({ code, reason: "основной счёт 62 — контроль для 60" });
-      continue;
-    }
-    if (code === "VAT-ADV-62" && evidence.osv60 && !evidence.osv62) {
-      notApplicable.push({ code, reason: "основной счёт 60 — контроль для 62" });
-      continue;
-    }
-    if ((code === "VAT-ADV-60" || code === "VAT-ADV-62" || code === "VAT-001") && !evidence.osv76 && !evidence.sf) {
-      deferred.push({ code, reason: "нет второго файла (76.* / книга / реестр СФ)", missing: (def.optional || []).filter(k => !evidence[k]) });
-      continue;
-    }
-    if (code === "VAT-001" && !evidence.osv76) {
-      deferred.push({ code, reason: "нужна ОСВ 76.*", missing: ["osv76"] });
-      continue;
-    }
-    const suf = assessControlSufficiency(code, evidence);
-    if (suf.level === "INVALID" || suf.level === "INSUFFICIENT") {
-      deferred.push({ code, reason: "не хватает: " + suf.missingRequired.join(", "), missing: suf.missingRequired, sufficiency: suf.level });
-    } else if (suf.level === "PARTIAL") {
-      partial.push({ code, missingOptional: suf.missingOptional, sufficiency: suf.level });
-      applicable.push(code);
-    } else {
-      applicable.push(code);
-    }
-  }
-  const plan = { applicable, partial, deferred, notApplicable };
-  plan.datasetSufficiency = assessDatasetSufficiency(evidence, plan);
-  return plan;
-}
-
-function controlPlanEnabled(plan, code) {
-  return (plan.applicable || []).indexOf(code) >= 0;
-}
-
-const REGULATORY = {"schema":"REGULATORY_V1","vat":{"schema":"REGULATORY_VAT_RATES_V1","product":"SverkaFact","updated":"2026-09-23","disclaimer":"Справочник для сверки файлов, не юридическая консультация. Стандартная ставка с 01.01.2026 — 22% (НК РФ / разъяснения ФНС). При смене ставки — обновить этот файл и выполнить node tools/sync-embedded.cjs.","standard":[{"rate":18,"from":"2004-01-01","to":"2018-12-31"},{"rate":20,"from":"2019-01-01","to":"2025-12-31"},{"rate":22,"from":"2026-01-01","to":null}],"reduced":[10,0],"known_rates":[0,10,18,20,22]}};
-
-/** Стандартная ставка НДС на дату (из regulatory/vat-rates). */
-function getStandardVatRate(date) {
-  const list = (REGULATORY.vat && REGULATORY.vat.standard) || [];
-  let t = null;
-  if (date instanceof Date && !Number.isNaN(date.getTime())) {
-    t = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
-  } else if (date) {
-    const d = parseDate(date);
-    if (d) t = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
-  }
-  if (t == null) t = Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
-  let hit = null;
-  for (const row of list) {
-    const from = parseDate(row.from);
-    const to = row.to ? parseDate(row.to) : null;
-    const f = from ? Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate()) : 0;
-    const e = to ? Date.UTC(to.getUTCFullYear(), to.getUTCMonth(), to.getUTCDate()) : Infinity;
-    if (t >= f && t <= e) hit = row.rate;
-  }
-  if (hit != null) return hit;
-  // fallback: последняя известная стандартная ставка из справочника
-  if (list.length) return list[list.length - 1].rate;
-  return 20;
-}
-
-/** Доля НДС в сумме с НДС: rate/(100+rate), напр. 22/122. */
-function vatInclusiveShare(rate) {
-  const r = Number(rate);
-  if (!Number.isFinite(r) || r < 0) return 0;
-  return r / (100 + r);
-}
-
-function vatInclusiveFormula(rate) {
-  const r = Number(rate);
-  if (!Number.isFinite(r)) return "—";
-  return r + "/" + (100 + r);
-}
-
-/** НДС из суммы с НДС на дату операции (или asOf / сегодня). */
-function calcInclusiveVat(amountWithVat, date) {
-  const rate = getStandardVatRate(date);
-  const r2 = (n) => Math.round((n || 0) * 100) / 100;
-  return { rate, formula: vatInclusiveFormula(rate), vat: r2((amountWithVat || 0) * vatInclusiveShare(rate)) };
-}
-
-function knownVatRates() {
-  const v = REGULATORY.vat || {};
-  if (Array.isArray(v.known_rates) && v.known_rates.length) return v.known_rates.slice();
-  const out = new Set(v.reduced || []);
-  for (const row of v.standard || []) if (row.rate != null) out.add(row.rate);
-  return [...out].sort((a, b) => a - b);
 }
 
 function buildNdsEvidence(a, b) {
@@ -1076,6 +1073,92 @@ function buildNdsEvidence(a, b) {
   };
 }
 
+/** Evidence-пакет: где программа нашла факт. entries: [{ source, row }] */
+function attachEvidence(row, entries) {
+  const list = (entries || []).filter(e => e && (e.source || e.row != null));
+  row._evidence = list.map(e => ({
+    source: e.source || "",
+    row: e.row != null ? e.row : null
+  }));
+  if (!list.length) {
+    if (row["Источник"] == null) row["Источник"] = "—";
+    return row;
+  }
+  const sources = [...new Set(list.map(e => e.source).filter(Boolean))];
+  const rows = list.map(e => e.row).filter(r => r != null && r !== "");
+  row["Источник"] = sources.length ? sources.join(" + ") : (row["Источник"] || "—");
+  if (list.length > 1) {
+    row["Строка"] = rows.length ? rows.join(" / ") : (row["Строка"] || "—");
+    row["Evidence"] = list.map(e => (e.source || "?") + ":" + (e.row != null ? e.row : "?")).join("; ");
+  } else if (rows.length && (row["Строка"] == null || row["Строка"] === "" || row["Строка"] === "—")) {
+    row["Строка"] = rows.join(" / ");
+  }
+  return row;
+}
+
+/* --- engine/03-sufficiency.js --- */
+/**
+ * DATA_SUFFICIENCY_V1 + requires_any / requires_all.
+ */
+function evidenceHasAny(evidence, keys) {
+  return (keys || []).some(k => !!evidence[k]);
+}
+
+function evidenceMissingAnyGroup(evidence, groups) {
+  const missingGroups = [];
+  for (const g of groups || []) {
+    if (!evidenceHasAny(evidence, g)) missingGroups.push(g.slice());
+  }
+  return missingGroups;
+}
+
+function assessControlSufficiency(code, evidence) {
+  const def = getControlDef(code);
+  if (!def) return { level: "INVALID", missingRequired: ["unknown_control"], missingOptional: [], missingRequiresAny: [] };
+  const req = def.requires || [];
+  const opt = def.optional || [];
+  const reqAny = def.requires_any || [];
+  const missingRequired = req.filter(k => !evidence[k]);
+  const missingOptional = opt.filter(k => !evidence[k]);
+  const missingRequiresAny = evidenceMissingAnyGroup(evidence, reqAny);
+
+  if (!evidence.osv && req.indexOf("osv") >= 0) {
+    return { level: "INVALID", missingRequired, missingOptional, missingRequiresAny };
+  }
+  if ((req.indexOf("sf") >= 0 || req.indexOf("sf_a") >= 0 || req.indexOf("sf_b") >= 0)
+      && !evidence.sf && !evidence.sf_a && !evidence.sf_b) {
+    return { level: "INVALID", missingRequired, missingOptional, missingRequiresAny };
+  }
+  if (missingRequired.length || missingRequiresAny.length) {
+    const flatAny = missingRequiresAny.map(g => g.join("|"));
+    return {
+      level: "INSUFFICIENT",
+      missingRequired: missingRequired.concat(flatAny),
+      missingOptional,
+      missingRequiresAny
+    };
+  }
+  if (missingOptional.length) {
+    return { level: "PARTIAL", missingRequired: [], missingOptional, missingRequiresAny: [] };
+  }
+  return { level: "COMPLETE", missingRequired: [], missingOptional: [], missingRequiresAny: [] };
+}
+
+function assessDatasetSufficiency(evidence, plan) {
+  if (!evidence.osv) return "INVALID";
+  const codes = plan && plan.applicable || [];
+  let worst = "COMPLETE";
+  const rank = { COMPLETE: 0, PARTIAL: 1, INSUFFICIENT: 2, INVALID: 3 };
+  for (const code of codes) {
+    const a = assessControlSufficiency(code, evidence);
+    if (rank[a.level] > rank[worst]) worst = a.level;
+  }
+  if (!evidence.contract && evidence.osv) {
+    if (rank.PARTIAL > rank[worst] || worst === "COMPLETE") worst = "PARTIAL";
+  }
+  return worst;
+}
+
 function assessNdsDatasetSufficiency(evidence, plan) {
   if (!evidence.sf && !evidence.sf_a && !evidence.sf_b) return "INVALID";
   if (!evidence.sf_a || !evidence.sf_b) return "INSUFFICIENT";
@@ -1089,41 +1172,41 @@ function assessNdsDatasetSufficiency(evidence, plan) {
   return worst;
 }
 
-/** CONTROL_ROUTER_V1 — контроли модуля НДС по профилю evidence реестров A/B. */
-function routeNdsControls(evidence) {
+/* --- engine/04-router.js --- */
+/**
+ * CONTROL_ROUTER_V1 — routing by registry requires / requires_any (no hard-coded VAT deps).
+ */
+function controlPlanEnabled(plan, code) {
+  return (plan.applicable || []).indexOf(code) >= 0;
+}
+
+function routeModuleControls(moduleId, evidence, extraGate) {
   const all = Object.keys((CONTROL_REGISTRY.controls) || {}).filter(id => {
     const d = getControlDef(id);
-    return d && d.module === "nds";
+    return d && d.module === moduleId;
   });
   const applicable = [];
   const partial = [];
   const deferred = [];
   const notApplicable = [];
   for (const code of all) {
-    const def = getControlDef(code);
-    const req = def.requires || [];
-    if (req.indexOf("sf_a") >= 0 && req.indexOf("sf_b") >= 0 && (!evidence.sf_a || !evidence.sf_b)) {
-      deferred.push({
-        code,
-        reason: !evidence.sf_a && !evidence.sf_b ? "нет реестров СФ" : (!evidence.sf_a ? "нет файла A" : "нет файла B"),
-        missing: [!evidence.sf_a ? "sf_a" : null, !evidence.sf_b ? "sf_b" : null].filter(Boolean)
-      });
-      continue;
-    }
-    if (req.indexOf("sf") >= 0 && !evidence.sf) {
-      deferred.push({ code, reason: "нет реестра СФ", missing: ["sf"] });
-      continue;
-    }
-    if (code === "NDS-MULTI" && !evidence.multi_rate) {
-      deferred.push({ code, reason: "нет колонок НДС по ставкам / multi-rate", missing: ["multi_rate"] });
-      continue;
+    if (typeof extraGate === "function") {
+      const gate = extraGate(code, evidence);
+      if (gate === "notApplicable") {
+        notApplicable.push({ code, reason: "не применимо к профилю данных" });
+        continue;
+      }
+      if (gate && gate.notApplicable) {
+        notApplicable.push({ code, reason: gate.reason || "не применимо" });
+        continue;
+      }
     }
     const suf = assessControlSufficiency(code, evidence);
     if (suf.level === "INVALID" || suf.level === "INSUFFICIENT") {
       deferred.push({
         code,
-        reason: "не хватает: " + suf.missingRequired.join(", "),
-        missing: suf.missingRequired,
+        reason: "не хватает: " + (suf.missingRequired || []).join(", "),
+        missing: suf.missingRequired || [],
         sufficiency: suf.level
       });
     } else if (suf.level === "PARTIAL") {
@@ -1133,10 +1216,133 @@ function routeNdsControls(evidence) {
       applicable.push(code);
     }
   }
-  const plan = { applicable, partial, deferred, notApplicable, module: "nds" };
-  plan.datasetSufficiency = assessNdsDatasetSufficiency(evidence, plan);
+  return { applicable, partial, deferred, notApplicable, module: moduleId };
+}
+
+function routeR6062Controls(evidence) {
+  const plan = routeModuleControls("r6062", evidence, (code) => {
+    if (code === "VAT-ADV-60" && evidence.osv62 && !evidence.osv60) {
+      return { notApplicable: true, reason: "основной счёт 62 — контроль для 60" };
+    }
+    if (code === "VAT-ADV-62" && evidence.osv60 && !evidence.osv62) {
+      return { notApplicable: true, reason: "основной счёт 60 — контроль для 62" };
+    }
+    return null;
+  });
+  plan.datasetSufficiency = assessDatasetSufficiency(evidence, plan);
   return plan;
 }
+
+function routeNdsControls(evidence) {
+  const plan = routeModuleControls("nds", evidence, (code) => {
+    // NDS-MULTI without multi_rate columns → deferred via requires_any / optional handled in sufficiency;
+    // keep explicit defer only if control requires multi_rate exclusively — optional keeps PARTIAL.
+    return null;
+  });
+  // If multi_rate missing and control lists it only as optional, MULTI stays PARTIAL+applicable.
+  // Prefer defer when requires_any includes [multi_rate] alone — set in registry.
+  plan.datasetSufficiency = assessNdsDatasetSufficiency(evidence, plan);
+  plan.module = "nds";
+  return plan;
+}
+
+/* --- engine/05-match-confidence.js --- */
+/**
+ * Match confidence for partner linking (OSV ↔ 76 / SF).
+ * HIGH = INN exact; MEDIUM = normalized name; LOW = weak/fuzzy (reserved).
+ */
+function matchPartnerConfidence(it, rec, via) {
+  if (!rec) {
+    return { level: "NONE", via: via || "none", label: "нет пары" };
+  }
+  if (via === "inn" || (it && it.inn && rec && (rec.inn === it.inn || via === "inn"))) {
+    return { level: "HIGH", via: "inn", label: "ИНН" };
+  }
+  if (via === "name" || via === "normalized_name") {
+    return { level: "MEDIUM", via: "name", label: "имя (нормализ.)" };
+  }
+  return { level: "MEDIUM", via: via || "name", label: "имя (нормализ.)" };
+}
+
+function resolveVatAdvLookup(it, vatIndex) {
+  if (it.inn && vatIndex.byInn && vatIndex.byInn.has(it.inn)) {
+    return { rec: vatIndex.byInn.get(it.inn), via: "inn" };
+  }
+  const key = typeof normalizePartnerKey === "function" ? normalizePartnerKey(it.name) : "";
+  if (key && vatIndex.byName && vatIndex.byName.has(key)) {
+    return { rec: vatIndex.byName.get(key), via: "name" };
+  }
+  return { rec: null, via: "none" };
+}
+
+/** ACCOUNTING_ERROR only when match confidence is HIGH (or finding is absence without pair). */
+function vatAdvSeverity(isReceived, confidenceLevel, hasPairRow) {
+  // Missing SF with no pair at all → still flag; for isReceived (62) error only if HIGH or NONE (no false name miss as error)
+  if (!isReceived) return "info";
+  if (confidenceLevel === "HIGH") return "error";
+  if (confidenceLevel === "NONE") return "error"; // no link possible → still accounting risk for received advances
+  return "warning"; // MEDIUM name-only → REVIEW, not ACCOUNTING_ERROR
+}
+
+function applyMatchConfidenceToRow(row, confidence) {
+  row._matchConfidence = confidence.level;
+  row["Уверенность связи"] = confidence.label || confidence.level;
+  return row;
+}
+
+/* --- engine/06-regulatory-vat.js --- */
+/**
+ * Regulatory VAT helpers. Expects global REGULATORY; uses parseDate if available.
+ */
+function getStandardVatRate(date) {
+  const list = (REGULATORY.vat && REGULATORY.vat.standard) || [];
+  let t = null;
+  if (date instanceof Date && !Number.isNaN(date.getTime())) {
+    t = Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+  } else if (date) {
+    const d = typeof parseDate === "function" ? parseDate(date) : null;
+    if (d) t = Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+  }
+  if (t == null) t = Date.UTC(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+  let hit = null;
+  for (const row of list) {
+    const from = typeof parseDate === "function" ? parseDate(row.from) : null;
+    const to = row.to && typeof parseDate === "function" ? parseDate(row.to) : null;
+    const f = from ? Date.UTC(from.getUTCFullYear(), from.getUTCMonth(), from.getUTCDate()) : 0;
+    const e = to ? Date.UTC(to.getUTCFullYear(), to.getUTCMonth(), to.getUTCDate()) : Infinity;
+    if (t >= f && t <= e) hit = row.rate;
+  }
+  if (hit != null) return hit;
+  if (list.length) return list[list.length - 1].rate;
+  return 20;
+}
+
+function vatInclusiveShare(rate) {
+  const r = Number(rate);
+  if (!Number.isFinite(r) || r < 0) return 0;
+  return r / (100 + r);
+}
+
+function vatInclusiveFormula(rate) {
+  const r = Number(rate);
+  if (!Number.isFinite(r)) return "—";
+  return r + "/" + (100 + r);
+}
+
+function calcInclusiveVat(amountWithVat, date) {
+  const rate = getStandardVatRate(date);
+  const r2 = (n) => Math.round((n || 0) * 100) / 100;
+  return { rate, formula: vatInclusiveFormula(rate), vat: r2((amountWithVat || 0) * vatInclusiveShare(rate)) };
+}
+
+function knownVatRates() {
+  const v = REGULATORY.vat || {};
+  if (Array.isArray(v.known_rates) && v.known_rates.length) return v.known_rates.slice();
+  const out = new Set(v.reduced || []);
+  for (const row of v.standard || []) if (row.rate != null) out.add(row.rate);
+  return [...out].sort((a, b) => a - b);
+}
+/* SF_ENGINE_END */
 
 function normalizeText(v) {
   if (v == null || v === undefined) return "";
@@ -3565,7 +3771,9 @@ function checkAdvanceVat(mainData, vatIndex, opts) {
     if (!(adv > 0.009)) continue;
     const key = normalizePartnerKey(it.name);
     if (key && !mainAdv.has(key)) mainAdv.set(key, it);
-    const rec = (it.inn && vatIndex.byInn.get(it.inn)) || (key ? vatIndex.byName.get(key) : null);
+    const looked = resolveVatAdvLookup(it, vatIndex);
+    const rec = looked.rec;
+    const confidence = matchPartnerConfidence(it, rec, looked.via);
     if (hasVatActivity(rec)) continue;
     if (adv < minAdvance) { smallSkipped++; smallSkippedSum += adv; continue; }
     const payTurn = isReceived ? (it.creditTurn || 0) : (it.debitTurn || 0);
@@ -3599,7 +3807,11 @@ function checkAdvanceVat(mainData, vatIndex, opts) {
       { source: mainData.name || "ОСВ", row: it.sourceRow },
       { source: vatIndex.name || kind, row: rec ? rec.sourceRow : null }
     ]);
-    missing.push(withSeverity(row, isReceived ? "error" : "info"));
+    applyMatchConfidenceToRow(row, confidence);
+    const sev = vatAdvSeverity(isReceived, confidence.level, !!rec);
+    // MEDIUM name match on 62 → REVIEW (not ACCOUNTING_ERROR)
+    const explicitStatus = (isReceived && confidence.level === "MEDIUM") ? "REVIEW" : null;
+    missing.push(withSeverity(row, sev, explicitStatus));
   }
 
   for (const [key, rec] of vatIndex.byName) {
@@ -3640,28 +3852,7 @@ function checkAdvanceVat(mainData, vatIndex, opts) {
 }
 
 
-/** Evidence-пакет: где программа нашла факт. entries: [{ source, row }] */
-function attachEvidence(row, entries) {
-  const list = (entries || []).filter(e => e && (e.source || e.row != null));
-  row._evidence = list.map(e => ({
-    source: e.source || "",
-    row: e.row != null ? e.row : null
-  }));
-  if (!list.length) {
-    if (row["Источник"] == null) row["Источник"] = "—";
-    return row;
-  }
-  const sources = [...new Set(list.map(e => e.source).filter(Boolean))];
-  const rows = list.map(e => e.row).filter(r => r != null && r !== "");
-  row["Источник"] = sources.length ? sources.join(" + ") : (row["Источник"] || "—");
-  if (list.length > 1) {
-    row["Строка"] = rows.length ? rows.join(" / ") : (row["Строка"] || "—");
-    row["Evidence"] = list.map(e => (e.source || "?") + ":" + (e.row != null ? e.row : "?")).join("; ");
-  } else if (rows.length && (row["Строка"] == null || row["Строка"] === "" || row["Строка"] === "—")) {
-    row["Строка"] = rows.join(" / ");
-  }
-  return row;
-}
+
 
 function severityMeta(level) {
   const s = level === "error" ? "error" : (level === "info" ? "info" : "warning");
@@ -4190,6 +4381,14 @@ function diagnose6062(data, opts) {
     }
   }
 
+  const findingsByCode = groupFindingsByCode([
+    issues, av76, overdue, analytics, advanceNoSf, duplicates, inconclusive, arithmetic, vatNotRestored
+  ]);
+  const controlResults = buildControlResults(router, findingsByCode, {
+    evidence,
+    regulatory_version: latestRegulatoryVersion()
+  });
+
   return {
     issues,
     av76,
@@ -4211,6 +4410,7 @@ function diagnose6062(data, opts) {
     evidence,
     router,
     datasetSufficiency: router.datasetSufficiency,
+    controlResults,
     sfChecked: !!(sfPartners || vatIndex),
     vatChecked: !!vatIndex
   };
@@ -4318,6 +4518,13 @@ document.getElementById("btnOsvRun").addEventListener("click", async () => {
         ? '. Отложено: ' + escapeHtml(plan.deferred.map(d => d.code + (d.reason ? " (" + d.reason + ")" : "")).join("; "))
         : "")
       + '</div></div>';
+    if (diag.controlResults && diag.controlResults.length) {
+      const passN = diag.controlResults.filter(r => r.status === "PASS" && r.execution === "EXECUTED").length;
+      const defN = diag.controlResults.filter(r => r.execution === "DEFERRED").length;
+      const hitN = diag.controlResults.filter(r => r.finding_count > 0).length;
+      notes += '<div class="reason-box"><b>Control results</b> — PASS: <b>' + passN
+        + '</b>; с находками: <b>' + hitN + '</b>; DEFERRED: <b>' + defN + '</b>.</div>';
+    }
     if (settle01 || settleRes || settleSame || settleCand) {
       notes += '<div class="reason-box">Зачёты: встречные 01↔02 — <b>' + settle01
         + '</b>; кандидаты (один договор) — <b>' + settleCand
@@ -4640,16 +4847,12 @@ function compareNds(a, b) {
     return withSeverity(row, level);
   });
   const gate = (code, rows) => (controlPlanEnabled(router, code) ? rows : []);
-  return {
-    ok,
-    evidence,
-    router,
-    datasetSufficiency: router.datasetSufficiency,
+  const tagged = {
     sumDiff: gate("NDS-SUM", tag(sumDiff, "error", "NDS-SUM", "AB")),
     ndsDiff: gate("NDS-VAT", tag(ndsDiff, "error", "NDS-VAT", "AB")),
     rateDiff: gate("NDS-RATE", tag(rateDiff, "warning", "NDS-RATE", "AB")),
     innDiff: gate("NDS-INN", tag(innDiff, "warning", "NDS-INN", "AB")),
-    kppDiff: gate("NDS-KPP", tag(kppDiff, "info", "NDS-KPP", "AB")),
+    kppDiff: gate("NDS-KPP", tag(kppDiff, "warning", "NDS-KPP", "AB")),
     corrDiff: gate("NDS-CORR", tag(corrDiff, "warning", "NDS-CORR", "AB")),
     typeDiff: gate("NDS-TYPE", tag(typeDiff, "warning", "NDS-TYPE", "AB")),
     missB: gate("NDS-MISS-B", tag(missB.map(r => ({
@@ -4668,8 +4871,17 @@ function compareNds(a, b) {
     })), "warning", "NDS-MISS-A", "B")),
     dupsA: gate("NDS-DUP", tag(dupsA, "warning", "NDS-DUP", "A")),
     dupsB: gate("NDS-DUP", tag(dupsB, "warning", "NDS-DUP", "B")),
-    multiRateWarn: gate("NDS-MULTI", tag(multiRateWarn, "info", "NDS-MULTI", "AB"))
+    multiRateWarn: gate("NDS-MULTI", tag(multiRateWarn, "warning", "NDS-MULTI", "AB"))
   };
+  const findingsByCode = groupFindingsByCode([
+    tagged.sumDiff, tagged.ndsDiff, tagged.rateDiff, tagged.innDiff, tagged.kppDiff,
+    tagged.corrDiff, tagged.typeDiff, tagged.missA, tagged.missB, tagged.dupsA, tagged.dupsB, tagged.multiRateWarn
+  ]);
+  const controlResults = buildControlResults(router, findingsByCode, {
+    evidence,
+    regulatory_version: latestRegulatoryVersion()
+  });
+  return Object.assign({ ok, evidence, router, datasetSufficiency: router.datasetSufficiency, controlResults }, tagged);
 }
 
 let LAST_NDS = null;

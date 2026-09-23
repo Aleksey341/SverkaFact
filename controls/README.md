@@ -29,12 +29,21 @@
 `routeR6062Controls(evidence)` → `applicable` / `partial` / `deferred` / `notApplicable`.  
 Доктор 60/62 показывает план в отчёте и не гоняет VAT/AGE/ARITH, если они отложены.
 
-## CONTROL_ROUTER_V1 (модуль nds)
+## CONTROL_RESULT_SCHEMA_V1
 
-`routeNdsControls(evidence)` — то же для сверки реестров СФ.  
-`compareNds` возвращает `router` + `datasetSufficiency` и не выдаёт отложенные коды (например `NDS-MULTI` без multi-rate колонок).
+`buildControlResults(plan, findingsByCode)` → массив:
 
-Ставки НДС: [`regulatory/vat-rates.json`](../regulatory/vat-rates.json) → встроенный `REGULATORY` / `getStandardVatRate`.
+`EXECUTED+PASS` · `EXECUTED+findings` · `DEFERRED` · `NOT_APPLICABLE`
+
+В отчёте Доктора 60/62 — блок «Control results».
+
+## requires_any
+
+Пример: `VAT-ADV-62` требует `osv62` и хотя бы одно из `osv76av|sales_book` (без хардкода в router).
+
+## Engine
+
+Исходники: [`engine/`](../engine/). Сборка: `node tools/build-engine.cjs`.
 
 ## Evidence в отчёте (UI / Excel)
 

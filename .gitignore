@@ -56,3 +56,6 @@ SverkaFact _v2.1.html
 kb/
 .local_workspace/
 
+
+engine/bundle.generated.js
+

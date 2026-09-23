@@ -47,6 +47,14 @@ check("router modules nds", !!(reg.router && reg.router.modules && reg.router.mo
 check("html has calcInclusiveVat", html.includes("function calcInclusiveVat"));
 check("no hardcoded 20/120", !html.includes("20/120"));
 check("sync-embedded exists", fs.existsSync(path.join(root, "tools", "sync-embedded.cjs")));
+check("build-engine exists", fs.existsSync(path.join(root, "tools", "build-engine.cjs")));
+check("engine dir", fs.existsSync(path.join(root, "engine", "01-control-result.js")));
+check("CONTROL_RESULT helper", html.includes("function buildControlResults"));
+check("requires_any in registry", JSON.stringify(reg.controls["VAT-ADV-62"].requires_any || []).includes("osv76av"));
+check("NDS-KPP is REVIEW", reg.controls["NDS-KPP"].default_status === "REVIEW");
+check("NDS-MULTI is REVIEW", reg.controls["NDS-MULTI"].default_status === "REVIEW");
+check("match confidence helper", html.includes("function matchPartnerConfidence"));
+check("SF_ENGINE markers", html.includes("SF_ENGINE_BEGIN") && html.includes("SF_ENGINE_END"));
 
 const vatFile = JSON.parse(fs.readFileSync(path.join(root, "regulatory", "vat-rates.json"), "utf8"));
 check("vat-rates has 22 from 2026", (vatFile.standard || []).some((r) => r.rate === 22 && String(r.from).startsWith("2026")));
@@ -54,7 +62,7 @@ check("vat-rates 20 ends 2025", (vatFile.standard || []).some((r) => r.rate === 
 check("known_rates includes 22", (vatFile.known_rates || []).includes(22));
 
 // Every registry id should appear as string literal in HTML (except we allow embedding only via JSON)
-const embeddedMatch = html.match(/const CONTROL_REGISTRY = (\{.*?\});\s*\n+function getControlDef/s);
+const embeddedMatch = html.match(/const CONTROL_REGISTRY = (\{.*?\});\s*\n/s);
 check("embedded JSON parseable", !!embeddedMatch, "regex miss");
 if (embeddedMatch) {
   const embedded = JSON.parse(embeddedMatch[1]);

@@ -188,11 +188,15 @@
         "osv60"
       ],
       "optional": [
-        "osv76va",
-        "purchase_book",
         "inn"
       ],
-      "version": 1
+      "version": 2,
+      "requires_any": [
+        [
+          "osv76va",
+          "purchase_book"
+        ]
+      ]
     },
     "VAT-ADV-62": {
       "name": "Аванс полученный без СФ (62 ↔ 76.АВ)",
@@ -203,11 +207,15 @@
         "osv62"
       ],
       "optional": [
-        "osv76av",
-        "sales_book",
         "inn"
       ],
-      "version": 1
+      "version": 2,
+      "requires_any": [
+        [
+          "osv76av",
+          "sales_book"
+        ]
+      ]
     },
     "VAT-001": {
       "name": "76.* без аванса на 60/62",
@@ -215,10 +223,15 @@
       "module": "r6062",
       "default_status": "REVIEW",
       "requires": [
-        "osv",
-        "osv76"
+        "osv"
       ],
-      "version": 1
+      "version": 2,
+      "requires_any": [
+        [
+          "osv76"
+        ]
+      ],
+      "optional": []
     },
     "DUP-NAME": {
       "name": "Возможный дубль контрагента по имени",
@@ -295,12 +308,12 @@
       "name": "Расхождение КПП",
       "domain": "vat",
       "module": "nds",
-      "default_status": "INSUFFICIENT_DATA",
+      "default_status": "REVIEW",
       "requires": [
         "sf_a",
         "sf_b"
       ],
-      "version": 1,
+      "version": 2,
       "optional": [
         "kpp"
       ]
@@ -369,13 +382,15 @@
       "name": "Несколько ставок в одной СФ",
       "domain": "vat",
       "module": "nds",
-      "default_status": "INSUFFICIENT_DATA",
+      "default_status": "REVIEW",
       "requires": [
         "sf"
       ],
-      "version": 1,
-      "optional": [
-        "multi_rate"
+      "version": 2,
+      "requires_any": [
+        [
+          "multi_rate"
+        ]
       ]
     }
   },
@@ -433,5 +448,14 @@
         "description": "Выбирает применимые контроли сверки НДС (реестры СФ A/B) по профилю evidence"
       }
     }
+  },
+  "control_result": {
+    "schema": "CONTROL_RESULT_SCHEMA_V1",
+    "execution": [
+      "EXECUTED",
+      "DEFERRED",
+      "NOT_APPLICABLE"
+    ],
+    "description": "Нормализованный итог контроля: PASS vs findings vs deferred"
   }
 }
