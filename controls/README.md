@@ -7,6 +7,7 @@
 - Синхронизация и проверка: `node tools/verify-controls.cjs`
 - Регрессия OSV: `node tools/verify-osv.cjs`
 - Регрессия НДС: `node tools/verify-nds.cjs`
+- Встраивание registry + REGULATORY: `node tools/sync-embedded.cjs`
 
 ## Semantic status → UI
 

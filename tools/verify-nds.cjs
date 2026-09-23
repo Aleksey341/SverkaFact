@@ -206,6 +206,17 @@ check("nds-router plan", () => {
   assert((comp.router.deferred || []).some((d) => d.code === "NDS-MULTI"), "NDS-MULTI deferred");
 });
 
+check("multi-rate detects 22%", () => {
+  const matrix = [
+    ["Номер", "Дата", "Контрагент", "ИНН", "Стоимость", "НДС 22%", "НДС 10%"],
+    ["SF-622", "15.02.2026", "ООО Тест 22", "7701999888", 122000, 22000, 0]
+  ];
+  const a = parseSfRegistry(matrix, "sf-22.xlsx");
+  assert(a.hasMultiRateCols, "hasMultiRateCols");
+  assert(a.rows.length === 1, "1 row");
+  assert(a.rows[0].multiRates.some((x) => x.rate === 22 && Math.abs(x.nds - 22000) < 0.01), "rate 22");
+});
+
 if (fail) {
   console.error("\n" + fail + " failed");
   process.exit(1);

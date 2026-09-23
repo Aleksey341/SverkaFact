@@ -192,6 +192,28 @@ check("age-advance-02", () => {
   assert(diag.overdue.some((r) => r["Код"] === "AGE-002"), "AGE-002");
 });
 
+// --- Regulatory VAT rates: 20% until 2025, 22% from 2026 ---
+check("vat-rate-2025-is-20", () => {
+  assert(typeof sandbox.getStandardVatRate === "function", "getStandardVatRate");
+  assert(sandbox.getStandardVatRate("2025-06-15") === 20, "2025→20");
+  assert(sandbox.getStandardVatRate("2025-12-31") === 20, "2025-12-31→20");
+});
+
+check("vat-rate-2026-is-22", () => {
+  assert(sandbox.getStandardVatRate("2026-01-01") === 22, "2026-01-01→22");
+  assert(sandbox.getStandardVatRate("2026-09-23") === 22, "2026-09-23→22");
+});
+
+check("inclusive-vat-22-122", () => {
+  const c = sandbox.calcInclusiveVat(122000, "2026-03-01");
+  assert(c.rate === 22, "rate 22");
+  assert(c.formula === "22/122", "formula " + c.formula);
+  assert(Math.abs(c.vat - 22000) < 0.011, "vat got " + c.vat);
+  const c20 = sandbox.calcInclusiveVat(120000, "2025-03-01");
+  assert(c20.rate === 20 && c20.formula === "20/120", "2025 formula");
+  assert(Math.abs(c20.vat - 20000) < 0.011, "2025 vat got " + c20.vat);
+});
+
 if (fail) {
   console.error("\n" + fail + " failed");
   process.exit(1);

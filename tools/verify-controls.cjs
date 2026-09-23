@@ -44,15 +44,28 @@ check("html has buildNdsEvidence", html.includes("function buildNdsEvidence"));
 check("html has REGULATORY", html.includes("const REGULATORY"));
 check("regulatory vat-rates file", fs.existsSync(path.join(root, "regulatory", "vat-rates.json")));
 check("router modules nds", !!(reg.router && reg.router.modules && reg.router.modules.nds));
+check("html has calcInclusiveVat", html.includes("function calcInclusiveVat"));
+check("no hardcoded 20/120", !html.includes("20/120"));
+check("sync-embedded exists", fs.existsSync(path.join(root, "tools", "sync-embedded.cjs")));
+
+const vatFile = JSON.parse(fs.readFileSync(path.join(root, "regulatory", "vat-rates.json"), "utf8"));
+check("vat-rates has 22 from 2026", (vatFile.standard || []).some((r) => r.rate === 22 && String(r.from).startsWith("2026")));
+check("vat-rates 20 ends 2025", (vatFile.standard || []).some((r) => r.rate === 20 && r.to && String(r.to).startsWith("2025")));
+check("known_rates includes 22", (vatFile.known_rates || []).includes(22));
 
 // Every registry id should appear as string literal in HTML (except we allow embedding only via JSON)
-const embeddedMatch = html.match(/const CONTROL_REGISTRY = (\{.*?\});\s*\nfunction getControlDef/s);
+const embeddedMatch = html.match(/const CONTROL_REGISTRY = (\{.*?\});\s*\n+function getControlDef/s);
 check("embedded JSON parseable", !!embeddedMatch, "regex miss");
 if (embeddedMatch) {
   const embedded = JSON.parse(embeddedMatch[1]);
-  const a = JSON.stringify(reg.controls);
-  const b = JSON.stringify(embedded.controls);
-  check("embedded controls == file", a === b);
+  check("embedded registry == file", JSON.stringify(reg) === JSON.stringify(embedded));
+}
+
+const reguMatch = html.match(/const REGULATORY = (\{.*?\});\s*\n+/s);
+check("embedded REGULATORY parseable", !!reguMatch, "regex miss");
+if (reguMatch) {
+  const embeddedVat = JSON.parse(reguMatch[1]);
+  check("embedded REGULATORY.vat == file", JSON.stringify(embeddedVat.vat) === JSON.stringify(vatFile));
 }
 
 // Codes that engine uses should be in registry
