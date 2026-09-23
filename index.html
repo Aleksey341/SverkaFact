@@ -857,7 +857,7 @@ const METHOD_COLORS = {
 };
 
 /* ========== CONTROL_REGISTRY_V1 (synced from controls/index.json) ========== */
-const CONTROL_REGISTRY = {"schema":"CONTROL_REGISTRY_V1","product":"SverkaFact","updated":"2026-09-23","semantic_status":{"PASS":{"ui":"info","label":"ок"},"ACCOUNTING_ERROR":{"ui":"error","label":"ошибка учёта"},"REVIEW":{"ui":"warning","label":"проверить"},"INSUFFICIENT_DATA":{"ui":"info","label":"мало данных"},"DEFERRED":{"ui":"info","label":"отложено"},"NOT_APPLICABLE":{"ui":"info","label":"не применимо"}},"input_quality":{"NO-CONTRACT":{"degrades":["SETTLE-001","SETTLE-002","SETTLE-001R"]},"NO-SUBACC":{"degrades":["SETTLE-001","AGE-001","AGE-002"]},"NO-INN":{"degrades":["VAT-ADV-60","VAT-ADV-62","DUP-INN"]},"NO-DATE":{"degrades":["AGE-001","AGE-002"]},"NO-ARITH":{"degrades":["ARITH-001"]}},"controls":{"RED-001":{"name":"Красное сальдо","domain":"settlements","module":"r6062","default_status":"ACCOUNTING_ERROR","requires":["osv"],"version":1},"SETTLE-001":{"name":"Встречные остатки 01↔02","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv","subaccounts"],"optional":["contract","inn"],"version":1},"SETTLE-001R":{"name":"Прочее развёрнутое сальдо (разные строки)","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":1},"SETTLE-002":{"name":"Развёрнутое сальдо / незачтённый аванс (одна строка)","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv"],"optional":["contract"],"version":1},"SETTLE-INC":{"name":"Недостаточно данных для зачёта (нет договора)","domain":"settlements","module":"r6062","default_status":"INSUFFICIENT_DATA","requires":["osv"],"version":1},"AGE-001":{"name":"Просроченная задолженность (.01)","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv","date"],"version":1},"AGE-002":{"name":"Просроченный аванс (.02)","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv","date","subaccounts"],"version":1},"ARITH-001":{"name":"Арифметика ОСВ: СН + обороты ≠ СК","domain":"data_quality","module":"r6062","default_status":"REVIEW","requires":["osv","start_balance","turnovers"],"version":1},"ANL-001":{"name":"Нет обязательной аналитики","domain":"data_quality","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":1},"VAT-76":{"name":"76.АВ / 76.ВА с остатком","domain":"vat","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":1},"VAT-ADV-60":{"name":"Аванс выданный без авансовой СФ (60 ↔ 76.ВА)","domain":"vat","module":"r6062","default_status":"REVIEW","requires":["osv60"],"optional":["osv76va","purchase_book"],"version":1},"VAT-ADV-62":{"name":"Аванс полученный без СФ (62 ↔ 76.АВ)","domain":"vat","module":"r6062","default_status":"ACCOUNTING_ERROR","requires":["osv62"],"optional":["osv76av","sales_book"],"version":1},"VAT-001":{"name":"76.* без аванса на 60/62","domain":"vat","module":"r6062","default_status":"REVIEW","requires":["osv","osv76"],"version":1},"DUP-NAME":{"name":"Возможный дубль контрагента по имени","domain":"master_data","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":1},"DUP-INN":{"name":"Дубль по ИНН (разные имена)","domain":"master_data","module":"r6062","default_status":"REVIEW","requires":["osv","inn"],"version":1},"NDS-SUM":{"name":"Расхождение суммы СФ","domain":"vat","module":"nds","default_status":"ACCOUNTING_ERROR","requires":["sf_a","sf_b"],"version":1},"NDS-VAT":{"name":"Расхождение суммы НДС","domain":"vat","module":"nds","default_status":"ACCOUNTING_ERROR","requires":["sf_a","sf_b"],"version":1},"NDS-RATE":{"name":"Расхождение ставки НДС","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-INN":{"name":"Расхождение ИНН","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-KPP":{"name":"Расхождение КПП","domain":"vat","module":"nds","default_status":"INSUFFICIENT_DATA","requires":["sf_a","sf_b"],"version":1},"NDS-CORR":{"name":"Расхождение исправления СФ","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-TYPE":{"name":"Расхождение типа СФ (корр.)","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-MISS-A":{"name":"СФ нет в файле A","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-MISS-B":{"name":"СФ нет в файле B","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-DUP":{"name":"Дубль СФ в одном файле","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf"],"version":1},"NDS-MULTI":{"name":"Несколько ставок в одной СФ","domain":"vat","module":"nds","default_status":"INSUFFICIENT_DATA","requires":["sf"],"version":1}}};
+const CONTROL_REGISTRY = {"schema":"CONTROL_REGISTRY_V1","product":"SverkaFact","updated":"2026-09-23","semantic_status":{"PASS":{"ui":"info","label":"ок"},"ACCOUNTING_ERROR":{"ui":"error","label":"ошибка учёта"},"REVIEW":{"ui":"warning","label":"проверить"},"INSUFFICIENT_DATA":{"ui":"info","label":"мало данных"},"DEFERRED":{"ui":"info","label":"отложено"},"NOT_APPLICABLE":{"ui":"info","label":"не применимо"}},"input_quality":{"NO-CONTRACT":{"degrades":["SETTLE-001","SETTLE-002","SETTLE-001R"]},"NO-SUBACC":{"degrades":["SETTLE-001","AGE-001","AGE-002"]},"NO-INN":{"degrades":["VAT-ADV-60","VAT-ADV-62","DUP-INN"]},"NO-DATE":{"degrades":["AGE-001","AGE-002"]},"NO-ARITH":{"degrades":["ARITH-001"]}},"controls":{"RED-001":{"name":"Красное сальдо","domain":"settlements","module":"r6062","default_status":"ACCOUNTING_ERROR","requires":["osv"],"version":1},"SETTLE-001":{"name":"Встречные остатки 01↔02","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv","subaccounts"],"optional":["contract","inn"],"version":1,"blocking_for_candidate":["contract"]},"SETTLE-001R":{"name":"Прочее развёрнутое сальдо (разные строки)","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":1},"SETTLE-002":{"name":"Развёрнутое сальдо / незачтённый аванс (одна строка)","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv"],"optional":["contract"],"version":1},"SETTLE-INC":{"name":"Недостаточно данных для зачёта (нет договора)","domain":"settlements","module":"r6062","default_status":"INSUFFICIENT_DATA","requires":["osv"],"version":1},"AGE-001":{"name":"Просроченная задолженность (.01)","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv","date"],"version":1},"AGE-002":{"name":"Просроченный аванс (.02)","domain":"settlements","module":"r6062","default_status":"REVIEW","requires":["osv","date","subaccounts"],"version":1},"ARITH-001":{"name":"Арифметика ОСВ: СН + обороты ≠ СК","domain":"data_quality","module":"r6062","default_status":"REVIEW","requires":["osv","start_balance","turnovers"],"version":1},"ANL-001":{"name":"Нет обязательной аналитики","domain":"data_quality","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":1},"VAT-76":{"name":"76.АВ / 76.ВА с остатком","domain":"vat","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":1},"VAT-ADV-60":{"name":"Аванс выданный без авансовой СФ (60 ↔ 76.ВА)","domain":"vat","module":"r6062","default_status":"REVIEW","requires":["osv60"],"optional":["osv76va","purchase_book","inn"],"version":1},"VAT-ADV-62":{"name":"Аванс полученный без СФ (62 ↔ 76.АВ)","domain":"vat","module":"r6062","default_status":"ACCOUNTING_ERROR","requires":["osv62"],"optional":["osv76av","sales_book","inn"],"version":1},"VAT-001":{"name":"76.* без аванса на 60/62","domain":"vat","module":"r6062","default_status":"REVIEW","requires":["osv","osv76"],"version":1},"DUP-NAME":{"name":"Возможный дубль контрагента по имени","domain":"master_data","module":"r6062","default_status":"REVIEW","requires":["osv"],"version":1},"DUP-INN":{"name":"Дубль по ИНН (разные имена)","domain":"master_data","module":"r6062","default_status":"REVIEW","requires":["osv","inn"],"version":1},"NDS-SUM":{"name":"Расхождение суммы СФ","domain":"vat","module":"nds","default_status":"ACCOUNTING_ERROR","requires":["sf_a","sf_b"],"version":1},"NDS-VAT":{"name":"Расхождение суммы НДС","domain":"vat","module":"nds","default_status":"ACCOUNTING_ERROR","requires":["sf_a","sf_b"],"version":1},"NDS-RATE":{"name":"Расхождение ставки НДС","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-INN":{"name":"Расхождение ИНН","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-KPP":{"name":"Расхождение КПП","domain":"vat","module":"nds","default_status":"INSUFFICIENT_DATA","requires":["sf_a","sf_b"],"version":1},"NDS-CORR":{"name":"Расхождение исправления СФ","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-TYPE":{"name":"Расхождение типа СФ (корр.)","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-MISS-A":{"name":"СФ нет в файле A","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-MISS-B":{"name":"СФ нет в файле B","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf_a","sf_b"],"version":1},"NDS-DUP":{"name":"Дубль СФ в одном файле","domain":"vat","module":"nds","default_status":"REVIEW","requires":["sf"],"version":1},"NDS-MULTI":{"name":"Несколько ставок в одной СФ","domain":"vat","module":"nds","default_status":"INSUFFICIENT_DATA","requires":["sf"],"version":1}},"data_sufficiency":{"schema":"DATA_SUFFICIENCY_V1","levels":{"COMPLETE":{"label":"полный ввод","ui":"ok"},"PARTIAL":{"label":"частичный ввод","ui":"warn"},"INSUFFICIENT":{"label":"недостаточно данных","ui":"info"},"INVALID":{"label":"данные непригодны","ui":"err"}},"evidence_keys":{"osv":"ОСВ / взаиморасчёты загружены","subaccounts":"Субсчета 60.01/60.02 (или 62.*)","contract":"Субконто «Договор»","inn":"ИНН контрагентов","date":"Дата в строках ОСВ","start_balance":"Сальдо на начало","turnovers":"Обороты за период","osv60":"Основной счёт 60","osv62":"Основной счёт 62","osv76":"Второй файл — ОСВ 76.*","osv76va":"ОСВ 76.ВА","osv76av":"ОСВ 76.АВ","purchase_book":"Книга покупок / реестр полученных СФ","sales_book":"Книга продаж / реестр выданных СФ","sf_a":"Реестр СФ A","sf_b":"Реестр СФ B","sf":"Реестр СФ"}},"router":{"schema":"CONTROL_ROUTER_V1","module":"r6062","description":"Выбирает применимые контроли Доктора 60/62 по профилю evidence"}};
 
 function getControlDef(code) {
   if (!code) return null;
@@ -887,6 +887,116 @@ function resolveControlStatus(code, explicitStatus, explicitSeverity) {
   if (def && def.default_status) return def.default_status;
   return severityToStatus(explicitSeverity || "warning");
 }
+
+function buildOsvEvidence(data, opts) {
+  opts = opts || {};
+  const mainAcc = String((data && data.mainAccount) || "").replace(/\s/g, "");
+  const vatKind = opts.vatIndex && opts.vatIndex.kind ? opts.vatIndex.kind : "";
+  const ev = {
+    osv: !!(data && data.items && data.items.length),
+    subaccounts: !!(data && data.hasSubaccounts),
+    contract: !!(data && data.hasContracts),
+    inn: !!(data && data.hasInns),
+    date: !!(data && data.hasDates),
+    start_balance: !!(data && data.hasStartBalances),
+    turnovers: !!(data && data.hasTurnovers),
+    osv60: /^60/.test(mainAcc),
+    osv62: /^62/.test(mainAcc),
+    osv76: !!opts.vatIndex,
+    osv76va: vatKind === "76.ВА",
+    osv76av: vatKind === "76.АВ",
+    purchase_book: !!(opts.sfPartners && !opts.vatIndex && /^60/.test(mainAcc)),
+    sales_book: !!(opts.sfPartners && !opts.vatIndex && /^62/.test(mainAcc)),
+    sf: !!opts.sfPartners,
+    sf_a: false,
+    sf_b: false
+  };
+  return ev;
+}
+
+function assessControlSufficiency(code, evidence) {
+  const def = getControlDef(code);
+  if (!def) return { level: "INVALID", missingRequired: ["unknown_control"], missingOptional: [] };
+  const req = def.requires || [];
+  const opt = def.optional || [];
+  const missingRequired = req.filter(k => !evidence[k]);
+  const missingOptional = opt.filter(k => !evidence[k]);
+  if (!evidence.osv && req.indexOf("osv") >= 0) {
+    return { level: "INVALID", missingRequired, missingOptional };
+  }
+  if (missingRequired.length) {
+    return { level: "INSUFFICIENT", missingRequired, missingOptional };
+  }
+  if (missingOptional.length) {
+    return { level: "PARTIAL", missingRequired, missingOptional };
+  }
+  return { level: "COMPLETE", missingRequired: [], missingOptional: [] };
+}
+
+function assessDatasetSufficiency(evidence, plan) {
+  if (!evidence.osv) return "INVALID";
+  const codes = plan && plan.applicable || [];
+  let worst = "COMPLETE";
+  const rank = { COMPLETE: 0, PARTIAL: 1, INSUFFICIENT: 2, INVALID: 3 };
+  for (const code of codes) {
+    const a = assessControlSufficiency(code, evidence);
+    if (rank[a.level] > rank[worst]) worst = a.level;
+  }
+  // Core settle degradation without contract
+  if (!evidence.contract && evidence.osv) {
+    if (rank.PARTIAL > rank[worst] || worst === "COMPLETE") worst = "PARTIAL";
+  }
+  return worst;
+}
+
+/** CONTROL_ROUTER_V1 — какие контроли 60/62 применимы к текущему набору файлов. */
+function routeR6062Controls(evidence) {
+  const all = Object.keys((CONTROL_REGISTRY.controls) || {}).filter(id => {
+    const d = getControlDef(id);
+    return d && d.module === "r6062";
+  });
+  const applicable = [];
+  const partial = [];
+  const deferred = [];
+  const notApplicable = [];
+  for (const code of all) {
+    const def = getControlDef(code);
+    // Account-family gating
+    if (code === "VAT-ADV-60" && evidence.osv62 && !evidence.osv60) {
+      notApplicable.push({ code, reason: "основной счёт 62 — контроль для 60" });
+      continue;
+    }
+    if (code === "VAT-ADV-62" && evidence.osv60 && !evidence.osv62) {
+      notApplicable.push({ code, reason: "основной счёт 60 — контроль для 62" });
+      continue;
+    }
+    if ((code === "VAT-ADV-60" || code === "VAT-ADV-62" || code === "VAT-001") && !evidence.osv76 && !evidence.sf) {
+      deferred.push({ code, reason: "нет второго файла (76.* / книга / реестр СФ)", missing: (def.optional || []).filter(k => !evidence[k]) });
+      continue;
+    }
+    if (code === "VAT-001" && !evidence.osv76) {
+      deferred.push({ code, reason: "нужна ОСВ 76.*", missing: ["osv76"] });
+      continue;
+    }
+    const suf = assessControlSufficiency(code, evidence);
+    if (suf.level === "INVALID" || suf.level === "INSUFFICIENT") {
+      deferred.push({ code, reason: "не хватает: " + suf.missingRequired.join(", "), missing: suf.missingRequired, sufficiency: suf.level });
+    } else if (suf.level === "PARTIAL") {
+      partial.push({ code, missingOptional: suf.missingOptional, sufficiency: suf.level });
+      applicable.push(code);
+    } else {
+      applicable.push(code);
+    }
+  }
+  const plan = { applicable, partial, deferred, notApplicable };
+  plan.datasetSufficiency = assessDatasetSufficiency(evidence, plan);
+  return plan;
+}
+
+function controlPlanEnabled(plan, code) {
+  return (plan.applicable || []).indexOf(code) >= 0;
+}
+
 
 
 function normalizeText(v) {
@@ -3530,33 +3640,34 @@ function findCrossRowSettlements(data) {
 }
 
 /** Качество входа ОСВ: что деградирует проверки (баннер в отчёте). */
-function assessOsvInputQuality(data) {
+function assessOsvInputQuality(data, evidence) {
   const flags = [];
-  if (!data.hasContracts) {
+  const ev = evidence || buildOsvEvidence(data, {});
+  if (!ev.contract) {
     flags.push({
       id: "NO-CONTRACT",
       text: "Нет субконто «Договор» — встречные остатки и развёрнутое сальдо идут как «недостаточно данных», без «К зачёту»."
     });
   }
-  if (!data.hasSubaccounts) {
+  if (!ev.subaccounts) {
     flags.push({
       id: "NO-SUBACC",
       text: "Нет субсчетов (60.01/60.02…) — проверка встречных 01↔02 ограничена или недоступна."
     });
   }
-  if (!data.hasInns) {
+  if (!ev.inn) {
     flags.push({
       id: "NO-INN",
       text: "Нет ИНН — сопоставление с 76.ВА/76.АВ и реестром СФ только по имени (менее надёжно)."
     });
   }
-  if (!data.hasDates) {
+  if (!ev.date) {
     flags.push({
       id: "NO-DATE",
       text: "Нет даты — проверка просрочки пропущена."
     });
   }
-  if (!(data.hasStartBalances && data.hasTurnovers)) {
+  if (!(ev.start_balance && ev.turnovers)) {
     flags.push({
       id: "NO-ARITH",
       text: "Нет сальдо на начало и/или оборотов — арифметика СН+обороты≈СК не выполнялась."
@@ -3566,9 +3677,12 @@ function assessOsvInputQuality(data) {
 }
 
 function diagnose6062(data, opts) {
-  const overdueDays = Math.max(1, Number(opts && opts.overdueDays) || 30);
-  const sfPartners = opts && opts.sfPartners ? opts.sfPartners : null;
-  const vatIndex = opts && opts.vatIndex ? opts.vatIndex : null;
+  opts = opts || {};
+  const overdueDays = Math.max(1, Number(opts.overdueDays) || 30);
+  const sfPartners = opts.sfPartners ? opts.sfPartners : null;
+  const vatIndex = opts.vatIndex ? opts.vatIndex : null;
+  const evidence = buildOsvEvidence(data, { sfPartners, vatIndex });
+  const router = routeR6062Controls(evidence);
   const mainAcc = String(data.mainAccount || "").replace(/\s/g, "");
   const mainIs62 = /^62/.test(mainAcc);
   const issues = [];
@@ -3650,7 +3764,7 @@ function diagnose6062(data, opts) {
         "Открыть карточку счёта и проверить знак операций.",
         { severity: "error", code: "RED-001" }));
     }
-    if (it.date) {
+    if (it.date && (controlPlanEnabled(router, "AGE-001") || controlPlanEnabled(router, "AGE-002"))) {
       const age = Math.floor((todayUtc - Date.UTC(it.date.getUTCFullYear(), it.date.getUTCMonth(), it.date.getUTCDate())) / 86400000);
       if (age > overdueDays) {
         const fam = osvAccountFamily(it.account) || osvAccountFamily(data.mainAccount)
@@ -3688,7 +3802,7 @@ function diagnose6062(data, opts) {
         }
       }
     }
-    if (sfPartners && !vatIndex) {
+    if (sfPartners && !vatIndex && controlPlanEnabled(router, mainIs62 ? "VAT-ADV-62" : "VAT-ADV-60")) {
       const adv = mainIs62 ? c : d;
       if (adv > 0.009) {
         const keyName = normalizePartnerKey(it.name);
@@ -3714,7 +3828,7 @@ function diagnose6062(data, opts) {
 
   // ARITH-001: СН + обороты ≈ СК (если в выгрузке есть начало и обороты)
   const arithmetic = [];
-  if (data.hasStartBalances && data.hasTurnovers) {
+  if (controlPlanEnabled(router, "ARITH-001") && data.hasStartBalances && data.hasTurnovers) {
     const r2 = (n) => Math.round((n || 0) * 100) / 100;
     for (const it of data.items) {
       const sn = r2((it.debitStart || 0) - (it.creditStart || 0));
@@ -3741,7 +3855,8 @@ function diagnose6062(data, opts) {
   }
 
   let vatAdvance = null;
-  if (vatIndex) {
+  const vatAdvCode = mainIs62 ? "VAT-ADV-62" : "VAT-ADV-60";
+  if (vatIndex && (controlPlanEnabled(router, vatAdvCode) || controlPlanEnabled(router, "VAT-001"))) {
     vatAdvance = checkAdvanceVat(data, vatIndex, { minAdvance: opts && opts.minAdvance });
     for (const row of vatAdvance.missing) {
       advanceNoSf.push(row);
@@ -3895,7 +4010,10 @@ function diagnose6062(data, opts) {
     overdueSkipped: !data.hasDates,
     contractsMissing: !data.hasContracts,
     arithSkipped: !(data.hasStartBalances && data.hasTurnovers),
-    inputQuality: assessOsvInputQuality(data),
+    inputQuality: assessOsvInputQuality(data, evidence),
+    evidence,
+    router,
+    datasetSufficiency: router.datasetSufficiency,
     sfChecked: !!(sfPartners || vatIndex),
     vatChecked: !!vatIndex
   };
@@ -3982,11 +4100,26 @@ document.getElementById("btnOsvRun").addEventListener("click", async () => {
       + '</b>. Проверки: развёрнутое/незачтённый аванс, встречные 01↔02, красное сальдо, 76.АВ/76.ВА, аналитика, дубли, просрочка'
       + (diag.sfChecked ? ", авансы без СФ" : "") + ".</div>";
     const qFlags = diag.inputQuality || [];
+    const sufMeta = (CONTROL_REGISTRY.data_sufficiency && CONTROL_REGISTRY.data_sufficiency.levels) || {};
+    const sufLevel = diag.datasetSufficiency || "PARTIAL";
+    const sufLabel = (sufMeta[sufLevel] && sufMeta[sufLevel].label) || sufLevel;
+    notes += '<div class="reason-box"><b>Data sufficiency:</b> <code>' + escapeHtml(sufLevel) + '</code> — '
+      + escapeHtml(sufLabel) + '.</div>';
     if (qFlags.length) {
       notes += '<div class="reason-box" style="border-left:4px solid #d4a017"><b>Качество выгрузки ОСВ</b> — часть проверок ослаблена:<ul style="margin:8px 0 0;padding-left:18px">'
         + qFlags.map(f => '<li><code>' + escapeHtml(f.id) + '</code> — ' + escapeHtml(f.text) + '</li>').join("")
         + '</ul></div>';
     }
+    const plan = diag.router || { applicable: [], deferred: [], notApplicable: [], partial: [] };
+    notes += '<div class="reason-box"><b>Control router</b> — применимо: <b>' + (plan.applicable || []).length
+      + '</b>; отложено: <b>' + (plan.deferred || []).length
+      + '</b>; не применимо: <b>' + (plan.notApplicable || []).length + '</b>.'
+      + '<div class="hint" style="margin-top:6px">Запуск: '
+      + escapeHtml((plan.applicable || []).join(", ") || "—")
+      + ((plan.deferred || []).length
+        ? '. Отложено: ' + escapeHtml(plan.deferred.map(d => d.code + (d.reason ? " (" + d.reason + ")" : "")).join("; "))
+        : "")
+      + '</div></div>';
     if (settle01 || settleRes || settleSame || settleCand) {
       notes += '<div class="reason-box">Зачёты: встречные 01↔02 — <b>' + settle01
         + '</b>; кандидаты (один договор) — <b>' + settleCand

@@ -15,4 +15,13 @@
 | INSUFFICIENT_DATA | мало данных | справочно |
 | PASS / DEFERRED / NOT_APPLICABLE | ок / отложено / не применимо | справочно |
 
-Алгоритмы проверок не меняются: registry задаёт метаданные и статус по умолчанию для кода.
+## DATA_SUFFICIENCY_V1
+
+Профиль evidence (`buildOsvEvidence`) → уровень набора данных и по каждому контролю:
+
+`COMPLETE` · `PARTIAL` · `INSUFFICIENT` · `INVALID`
+
+## CONTROL_ROUTER_V1 (модуль r6062)
+
+`routeR6062Controls(evidence)` → `applicable` / `partial` / `deferred` / `notApplicable`.  
+Доктор 60/62 показывает план в отчёте и не гоняет VAT/AGE/ARITH, если они отложены.

@@ -3,19 +3,64 @@
   "product": "SverkaFact",
   "updated": "2026-09-23",
   "semantic_status": {
-    "PASS": { "ui": "info", "label": "ок" },
-    "ACCOUNTING_ERROR": { "ui": "error", "label": "ошибка учёта" },
-    "REVIEW": { "ui": "warning", "label": "проверить" },
-    "INSUFFICIENT_DATA": { "ui": "info", "label": "мало данных" },
-    "DEFERRED": { "ui": "info", "label": "отложено" },
-    "NOT_APPLICABLE": { "ui": "info", "label": "не применимо" }
+    "PASS": {
+      "ui": "info",
+      "label": "ок"
+    },
+    "ACCOUNTING_ERROR": {
+      "ui": "error",
+      "label": "ошибка учёта"
+    },
+    "REVIEW": {
+      "ui": "warning",
+      "label": "проверить"
+    },
+    "INSUFFICIENT_DATA": {
+      "ui": "info",
+      "label": "мало данных"
+    },
+    "DEFERRED": {
+      "ui": "info",
+      "label": "отложено"
+    },
+    "NOT_APPLICABLE": {
+      "ui": "info",
+      "label": "не применимо"
+    }
   },
   "input_quality": {
-    "NO-CONTRACT": { "degrades": ["SETTLE-001", "SETTLE-002", "SETTLE-001R"] },
-    "NO-SUBACC": { "degrades": ["SETTLE-001", "AGE-001", "AGE-002"] },
-    "NO-INN": { "degrades": ["VAT-ADV-60", "VAT-ADV-62", "DUP-INN"] },
-    "NO-DATE": { "degrades": ["AGE-001", "AGE-002"] },
-    "NO-ARITH": { "degrades": ["ARITH-001"] }
+    "NO-CONTRACT": {
+      "degrades": [
+        "SETTLE-001",
+        "SETTLE-002",
+        "SETTLE-001R"
+      ]
+    },
+    "NO-SUBACC": {
+      "degrades": [
+        "SETTLE-001",
+        "AGE-001",
+        "AGE-002"
+      ]
+    },
+    "NO-INN": {
+      "degrades": [
+        "VAT-ADV-60",
+        "VAT-ADV-62",
+        "DUP-INN"
+      ]
+    },
+    "NO-DATE": {
+      "degrades": [
+        "AGE-001",
+        "AGE-002"
+      ]
+    },
+    "NO-ARITH": {
+      "degrades": [
+        "ARITH-001"
+      ]
+    }
   },
   "controls": {
     "RED-001": {
@@ -23,7 +68,9 @@
       "domain": "settlements",
       "module": "r6062",
       "default_status": "ACCOUNTING_ERROR",
-      "requires": ["osv"],
+      "requires": [
+        "osv"
+      ],
       "version": 1
     },
     "SETTLE-001": {
@@ -31,16 +78,27 @@
       "domain": "settlements",
       "module": "r6062",
       "default_status": "REVIEW",
-      "requires": ["osv", "subaccounts"],
-      "optional": ["contract", "inn"],
-      "version": 1
+      "requires": [
+        "osv",
+        "subaccounts"
+      ],
+      "optional": [
+        "contract",
+        "inn"
+      ],
+      "version": 1,
+      "blocking_for_candidate": [
+        "contract"
+      ]
     },
     "SETTLE-001R": {
       "name": "Прочее развёрнутое сальдо (разные строки)",
       "domain": "settlements",
       "module": "r6062",
       "default_status": "REVIEW",
-      "requires": ["osv"],
+      "requires": [
+        "osv"
+      ],
       "version": 1
     },
     "SETTLE-002": {
@@ -48,8 +106,12 @@
       "domain": "settlements",
       "module": "r6062",
       "default_status": "REVIEW",
-      "requires": ["osv"],
-      "optional": ["contract"],
+      "requires": [
+        "osv"
+      ],
+      "optional": [
+        "contract"
+      ],
       "version": 1
     },
     "SETTLE-INC": {
@@ -57,7 +119,9 @@
       "domain": "settlements",
       "module": "r6062",
       "default_status": "INSUFFICIENT_DATA",
-      "requires": ["osv"],
+      "requires": [
+        "osv"
+      ],
       "version": 1
     },
     "AGE-001": {
@@ -65,7 +129,10 @@
       "domain": "settlements",
       "module": "r6062",
       "default_status": "REVIEW",
-      "requires": ["osv", "date"],
+      "requires": [
+        "osv",
+        "date"
+      ],
       "version": 1
     },
     "AGE-002": {
@@ -73,7 +140,11 @@
       "domain": "settlements",
       "module": "r6062",
       "default_status": "REVIEW",
-      "requires": ["osv", "date", "subaccounts"],
+      "requires": [
+        "osv",
+        "date",
+        "subaccounts"
+      ],
       "version": 1
     },
     "ARITH-001": {
@@ -81,7 +152,11 @@
       "domain": "data_quality",
       "module": "r6062",
       "default_status": "REVIEW",
-      "requires": ["osv", "start_balance", "turnovers"],
+      "requires": [
+        "osv",
+        "start_balance",
+        "turnovers"
+      ],
       "version": 1
     },
     "ANL-001": {
@@ -89,7 +164,9 @@
       "domain": "data_quality",
       "module": "r6062",
       "default_status": "REVIEW",
-      "requires": ["osv"],
+      "requires": [
+        "osv"
+      ],
       "version": 1
     },
     "VAT-76": {
@@ -97,7 +174,9 @@
       "domain": "vat",
       "module": "r6062",
       "default_status": "REVIEW",
-      "requires": ["osv"],
+      "requires": [
+        "osv"
+      ],
       "version": 1
     },
     "VAT-ADV-60": {
@@ -105,8 +184,14 @@
       "domain": "vat",
       "module": "r6062",
       "default_status": "REVIEW",
-      "requires": ["osv60"],
-      "optional": ["osv76va", "purchase_book"],
+      "requires": [
+        "osv60"
+      ],
+      "optional": [
+        "osv76va",
+        "purchase_book",
+        "inn"
+      ],
       "version": 1
     },
     "VAT-ADV-62": {
@@ -114,8 +199,14 @@
       "domain": "vat",
       "module": "r6062",
       "default_status": "ACCOUNTING_ERROR",
-      "requires": ["osv62"],
-      "optional": ["osv76av", "sales_book"],
+      "requires": [
+        "osv62"
+      ],
+      "optional": [
+        "osv76av",
+        "sales_book",
+        "inn"
+      ],
       "version": 1
     },
     "VAT-001": {
@@ -123,7 +214,10 @@
       "domain": "vat",
       "module": "r6062",
       "default_status": "REVIEW",
-      "requires": ["osv", "osv76"],
+      "requires": [
+        "osv",
+        "osv76"
+      ],
       "version": 1
     },
     "DUP-NAME": {
@@ -131,7 +225,9 @@
       "domain": "master_data",
       "module": "r6062",
       "default_status": "REVIEW",
-      "requires": ["osv"],
+      "requires": [
+        "osv"
+      ],
       "version": 1
     },
     "DUP-INN": {
@@ -139,7 +235,10 @@
       "domain": "master_data",
       "module": "r6062",
       "default_status": "REVIEW",
-      "requires": ["osv", "inn"],
+      "requires": [
+        "osv",
+        "inn"
+      ],
       "version": 1
     },
     "NDS-SUM": {
@@ -147,7 +246,10 @@
       "domain": "vat",
       "module": "nds",
       "default_status": "ACCOUNTING_ERROR",
-      "requires": ["sf_a", "sf_b"],
+      "requires": [
+        "sf_a",
+        "sf_b"
+      ],
       "version": 1
     },
     "NDS-VAT": {
@@ -155,7 +257,10 @@
       "domain": "vat",
       "module": "nds",
       "default_status": "ACCOUNTING_ERROR",
-      "requires": ["sf_a", "sf_b"],
+      "requires": [
+        "sf_a",
+        "sf_b"
+      ],
       "version": 1
     },
     "NDS-RATE": {
@@ -163,7 +268,10 @@
       "domain": "vat",
       "module": "nds",
       "default_status": "REVIEW",
-      "requires": ["sf_a", "sf_b"],
+      "requires": [
+        "sf_a",
+        "sf_b"
+      ],
       "version": 1
     },
     "NDS-INN": {
@@ -171,7 +279,10 @@
       "domain": "vat",
       "module": "nds",
       "default_status": "REVIEW",
-      "requires": ["sf_a", "sf_b"],
+      "requires": [
+        "sf_a",
+        "sf_b"
+      ],
       "version": 1
     },
     "NDS-KPP": {
@@ -179,7 +290,10 @@
       "domain": "vat",
       "module": "nds",
       "default_status": "INSUFFICIENT_DATA",
-      "requires": ["sf_a", "sf_b"],
+      "requires": [
+        "sf_a",
+        "sf_b"
+      ],
       "version": 1
     },
     "NDS-CORR": {
@@ -187,7 +301,10 @@
       "domain": "vat",
       "module": "nds",
       "default_status": "REVIEW",
-      "requires": ["sf_a", "sf_b"],
+      "requires": [
+        "sf_a",
+        "sf_b"
+      ],
       "version": 1
     },
     "NDS-TYPE": {
@@ -195,7 +312,10 @@
       "domain": "vat",
       "module": "nds",
       "default_status": "REVIEW",
-      "requires": ["sf_a", "sf_b"],
+      "requires": [
+        "sf_a",
+        "sf_b"
+      ],
       "version": 1
     },
     "NDS-MISS-A": {
@@ -203,7 +323,10 @@
       "domain": "vat",
       "module": "nds",
       "default_status": "REVIEW",
-      "requires": ["sf_a", "sf_b"],
+      "requires": [
+        "sf_a",
+        "sf_b"
+      ],
       "version": 1
     },
     "NDS-MISS-B": {
@@ -211,7 +334,10 @@
       "domain": "vat",
       "module": "nds",
       "default_status": "REVIEW",
-      "requires": ["sf_a", "sf_b"],
+      "requires": [
+        "sf_a",
+        "sf_b"
+      ],
       "version": 1
     },
     "NDS-DUP": {
@@ -219,7 +345,9 @@
       "domain": "vat",
       "module": "nds",
       "default_status": "REVIEW",
-      "requires": ["sf"],
+      "requires": [
+        "sf"
+      ],
       "version": 1
     },
     "NDS-MULTI": {
@@ -227,8 +355,55 @@
       "domain": "vat",
       "module": "nds",
       "default_status": "INSUFFICIENT_DATA",
-      "requires": ["sf"],
+      "requires": [
+        "sf"
+      ],
       "version": 1
     }
+  },
+  "data_sufficiency": {
+    "schema": "DATA_SUFFICIENCY_V1",
+    "levels": {
+      "COMPLETE": {
+        "label": "полный ввод",
+        "ui": "ok"
+      },
+      "PARTIAL": {
+        "label": "частичный ввод",
+        "ui": "warn"
+      },
+      "INSUFFICIENT": {
+        "label": "недостаточно данных",
+        "ui": "info"
+      },
+      "INVALID": {
+        "label": "данные непригодны",
+        "ui": "err"
+      }
+    },
+    "evidence_keys": {
+      "osv": "ОСВ / взаиморасчёты загружены",
+      "subaccounts": "Субсчета 60.01/60.02 (или 62.*)",
+      "contract": "Субконто «Договор»",
+      "inn": "ИНН контрагентов",
+      "date": "Дата в строках ОСВ",
+      "start_balance": "Сальдо на начало",
+      "turnovers": "Обороты за период",
+      "osv60": "Основной счёт 60",
+      "osv62": "Основной счёт 62",
+      "osv76": "Второй файл — ОСВ 76.*",
+      "osv76va": "ОСВ 76.ВА",
+      "osv76av": "ОСВ 76.АВ",
+      "purchase_book": "Книга покупок / реестр полученных СФ",
+      "sales_book": "Книга продаж / реестр выданных СФ",
+      "sf_a": "Реестр СФ A",
+      "sf_b": "Реестр СФ B",
+      "sf": "Реестр СФ"
+    }
+  },
+  "router": {
+    "schema": "CONTROL_ROUTER_V1",
+    "module": "r6062",
+    "description": "Выбирает применимые контроли Доктора 60/62 по профилю evidence"
   }
 }

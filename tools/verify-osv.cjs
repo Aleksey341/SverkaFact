@@ -150,6 +150,9 @@ check("settle-candidate", () => {
   assert(diag.settle.candidates >= 1, "candidates>=1 got " + diag.settle.candidates);
   assert(diag.issues.some((r) => r["Код"] === "SETTLE-001"), "SETTLE-001 code");
   assert(diag.issues.some((r) => /Кандидат к зачёту/i.test(r["Проблема"] || "")), "candidate wording");
+  assert(diag.router && diag.router.applicable.indexOf("SETTLE-001") >= 0, "router has SETTLE-001");
+  assert(diag.evidence && diag.evidence.contract === true, "evidence.contract");
+  assert(["COMPLETE", "PARTIAL"].indexOf(diag.datasetSufficiency) >= 0, "sufficiency " + diag.datasetSufficiency);
 });
 
 // --- Sample: no contract → SETTLE-INC ---
@@ -162,6 +165,8 @@ check("no-contract-inconclusive", () => {
   assert(diag.settle.candidates === 0, "no candidates without contract");
   assert(diag.issues.some((r) => r["Код"] === "SETTLE-INC"), "SETTLE-INC");
   assert((diag.inputQuality || []).some((f) => f.id === "NO-CONTRACT"), "NO-CONTRACT flag");
+  assert(diag.datasetSufficiency === "PARTIAL" || diag.datasetSufficiency === "INSUFFICIENT", "suf " + diag.datasetSufficiency);
+  assert(diag.router && (diag.router.deferred || []).some((d) => d.code === "VAT-ADV-60" || d.code === "VAT-ADV-62" || d.code === "VAT-001"), "VAT deferred without 2nd file");
 });
 
 // --- Sample: arithmetic mismatch ---

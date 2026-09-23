@@ -31,6 +31,11 @@ function check(name, cond, detail) {
 
 check("schema", reg.schema === "CONTROL_REGISTRY_V1");
 check("semantic_status keys", ["ACCOUNTING_ERROR", "REVIEW", "INSUFFICIENT_DATA"].every((k) => reg.semantic_status[k]));
+check("data_sufficiency", !!(reg.data_sufficiency && reg.data_sufficiency.schema === "DATA_SUFFICIENCY_V1"));
+check("router schema", !!(reg.router && reg.router.schema === "CONTROL_ROUTER_V1"));
+check("html has routeR6062", html.includes("function routeR6062Controls"));
+check("html has buildOsvEvidence", html.includes("function buildOsvEvidence"));
+check("html has assessControlSufficiency", html.includes("function assessControlSufficiency"));
 
 // Every registry id should appear as string literal in HTML (except we allow embedding only via JSON)
 const embeddedMatch = html.match(/const CONTROL_REGISTRY = (\{.*?\});\s*\nfunction getControlDef/s);
