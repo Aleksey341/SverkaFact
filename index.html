@@ -3124,8 +3124,11 @@ function resolveOsvAmountCols(matrix, headerRow) {
     return found;
   };
   const endRe = /сальдо[^а-я]*на\s*кон|сальдо\s*кон|кон[а-я]*\s*сальдо|(^|\s)ск(\s|$)/;
+  const startRe = /сальдо[^а-я]*на\s*нач|сальдо\s*нач|нач[а-я]*\s*сальдо|(^|\s)сн(\s|$)/;
   let debEnd = find(endRe, "deb");
   let credEnd = find(endRe, "cred");
+  let debStart = find(startRe, "deb");
+  let credStart = find(startRe, "cred");
   const debTurn = find(/оборот/, "deb");
   const credTurn = find(/оборот/, "cred");
   if (debEnd < 0 || credEnd < 0) {
@@ -3139,7 +3142,7 @@ function resolveOsvAmountCols(matrix, headerRow) {
     if (debEnd < 0) debEnd = debs.length ? debs[debs.length - 1] : -1;
     if (credEnd < 0) credEnd = creds.length ? creds[creds.length - 1] : -1;
   }
-  return { debEnd, credEnd, debTurn, credTurn, groups, own };
+  return { debEnd, credEnd, debStart, credStart, debTurn, credTurn, groups, own };
 }
 
 function parseOsv6062(matrix, fileName) {
@@ -3151,7 +3154,7 @@ function parseOsv6062(matrix, fileName) {
   if (cols.debEnd < 0 && cols.credEnd < 0) {
     throw new Error("Не найдены колонки конечного сальдо Дт/Кт. Выгрузите ОСВ с сальдо на конец периода.");
   }
-  const amountCols = new Set([cols.debEnd, cols.credEnd, cols.debTurn, cols.credTurn].filter(c => c >= 0));
+  const amountCols = new Set([cols.debEnd, cols.credEnd, cols.debStart, cols.credStart, cols.debTurn, cols.credTurn].filter(c => c >= 0));
   const width = matrixWidth(matrix);
   const findByHeader = (variants) => {
     for (let c = 0; c < width; c++) {
@@ -3181,9 +3184,11 @@ function parseOsv6062(matrix, fileName) {
     if (isOsvDocumentRow(name)) { skippedDocs++; continue; }
     const debit = cols.debEnd >= 0 ? parseAmount(row[cols.debEnd]) : null;
     const credit = cols.credEnd >= 0 ? parseAmount(row[cols.credEnd]) : null;
+    const debitStart = cols.debStart >= 0 ? parseAmount(row[cols.debStart]) : null;
+    const creditStart = cols.credStart >= 0 ? parseAmount(row[cols.credStart]) : null;
     const debitTurn = cols.debTurn >= 0 ? parseAmount(row[cols.debTurn]) : null;
     const creditTurn = cols.credTurn >= 0 ? parseAmount(row[cols.credTurn]) : null;
-    if (![debit, credit, debitTurn, creditTurn].some(v => v != null && Math.abs(v) > 0.009)) continue;
+    if (![debit, credit, debitStart, creditStart, debitTurn, creditTurn].some(v => v != null && Math.abs(v) > 0.009)) continue;
     const account = accountCol >= 0 ? normalizeText(row[accountCol]) : "";
     items.push({
       name: name || "(без аналитики)",
@@ -3193,6 +3198,8 @@ function parseOsv6062(matrix, fileName) {
       date: dateCol >= 0 ? parseDate(row[dateCol]) : null,
       debit: debit || 0,
       credit: credit || 0,
+      debitStart: debitStart || 0,
+      creditStart: creditStart || 0,
       debitTurn: debitTurn || 0,
       creditTurn: creditTurn || 0,
       sourceRow: r + 1
@@ -3208,7 +3215,9 @@ function parseOsv6062(matrix, fileName) {
     hasAccounts: items.some(it => !!String(it.account || "").replace(/\s/g, "")),
     hasContracts: contractCol >= 0 && items.some(it => !!it.contract),
     hasInns: items.some(it => !!it.inn),
-    hasSubaccounts: items.some(it => /\.[0-9A-Za-zА-Яа-я]{1,3}\b/.test(String(it.account || "").replace(/\s/g, "")))
+    hasSubaccounts: items.some(it => /\.[0-9A-Za-zА-Яа-я]{1,3}\b/.test(String(it.account || "").replace(/\s/g, ""))),
+    hasStartBalances: cols.debStart >= 0 || cols.credStart >= 0,
+    hasTurnovers: cols.debTurn >= 0 || cols.credTurn >= 0
   };
 }
 
@@ -3505,6 +3514,12 @@ function assessOsvInputQuality(data) {
       text: "Нет даты — проверка просрочки пропущена."
     });
   }
+  if (!(data.hasStartBalances && data.hasTurnovers)) {
+    flags.push({
+      id: "NO-ARITH",
+      text: "Нет сальдо на начало и/или оборотов — арифметика СН+обороты≈СК не выполнялась."
+    });
+  }
   return flags;
 }
 
@@ -3595,17 +3610,40 @@ function diagnose6062(data, opts) {
     }
     if (it.date) {
       const age = Math.floor((todayUtc - Date.UTC(it.date.getUTCFullYear(), it.date.getUTCMonth(), it.date.getUTCDate())) / 86400000);
-      const acc = (it.account || "").replace(/\s/g, "");
-      const is60 = /^60\b|^60\.|сч\.?\s*60/i.test(acc) || (!acc && c > 0.009 && d < 0.009);
-      const is62 = /^62\b|^62\.|сч\.?\s*62/i.test(acc) || (!acc && d > 0.009 && c < 0.009);
-      const overdueAmt = is62 ? d : (is60 ? c : (d > c ? d : c));
-      if (age > overdueDays && overdueAmt > 0.009) {
-        const row = issueRow(it, "Просроченная задолженность",
-          "Дата старше " + overdueDays + " дн. (факт: " + age + " дн.).",
-          "Запросить акт сверки / оплату / уточнить срок договора.",
-          { "Дней": age, severity: "warning", code: "AGE-001" });
-        overdue.push(row);
-        issues.push(row);
+      if (age > overdueDays) {
+        const fam = osvAccountFamily(it.account) || osvAccountFamily(data.mainAccount)
+          || (c > 0.009 && d < 0.009 ? "60" : (d > 0.009 && c < 0.009 ? "62" : ""));
+        const isAdv = fam ? osvIsAdvanceSub(it.account, fam) : false;
+        const isDebt = fam ? osvIsDebtSub(it.account, fam) : false;
+        // 60: долг на Кт .01, аванс на Дт .02; 62: долг на Дт .01, аванс на Кт .02
+        let overdueAmt = 0;
+        let kind = "debt";
+        if (fam === "60") {
+          if (isAdv && d > 0.009) { overdueAmt = d; kind = "advance"; }
+          else if (isDebt && c > 0.009) { overdueAmt = c; kind = "debt"; }
+          else if (!isAdv && !isDebt) overdueAmt = c > 0.009 ? c : (d > 0.009 ? d : 0);
+        } else if (fam === "62") {
+          if (isAdv && c > 0.009) { overdueAmt = c; kind = "advance"; }
+          else if (isDebt && d > 0.009) { overdueAmt = d; kind = "debt"; }
+          else if (!isAdv && !isDebt) overdueAmt = d > 0.009 ? d : (c > 0.009 ? c : 0);
+        } else {
+          overdueAmt = d > c ? d : c;
+        }
+        if (overdueAmt > 0.009) {
+          const code = kind === "advance" ? "AGE-002" : "AGE-001";
+          const problem = kind === "advance"
+            ? "Просроченный аванс (субсчёт .02)"
+            : (isDebt ? "Просроченная задолженность (субсчёт .01)" : "Просроченная задолженность");
+          const action = kind === "advance"
+            ? "Проверить зачёт аванса поставкой/реализацией или возврат; сверить срок договора."
+            : "Запросить акт сверки / оплату / уточнить срок договора.";
+          const row = issueRow(it, problem,
+            "Дата старше " + overdueDays + " дн. (факт: " + age + " дн.).",
+            action,
+            { "Дней": age, "Вид": kind === "advance" ? "аванс" : "долг", severity: "warning", code });
+          overdue.push(row);
+          issues.push(row);
+        }
       }
     }
     if (sfPartners && !vatIndex) {
@@ -3628,6 +3666,34 @@ function diagnose6062(data, opts) {
           advanceNoSf.push(row);
           if (mainIs62) issues.push(row);
         }
+      }
+    }
+  }
+
+  // ARITH-001: СН + обороты ≈ СК (если в выгрузке есть начало и обороты)
+  const arithmetic = [];
+  if (data.hasStartBalances && data.hasTurnovers) {
+    const r2 = (n) => Math.round((n || 0) * 100) / 100;
+    for (const it of data.items) {
+      const sn = r2((it.debitStart || 0) - (it.creditStart || 0));
+      const ob = r2((it.debitTurn || 0) - (it.creditTurn || 0));
+      const sk = r2((it.debit || 0) - (it.credit || 0));
+      const expect = r2(sn + ob);
+      const delta = r2(sk - expect);
+      if (Math.abs(delta) > 0.05) {
+        const row = issueRow(it, "Арифметика ОСВ: СН + обороты ≠ СК",
+          "Ожидали конечное сальдо (нетто) " + expect + ", в файле " + sk + ", расхождение " + delta + ".",
+          "Перевыгрузить ОСВ или проверить разворот субконто/итоги в 1С.",
+          {
+            severity: "warning",
+            code: "ARITH-001",
+            "СН нетто": sn,
+            "Обороты нетто": ob,
+            "СК нетто": sk,
+            "Δ": delta
+          });
+        arithmetic.push(row);
+        issues.push(row);
       }
     }
   }
@@ -3780,11 +3846,13 @@ function diagnose6062(data, opts) {
     corrections,
     inconclusive,
     settle,
+    arithmetic,
     vatNotRestored,
     vatAdvance,
     mainAccount: data.mainAccount || "",
     overdueSkipped: !data.hasDates,
     contractsMissing: !data.hasContracts,
+    arithSkipped: !(data.hasStartBalances && data.hasTurnovers),
     inputQuality: assessOsvInputQuality(data),
     sfChecked: !!(sfPartners || vatIndex),
     vatChecked: !!vatIndex
@@ -3853,6 +3921,7 @@ document.getElementById("btnOsvRun").addEventListener("click", async () => {
       [settleInc, "Недостаточно данных"],
       [diag.av76.length, "76.АВ/ВА"],
       [diag.overdue.length, "Просрочка"],
+      [(diag.arithmetic || []).length, "Арифметика ОСВ"],
       [diag.duplicates.length, "Дубли"],
       [diag.advanceNoSf.length, "Аванс без СФ"]
     ]);
@@ -3908,6 +3977,7 @@ document.getElementById("btnOsvRun").addEventListener("click", async () => {
       '<h3 class="section">Недостаточно данных (нет договора)</h3>' + renderTable(diag.inconclusive || [], [], "Нет") +
       '<h3 class="section">76.АВ / 76.ВА</h3>' + renderTable(diag.av76, [], "Нет") +
       '<h3 class="section">Просрочка</h3>' + renderTable(diag.overdue, [], "Нет") +
+      '<h3 class="section">Арифметика ОСВ (СН + обороты ≠ СК)</h3>' + renderTable(diag.arithmetic || [], [], "Нет") +
       '<h3 class="section">Аналитика</h3>' + renderTable(diag.analytics, [], "Нет") +
       '<h3 class="section">Дубли контрагентов</h3>' + renderTable(diag.duplicates, [], "Нет") +
       (diag.sfChecked ? '<h3 class="section">' + advTitle + '</h3>' + renderTable(diag.advanceNoSf, [], "Нет") : "") +
@@ -3935,7 +4005,8 @@ document.getElementById("btnOsvXlsx").addEventListener("click", () => {
   add("Проблемы", "Все замечания 60/62", d.issues);
   add("Недостаточно", "Недостаточно данных (нет договора)", d.inconclusive || []);
   add("76АВ_ВА", "76.АВ / 76.ВА", d.av76);
-  add("Просрочка", "Просроченная задолженность", d.overdue);
+  add("Просрочка", "Просроченная задолженность / аванс", d.overdue);
+  add("Арифметика", "СН + обороты ≠ СК", d.arithmetic || []);
   add("Дубли", "Дубли контрагентов", d.duplicates);
   add("Аналитика", "Обязательная аналитика", d.analytics);
   if (d.sfChecked) {
@@ -4160,31 +4231,34 @@ function compareNds(a, b) {
       }
     }
   }
-  const sevW = (arr) => (arr || []).map(r => withSeverity(Object.assign({}, r), "warning"));
+  const tag = (arr, level, code) => (arr || []).map(r => {
+    const row = Object.assign({ "Код": code }, r);
+    return withSeverity(row, level);
+  });
   return {
     ok,
-    sumDiff: sevW(sumDiff),
-    ndsDiff: sevW(ndsDiff),
-    rateDiff: sevW(rateDiff),
-    innDiff: sevW(innDiff),
-    kppDiff: sevW(kppDiff),
-    corrDiff: sevW(corrDiff),
-    typeDiff: sevW(typeDiff),
-    missB: sevW(missB.map(r => ({
+    sumDiff: tag(sumDiff, "error", "NDS-SUM"),
+    ndsDiff: tag(ndsDiff, "error", "NDS-VAT"),
+    rateDiff: tag(rateDiff, "warning", "NDS-RATE"),
+    innDiff: tag(innDiff, "warning", "NDS-INN"),
+    kppDiff: tag(kppDiff, "info", "NDS-KPP"),
+    corrDiff: tag(corrDiff, "warning", "NDS-CORR"),
+    typeDiff: tag(typeDiff, "warning", "NDS-TYPE"),
+    missB: tag(missB.map(r => ({
       "№": r.number, "Дата": fmtDate(r.date), "Сумма": r.amount, "НДС": r.nds,
       "Ставка": r.rate, "ИНН": r.inn || "—", "КПП": r.kpp || "—",
       "Корр.": r.isCorr ? "да" : "нет", "Контрагент": r.partner,
       "Причина": r.reason || "нет в паре"
-    }))),
-    missA: sevW(missA.map(r => ({
+    })), "warning", "NDS-MISS-B"),
+    missA: tag(missA.map(r => ({
       "№": r.number, "Дата": fmtDate(r.date), "Сумма": r.amount, "НДС": r.nds,
       "Ставка": r.rate, "ИНН": r.inn || "—", "КПП": r.kpp || "—",
       "Корр.": r.isCorr ? "да" : "нет", "Контрагент": r.partner,
       "Причина": r.reason || "нет в паре"
-    }))),
-    dupsA: sevW(dupsA),
-    dupsB: sevW(dupsB),
-    multiRateWarn: sevW(multiRateWarn)
+    })), "warning", "NDS-MISS-A"),
+    dupsA: tag(dupsA, "warning", "NDS-DUP"),
+    dupsB: tag(dupsB, "warning", "NDS-DUP"),
+    multiRateWarn: tag(multiRateWarn, "info", "NDS-MULTI")
   };
 }
 
@@ -4220,9 +4294,11 @@ document.getElementById("btnNdsRun").addEventListener("click", async () => {
       [comp.multiRateWarn.length, "Неск. ставок"]
     ]);
     const ndsLegend = '<div class="legend" style="margin:0 0 12px">'
-      + '<span><i class="sev sev-warning" style="margin-right:4px">внимание</i>расхождения и дубли</span></div>';
+      + '<span><i class="sev sev-error" style="margin-right:4px">ошибка</i>сумма / НДС</span>'
+      + '<span><i class="sev sev-warning" style="margin-right:4px">внимание</i>нет пары, ставка, ИНН, дубли</span>'
+      + '<span><i class="sev sev-info" style="margin-right:4px">справочно</i>КПП / несколько ставок</span></div>';
     const fullNds = kpiNds + ndsLegend +
-      '<div class="reason-box">Сопоставление: номер → номер+дата / ИНН. Колонка «Важность» — уровень замечания.</div>' +
+      '<div class="reason-box">Сопоставление: номер → номер+дата / ИНН. Колонки «Код» и «Важность»: NDS-SUM, NDS-VAT, NDS-MISS-A/B, NDS-DUP…</div>' +
       '<h3 class="section">Нет в B</h3>' + renderTable(comp.missB, [], "Нет") +
       '<h3 class="section">Нет в A</h3>' + renderTable(comp.missA, [], "Нет") +
       '<h3 class="section">Отличается стоимость</h3>' + renderTable(comp.sumDiff, [], "Нет") +
