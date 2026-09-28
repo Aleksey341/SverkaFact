@@ -19,6 +19,7 @@ jobs:
         run: node tools/verify-osv.cjs
       - name: Verify NDS samples
         run: node tools/verify-nds.cjs
+      # Regression for two-sided PDF acts with a separate document-number row.
       - name: Verify ACT PDF document headers
         run: node tools/verify-acts-pdf.cjs
       - name: Ensure working tree clean after build
