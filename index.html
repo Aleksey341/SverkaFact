@@ -1464,12 +1464,13 @@ function extractDocInfo(docAct, fromInsideParens) {
   ostatok = collapseSpaces(ostatok);
 
   // «81820 от 22.07.2026» — номер до « от », не год из даты
-  const mBeforeOt = ostatok.match(/^(\d+)\s+от\b/i);
+  // ACT_CYRILLIC_OT_BOUNDARY_V1: для кириллицы используем явный пробел/конец вместо \b.
+  const mBeforeOt = ostatok.match(/^(\d+)\s+от(?=\s|$)/i);
   if (mBeforeOt) {
     nomer = mBeforeOt[1].replace(/^0+/, "") || "0";
   } else {
     let numberSource = ostatok;
-    const mNo = ostatok.match(/№\s*(.*?)(?:\s+от\b|$)/i);
+    const mNo = ostatok.match(/№\s*(.*?)(?:\s+от(?=\s|$)|$)/i);
     if (mNo) numberSource = mNo[1];
     const otIdx = numberSource.toLowerCase().indexOf(" от ");
     if (otIdx >= 0) numberSource = numberSource.slice(0, otIdx);
