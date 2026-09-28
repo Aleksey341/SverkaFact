@@ -1,0 +1,57 @@
+/**
+ * Patch ACT PDF parsing in index.html.
+ *
+ * Fixes two related issues in two-sided reconciliation PDFs:
+ * 1) A4 portrait PDFs (≈595 pt) were not detected as two-party tables, so the
+ *    parser could mix the left and right halves.
+ * 2) A document header such as "документ № 226 от 07.09.2026" is printed on a
+ *    separate row from "Операция №1". The old PDF parser dropped that header,
+ *    so every operation was parsed as document №1.
+ *
+ * Idempotent. Run from repository root:
+ *   node tools/patch-acts-pdf.cjs
+ */
+const fs = require("fs");
+const path = require("path");
+
+const root = path.join(__dirname, "..");
+const htmlPath = path.join(root, "index.html");
+let html = fs.readFileSync(htmlPath, "utf8");
+
+const MARK = "ACT_PDF_DOC_HEADER_V1";
+if (html.includes(MARK)) {
+  console.log("ACT PDF patch already applied");
+  process.exit(0);
+}
+
+const oldSplit = `  const dual = pageWidth > 700;\n  const leftMax = dual ? pageWidth * 0.48 : pageWidth;\n  const leftWords = words.filter(w => w.x0 < leftMax);`;
+const newSplit = `  // ${MARK}: two-sided A4 acts have a second exact \"Дата\" header near the right half.\n  // pageWidth > 700 is not enough: portrait A4 is about 595 pt.\n  const firstPageDateHeaders = words\n    .filter(w => w.page === 1 && normalizeText(w.text).toLowerCase() === \"дата\")\n    .map(w => w.x0)\n    .sort((a, b) => a - b);\n  const hasTwoPartyTable = firstPageDateHeaders.length >= 2 &&\n    firstPageDateHeaders[1] - firstPageDateHeaders[0] > pageWidth * 0.25;\n  const leftMax = hasTwoPartyTable\n    ? Math.max(firstPageDateHeaders[1] - 2, pageWidth * 0.45)\n    : (pageWidth > 700 ? pageWidth * 0.48 : pageWidth);\n  const leftWords = words.filter(w => w.x0 < leftMax);`;
+
+if (!html.includes(oldSplit)) {
+  throw new Error("ACT PDF patch: split marker not found; index.html changed");
+}
+html = html.replace(oldSplit, newSplit);
+
+const oldMatrix = `  const matrix = [[\"Дата\", \"Документ\", \"Дебет\", \"Кредит\"]];\n  for (const cl of clusters) {`;
+const newMatrix = `  const matrix = [[\"Дата\", \"Документ\", \"Дебет\", \"Кредит\"]];\n  let pendingPdfDoc = \"\";\n  for (const cl of clusters) {`;
+if (!html.includes(oldMatrix)) {
+  throw new Error("ACT PDF patch: matrix marker not found; index.html changed");
+}
+html = html.replace(oldMatrix, newMatrix);
+
+const oldDoc = `    const doc = docParts.join(\" \").trim();\n    const lowAll = fixed.map(m => m.text).join(\" \").toLowerCase();\n\n    // итоги периода / подписи / текст внизу акта — не операции`;
+const newDoc = `    const doc = docParts.join(\" \").trim();\n    const fullLine = fixed.map(m => m.text).join(\" \").trim();\n    const lowAll = fullLine.toLowerCase();\n\n    // В актах Диадок/1С номер документа часто находится отдельной строкой\n    // непосредственно перед строкой операции. Не теряем эту строку: parseAct\n    // затем извлечёт реальный номер (226/228/2064), а не \"Операция №1\".\n    const isDocHeader = !amounts.length &&\n      /(?:^|\\s)(?:документ|накладн\\w*|упд|сч[её]т(?:-фактур\\w*)?)\\s*№/i.test(fullLine);\n    if (isDocHeader) {\n      pendingPdfDoc = fullLine;\n      continue;\n    }\n\n    // итоги периода / подписи / текст внизу акта — не операции`;
+if (!html.includes(oldDoc)) {
+  throw new Error("ACT PDF patch: document marker not found; index.html changed");
+}
+html = html.replace(oldDoc, newDoc);
+
+const oldPush = `    if (!dateTok) continue;\n    if (!amounts.length) continue;\n    if (!doc) continue;\n\n    matrix.push([dateTok.text, doc, debit, credit]);`;
+const newPush = `    if (!dateTok) continue;\n    if (!amounts.length) continue;\n    if (!doc && !pendingPdfDoc) continue;\n\n    const effectiveDoc = pendingPdfDoc\n      ? collapseSpaces(pendingPdfDoc + \" \" + doc)\n      : doc;\n    pendingPdfDoc = \"\";\n    matrix.push([dateTok.text, effectiveDoc, debit, credit]);`;
+if (!html.includes(oldPush)) {
+  throw new Error("ACT PDF patch: operation marker not found; index.html changed");
+}
+html = html.replace(oldPush, newPush);
+
+fs.writeFileSync(htmlPath, html, "utf8");
+console.log("ACT PDF patch applied to index.html");
