@@ -5,7 +5,9 @@
  * 1) a portrait A4 page contains two party tables side by side;
  * 2) the real document number is printed on a row above "Операция №1";
  * 3) trailing digits after the document date (for example "Операция №1") must
- *    not become part of the year used for matching.
+ *    not become part of the year used for matching;
+ * 4) Cyrillic «от» must not use JS \b, because Cyrillic letters are not \w in
+ *    JavaScript and the boundary does not match before a space.
  *
  * Idempotent. Run from repository root:
  *   node tools/patch-acts-pdf.cjs
@@ -48,6 +50,20 @@ if (!html.includes(DATE_MARK)) {
   const newDate = `  // ${DATE_MARK}: берём только первый токен даты после « от ».\n  // Иначе хвост вроде «Операция №1» превращал 2026 в 20261.\n  const pozOt = ostatok.toLowerCase().indexOf(\" от \");\n  if (pozOt >= 0) {\n    const after = ostatok.slice(pozOt + 4);\n    const md = after.match(/^(\\d{1,2})[.\\-/](\\d{1,2})[.\\-/](\\d{2,4})(?!\\d)/);\n    if (md) {\n      let yNum = Number(md[3]);\n      if (yNum < 100) yNum += 2000;\n      const d = new Date(Date.UTC(yNum, Number(md[2]) - 1, Number(md[1])));\n      if (!Number.isNaN(d.getTime())) dateFromOper = d;\n    }\n  }`;
   if (!html.includes(oldDate)) throw new Error("ACT date patch: date extraction marker not found; index.html changed");
   html = html.replace(oldDate, newDate);
+  changed = true;
+}
+
+const OT_MARK = "ACT_CYRILLIC_OT_BOUNDARY_V1";
+if (!html.includes(OT_MARK)) {
+  const oldBefore = `  const mBeforeOt = ostatok.match(/^(\\d+)\\s+от\\b/i);`;
+  const newBefore = `  // ${OT_MARK}: для кириллицы используем явный пробел/конец вместо \\b.\n  const mBeforeOt = ostatok.match(/^(\\d+)\\s+от(?=\\s|$)/i);`;
+  if (!html.includes(oldBefore)) throw new Error("ACT number patch: mBeforeOt marker not found; index.html changed");
+  html = html.replace(oldBefore, newBefore);
+
+  const oldNo = `    const mNo = ostatok.match(/№\\s*(.*?)(?:\\s+от\\b|$)/i);`;
+  const newNo = `    const mNo = ostatok.match(/№\\s*(.*?)(?:\\s+от(?=\\s|$)|$)/i);`;
+  if (!html.includes(oldNo)) throw new Error("ACT number patch: mNo marker not found; index.html changed");
+  html = html.replace(oldNo, newNo);
   changed = true;
 }
 
