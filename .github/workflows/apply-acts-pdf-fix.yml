@@ -1,0 +1,37 @@
+name: apply-acts-pdf-fix
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tools/patch-acts-pdf.cjs"
+      - ".github/workflows/apply-acts-pdf-fix.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  patch-index:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Patch ACT PDF parser
+        run: node tools/patch-acts-pdf.cjs
+      - name: Validate diff
+        run: git diff --check
+      - name: Commit generated index
+        shell: bash
+        run: |
+          if [ -z "$(git status --porcelain -- index.html)" ]; then
+            echo "index.html already patched"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html
+          git commit -m "fix(acts): preserve PDF document headers during reconciliation"
+          git push
