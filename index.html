@@ -1494,17 +1494,16 @@ function extractDocInfo(docAct, fromInsideParens) {
     }
   }
 
+  // ACT_DOC_DATE_TOKEN_V1: берём только первый токен даты после « от ».
+  // Иначе хвост вроде «Операция №1» превращал 2026 в 20261.
   const pozOt = ostatok.toLowerCase().indexOf(" от ");
   if (pozOt >= 0) {
     const after = ostatok.slice(pozOt + 4);
-    let digits = "";
-    for (const ch of after) if (/\d/.test(ch)) digits += ch;
-    if (digits.length >= 6) {
-      const dd = digits.slice(0, 2);
-      const mm = digits.slice(2, 4);
-      const yy = digits.slice(4);
-      const yNum = yy.length === 2 ? 2000 + Number(yy) : Number(yy);
-      const d = new Date(Date.UTC(yNum, Number(mm) - 1, Number(dd)));
+    const md = after.match(/^(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{2,4})(?!\d)/);
+    if (md) {
+      let yNum = Number(md[3]);
+      if (yNum < 100) yNum += 2000;
+      const d = new Date(Date.UTC(yNum, Number(md[2]) - 1, Number(md[1])));
       if (!Number.isNaN(d.getTime())) dateFromOper = d;
     }
   }
