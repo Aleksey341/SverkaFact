@@ -4,7 +4,8 @@
  * The production parser must:
  * - detect two-sided portrait A4 tables;
  * - carry a standalone "документ №..." row into the following operation;
- * - parse only the date token after «от», ignoring trailing "Операция №1".
+ * - parse only the date token after «от», ignoring trailing "Операция №1";
+ * - treat Cyrillic «от» with an explicit lookahead, not JS \b.
  */
 const fs = require("fs");
 const path = require("path");
@@ -20,10 +21,10 @@ assert(html.includes("ACT_PDF_DOC_HEADER_V1"), "A4 two-party PDF split fix is mi
 assert(html.includes('let pendingPdfDoc = "";'), "standalone PDF document header state is missing");
 assert(html.includes("pendingPdfDoc + \" \" + doc"), "PDF document header is not joined to the operation row");
 assert(html.includes("ACT_DOC_DATE_TOKEN_V1"), "document date-token fix is missing");
+assert(html.includes("ACT_CYRILLIC_OT_BOUNDARY_V1"), "Cyrillic от boundary fix is missing");
 assert(html.includes("const hasTwoPartyTable = firstPageDateHeaders.length >= 2"), "portrait two-party detection is missing");
+assert(html.includes("\\s+от(?=\\s|$)"), "document-number parser still relies on an invalid Cyrillic word boundary");
 
-// Reproduce the date bug independently: the old parser collected all digits
-// after «от» and turned "2026 ... №1" into year 20261.
 function parseDateAfterOt(text) {
   const pos = String(text).toLowerCase().indexOf(" от ");
   if (pos < 0) return null;
@@ -36,7 +37,7 @@ function parseDateAfterOt(text) {
 }
 
 function docNumber(text) {
-  const m = String(text).match(/№\s*(.*?)(?:\s+от\b|$)/i);
+  const m = String(text).match(/№\s*(.*?)(?:\s+от(?=\s|$)|$)/i);
   if (!m) return "";
   const nums = m[1].match(/\d+/g) || [];
   return nums.length ? (nums[nums.length - 1].replace(/^0+/, "") || "0") : "";
@@ -52,4 +53,4 @@ const expectedNumbers = ["226", "228", "2064"];
 assert(pdfHeaders.every(x => parseDateAfterOt(x) === "07.09.2026"), "trailing operation number corrupts document date");
 assert(JSON.stringify(pdfHeaders.map(docNumber)) === JSON.stringify(expectedNumbers), "document numbers 226/228/2064 are not preserved");
 
-console.log("ACT PDF regression OK: document rows and dates are preserved for 226, 228, 2064");
+console.log("ACT PDF regression OK: documents 226, 228, 2064 keep correct numbers and 07.09.2026 dates");
