@@ -1784,8 +1784,17 @@ async function readPdfToMatrix(file) {
   }
   if (!words.length) throw new Error("В PDF «" + file.name + "» не удалось извлечь текст.");
 
-  const dual = pageWidth > 700;
-  const leftMax = dual ? pageWidth * 0.48 : pageWidth;
+  // ACT_PDF_DOC_HEADER_V1: two-sided A4 acts have a second exact "Дата" header near the right half.
+  // pageWidth > 700 is not enough: portrait A4 is about 595 pt.
+  const firstPageDateHeaders = words
+    .filter(w => w.page === 1 && normalizeText(w.text).toLowerCase() === "дата")
+    .map(w => w.x0)
+    .sort((a, b) => a - b);
+  const hasTwoPartyTable = firstPageDateHeaders.length >= 2 &&
+    firstPageDateHeaders[1] - firstPageDateHeaders[0] > pageWidth * 0.25;
+  const leftMax = hasTwoPartyTable
+    ? Math.max(firstPageDateHeaders[1] - 2, pageWidth * 0.45)
+    : (pageWidth > 700 ? pageWidth * 0.48 : pageWidth);
   const leftWords = words.filter(w => w.x0 < leftMax);
 
   let debitX = null, creditX = null;
@@ -1815,6 +1824,7 @@ async function readPdfToMatrix(file) {
   }
 
   const matrix = [["Дата", "Документ", "Дебет", "Кредит"]];
+  let pendingPdfDoc = "";
   for (const cl of clusters) {
     const items = cl.items.slice().sort((a, b) => a.x0 - b.x0);
     const merged = [];
@@ -1863,7 +1873,18 @@ async function readPdfToMatrix(file) {
       docParts.push(m.text);
     }
     const doc = docParts.join(" ").trim();
-    const lowAll = fixed.map(m => m.text).join(" ").toLowerCase();
+    const fullLine = fixed.map(m => m.text).join(" ").trim();
+    const lowAll = fullLine.toLowerCase();
+
+    // В актах Диадок/1С номер документа часто находится отдельной строкой
+    // непосредственно перед строкой операции. Не теряем эту строку: parseAct
+    // затем извлечёт реальный номер (226/228/2064), а не "Операция №1".
+    const isDocHeader = !amounts.length &&
+      /(?:^|\s)(?:документ|накладн\w*|упд|сч[её]т(?:-фактур\w*)?)\s*№/i.test(fullLine);
+    if (isDocHeader) {
+      pendingPdfDoc = fullLine;
+      continue;
+    }
 
     // итоги периода / подписи / текст внизу акта — не операции
     if (/оборот/.test(lowAll)) continue;
@@ -1888,9 +1909,13 @@ async function readPdfToMatrix(file) {
 
     if (!dateTok) continue;
     if (!amounts.length) continue;
-    if (!doc) continue;
+    if (!doc && !pendingPdfDoc) continue;
 
-    matrix.push([dateTok.text, doc, debit, credit]);
+    const effectiveDoc = pendingPdfDoc
+      ? collapseSpaces(pendingPdfDoc + " " + doc)
+      : doc;
+    pendingPdfDoc = "";
+    matrix.push([dateTok.text, effectiveDoc, debit, credit]);
   }
 
   if (matrix.length < 2) {
